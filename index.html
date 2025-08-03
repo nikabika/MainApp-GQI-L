@@ -1,62 +1,105 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Загрузка...</title>
   <style>
-    * {
+    html, body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background-color: #a8d8f8; /* Голубой фон */
+      height: 100%;
+      background-color: #229ED9; /* Тот самый синий */
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      overflow: hidden;
     }
-    .img-container {
-      opacity: 0;
-      transform: translateY(50px);
-      transition: opacity 1.5s ease, transform 1.5s ease;
+
+    .container {
+      position: relative;
+      width: 240px;
+      height: 240px;
     }
-    .img-container.show {
-      opacity: 1;
-      transform: translateY(0);
+
+    .loader-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      z-index: 1;
     }
-    img {
-      max-width: 80vw;
-      max-height: 60vh;
-      border-radius: 16px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+
+    .mask {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #229ED9;
+      z-index: 2;
+    }
+
+    .fade-out {
+      animation: fadeOut 0.8s ease forwards;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="img-container" id="loader">
-    <img id="randomImage" src="" alt="Loading image...">
+  <div class="container">
+    <img id="randomImage" class="loader-img" src="" alt="loading">
+    <div id="mask" class="mask"></div>
   </div>
 
   <script>
     const images = [
-      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/01bd9c22-de38-416e-bb75-742a21900865_IMG_4918.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIwMWJkOWMyMi1kZTM4LTQxNmUtYmI3NS03NDJhMjE5MDA4NjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.eLGUTSFp33sU-tglTa-TYD6FWYjegOLHthTP9ToWdUA&x-oss-process=image/resize,m_mfit,w_320,h_320",
-      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/3d17d005-cb54-4867-b092-2cd50057d502_IMG_4917.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIzZDE3ZDAwNS1jYjU0LTQ4NjctYjA5Mi0yY2Q1MDA1N2Q1MDIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.EQsjP0xy-wDrhQIbcHuvA293tfZNTCADRkTP9r6Lg98&x-oss-process=image/resize,m_mfit,w_320,h_320",
-      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/9a21ec4f-7020-4c70-9523-edccaaf2179f_IMG_4919.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI5YTIxZWM0Zi03MDIwLTRjNzAtOTUyMy1lZGNjYWFmMjE3OWYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.PrtVbGcfIIQdlY6gttvVePKL7R1bFGlfpBc5Pup1Xps&x-oss-process=image/resize,m_mfit,w_320,h_320"
+      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/01bd9c22-de38-416e-bb75-742a21900865_IMG_4918.png?key=...&x-oss-process=image/resize,m_mfit,w_320,h_320",
+      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/3d17d005-cb54-4867-b092-2cd50057d502_IMG_4917.png?key=...&x-oss-process=image/resize,m_mfit,w_320,h_320",
+      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/9a21ec4f-7020-4c70-9523-edccaaf2179f_IMG_4919.png?key=...&x-oss-process=image/resize,m_mfit,w_320,h_320"
     ];
 
-    const randomIndex = Math.floor(Math.random() * images.length);
-    const imgElement = document.getElementById("randomImage");
-    imgElement.src = images[randomIndex];
+    // Вставь ключи ссылок обратно (обрезаны здесь для краткости)
 
-    const loader = document.getElementById("loader");
-    const delay = Math.random() * (8 - 5) + 5; // от 5 до 8 секунд
+    const img = document.getElementById("randomImage");
+    const mask = document.getElementById("mask");
+    const randomImage = images[Math.floor(Math.random() * images.length)];
+    img.src = randomImage;
 
-    setTimeout(() => {
-      loader.classList.add("show");
-    }, delay * 1000);
+    let currentHeight = 100; // % от блока
+    const minPause = 150;  // минимальная задержка
+    const maxPause = 400;  // максимальная задержка
+    const stepMin = 2;
+    const stepMax = 5;
+
+    function animateMask() {
+      if (currentHeight <= 0) {
+        // Всё прогружено — удаляем и переходим на основной сайт
+        document.body.classList.add("fade-out");
+        setTimeout(() => {
+          window.location.href = "https://nikabika.github.io/NoLego-Web/main.html"; // основная страница
+        }, 800);
+        return;
+      }
+
+      const step = Math.floor(Math.random() * (stepMax - stepMin + 1)) + stepMin;
+      currentHeight -= step;
+
+      if (currentHeight < 0) currentHeight = 0;
+      mask.style.height = `${currentHeight}%`;
+
+      const pause = Math.floor(Math.random() * (maxPause - minPause + 1)) + minPause;
+      setTimeout(animateMask, pause);
+    }
+
+    window.onload = () => {
+      setTimeout(animateMask, 500); // старт анимации через полсекунды
+    };
   </script>
 </body>
 </html>
