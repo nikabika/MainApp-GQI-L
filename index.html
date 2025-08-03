@@ -14,7 +14,8 @@
             --card-bg: #1C1C1E;
             --card-border: rgba(255, 255, 255, 0.1);
             --primary: #0088CC;
-            --sparkle-color: rgba(255, 255, 255, 0.3);
+            --tiktok-pink: #FE2C55;
+            --tiktok-gradient: linear-gradient(90deg, #FE2C55 0%, #25F4EE 100%);
         }
 
         * {
@@ -30,6 +31,7 @@
             color: var(--text);
             min-height: 100vh;
             position: relative;
+            padding-bottom: 40px;
         }
 
         .counter-container {
@@ -59,7 +61,7 @@
 
         .hint {
             position: absolute;
-            top: 120px; /* 50px (верх) + 64px (цифра) + 6px (базовая линия) */
+            top: 120px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -87,11 +89,9 @@
             font-weight: bold;
         }
 
-        .tg-card {
-            position: absolute;
-            top: 155px; /* 50px + 64px + 6px + 35px */
-            left: 50%;
-            transform: translateX(-50%);
+        /* Общие стили для карточек */
+        .card {
+            position: relative;
             background: var(--card-bg);
             border-radius: 18px;
             border: 1px solid var(--card-border);
@@ -100,30 +100,26 @@
             padding: 18px;
             display: flex;
             align-items: center;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            margin: 0 auto 16px;
             transition: transform 0.3s ease;
-            z-index: 10;
         }
 
-        .tg-card:hover {
-            transform: translateX(-50%) translateY(-2px);
+        .card:hover {
+            transform: translateY(-2px);
         }
 
-        .tg-content {
+        .card-content {
             flex: 1;
             padding-right: 16px;
-            position: relative;
-            z-index: 2;
         }
 
-        .tg-title {
+        .card-title {
             font-size: 17px;
             font-weight: 700;
             margin-bottom: 4px;
         }
 
-        .tg-subtitle {
+        .card-subtitle {
             font-size: 15px;
             color: var(--text-secondary);
             display: flex;
@@ -131,34 +127,39 @@
             font-weight: 500;
         }
 
-        .tg-icon-container {
-            position: relative;
+        .card-icon-container {
             width: 44px;
             height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 2;
         }
 
-        .tg-icon {
+        .card-icon {
             font-size: 28px;
-            color: var(--primary);
             transition: transform 0.3s ease;
         }
 
-        .tg-card:hover .tg-icon {
+        .card:hover .card-icon {
             transform: scale(1.1);
         }
 
-        .tg-chevron {
+        .card-chevron {
             margin-left: 4px;
             font-size: 14px;
             transition: transform 0.3s ease;
         }
 
-        .tg-card:hover .tg-chevron {
+        .card:hover .card-chevron {
             transform: translateX(2px);
+        }
+
+        /* Специфичные карточки */
+        .tg-card {
+            position: absolute;
+            top: 155px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .tg-gradient {
@@ -172,24 +173,44 @@
             z-index: 1;
         }
 
-        .sparkle {
-            position: absolute;
-            background: var(--sparkle-color);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            animation: sparkleAnimation 2s ease-out forwards;
+        .tg-icon {
+            color: var(--primary);
         }
 
-        @keyframes sparkleAnimation {
-            0% {
-                transform: translate(0, 0) scale(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--sparkle-x), var(--sparkle-y)) scale(1);
-                opacity: 0;
-            }
+        .team-card {
+            position: absolute;
+            top: 250px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .report-card {
+            position: absolute;
+            top: 330px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .tiktok-card {
+            position: absolute;
+            top: 410px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .tiktok-gradient {
+            position: absolute;
+            right: -50px;
+            top: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(254, 44, 85, 0.2) 0%, rgba(37, 244, 238, 0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .tiktok-icon {
+            color: var(--tiktok-pink);
         }
 
         /* Модальное окно */
@@ -278,16 +299,57 @@
         <div class="hint-icon">?</div>
     </div>
 
-    <div class="tg-card" id="tgCard">
+    <!-- Telegram карточка -->
+    <div class="card tg-card" id="tgCard">
         <div class="tg-gradient"></div>
-        <div class="tg-content">
-            <div class="tg-title">У нас есть Телеграм-канал!</div>
-            <div class="tg-subtitle">Там каждый день много интересного
-                <span class="tg-chevron">›</span>
+        <div class="card-content">
+            <div class="card-title">У нас есть Телеграм-канал!</div>
+            <div class="card-subtitle">Там каждый день много интересного
+                <span class="card-chevron">›</span>
             </div>
         </div>
-        <div class="tg-icon-container">
-            <i class="fab fa-telegram tg-icon"></i>
+        <div class="card-icon-container">
+            <i class="fab fa-telegram card-icon tg-icon"></i>
+        </div>
+    </div>
+
+    <!-- Команда -->
+    <div class="card team-card" id="teamCard">
+        <div class="card-content">
+            <div class="card-title">Наша команда</div>
+            <div class="card-subtitle">Просмотр
+                <span class="card-chevron">›</span>
+            </div>
+        </div>
+        <div class="card-icon-container">
+            <i class="fas fa-users card-icon"></i>
+        </div>
+    </div>
+
+    <!-- Жалоба -->
+    <div class="card report-card" id="reportCard">
+        <div class="card-content">
+            <div class="card-title">Подать жалобу</div>
+            <div class="card-subtitle">Сообщите нам о нарушителях
+                <span class="card-chevron">›</span>
+            </div>
+        </div>
+        <div class="card-icon-container">
+            <i class="fas fa-flag card-icon"></i>
+        </div>
+    </div>
+
+    <!-- TikTok -->
+    <div class="card tiktok-card" id="tiktokCard">
+        <div class="tiktok-gradient"></div>
+        <div class="card-content">
+            <div class="card-title">Наш TikTok</div>
+            <div class="card-subtitle">Подписаться
+                <span class="card-chevron">›</span>
+            </div>
+        </div>
+        <div class="card-icon-container">
+            <i class="fab fa-tiktok card-icon tiktok-icon"></i>
         </div>
     </div>
 
@@ -306,57 +368,23 @@
     </div>
 
     <script>
-        // Анимация блесток
-        function createSparkle(event) {
-            const card = document.getElementById('tgCard');
-            const rect = card.getBoundingClientRect();
-            
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 20 + Math.random() * 30;
-            const sparkleX = Math.cos(angle) * distance;
-            const sparkleY = Math.sin(angle) * distance;
-            
-            const sparkle = document.createElement('div');
-            sparkle.className = 'sparkle';
-            sparkle.style.left = `${x}px`;
-            sparkle.style.top = `${y}px`;
-            sparkle.style.width = `${2 + Math.random() * 4}px`;
-            sparkle.style.height = sparkle.style.width;
-            sparkle.style.setProperty('--sparkle-x', `${sparkleX}px`);
-            sparkle.style.setProperty('--sparkle-y', `${sparkleY}px`);
-            
-            card.appendChild(sparkle);
-            
-            setTimeout(() => {
-                sparkle.remove();
-            }, 2000);
-        }
-
-        let lastTime = 0;
-        
-        document.getElementById('tgCard').addEventListener('mousemove', (event) => {
-            const now = Date.now();
-            if (now - lastTime > 100) {
-                createSparkle(event);
-                lastTime = now;
-            }
-        });
-
-        document.getElementById('tgCard').addEventListener('touchmove', (event) => {
-            const touch = event.touches[0];
-            const mouseEvent = new MouseEvent('mousemove', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            createSparkle(mouseEvent);
-        });
-
-        // Обработка клика по карточке Telegram
+        // Обработка клика по карточкам
         document.getElementById('tgCard').addEventListener('click', function() {
             window.location.href = 'https://t.me/noLEGObutGreat';
+        });
+
+        document.getElementById('teamCard').addEventListener('click', function() {
+            // Здесь можно добавить переход к команде
+            alert('Раздел "Наша команда" в разработке');
+        });
+
+        document.getElementById('reportCard').addEventListener('click', function() {
+            // Здесь можно добавить форму жалобы
+            alert('Форма подачи жалобы в разработке');
+        });
+
+        document.getElementById('tiktokCard').addEventListener('click', function() {
+            window.location.href = 'https://tiktok.com/@temik.nls';
         });
 
         // Модальное окно
