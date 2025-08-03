@@ -1,105 +1,382 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Загрузка...</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: #229ED9; /* Тот самый синий */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoLego</title>
+    <link href="https://fonts.cdnfonts.com/css/avenir-next-cyr" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #000000;
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.5);
+            --card-bg: #1C1C1E;
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #0088CC;
+            --sparkle-color: rgba(255, 255, 255, 0.3);
+        }
 
-    .container {
-      position: relative;
-      width: 240px;
-      height: 240px;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    .loader-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 12px;
-      z-index: 1;
-    }
+        body {
+            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+        }
 
-    .mask {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #229ED9;
-      z-index: 2;
-    }
+        .counter-container {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            white-space: nowrap;
+        }
 
-    .fade-out {
-      animation: fadeOut 0.8s ease forwards;
-    }
+        .counter-number {
+            font-size: 64px;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
 
-    @keyframes fadeOut {
-      to {
-        opacity: 0;
-        visibility: hidden;
-      }
-    }
-  </style>
+        .counter-label {
+            font-size: 24px;
+            color: var(--text);
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        .hint {
+            position: absolute;
+            top: 120px; /* 50px (верх) + 64px (цифра) + 6px (базовая линия) */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .hint-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .hint-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .tg-card {
+            position: absolute;
+            top: 155px; /* 50px + 64px + 6px + 35px */
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            border-radius: 18px;
+            border: 1px solid var(--card-border);
+            width: calc(100% - 40px);
+            max-width: 400px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .tg-card:hover {
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        .tg-content {
+            flex: 1;
+            padding-right: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tg-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tg-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .tg-icon-container {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .tg-icon {
+            font-size: 28px;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .tg-card:hover .tg-icon {
+            transform: scale(1.1);
+        }
+
+        .tg-chevron {
+            margin-left: 4px;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .tg-card:hover .tg-chevron {
+            transform: translateX(2px);
+        }
+
+        .tg-gradient {
+            position: absolute;
+            right: -50px;
+            top: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(0, 136, 204, 0.2) 0%, rgba(0, 136, 204, 0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .sparkle {
+            position: absolute;
+            background: var(--sparkle-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: sparkleAnimation 2s ease-out forwards;
+        }
+
+        @keyframes sparkleAnimation {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--sparkle-x), var(--sparkle-y)) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-card {
+            position: fixed;
+            bottom: 15px;
+            left: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 21;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .modal-content {
+            flex: 1;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .modal-close {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <img id="randomImage" class="loader-img" src="" alt="loading">
-    <div id="mask" class="mask"></div>
-  </div>
+    <div class="counter-container">
+        <div class="counter-number">0</div>
+        <div class="counter-label">сообщений</div>
+    </div>
 
-  <script>
-    const images = [
-      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/01bd9c22-de38-416e-bb75-742a21900865_IMG_4918.png?key=...&x-oss-process=image/resize,m_mfit,w_320,h_320",
-      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/3d17d005-cb54-4867-b092-2cd50057d502_IMG_4917.png?key=...&x-oss-process=image/resize,m_mfit,w_320,h_320",
-      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/9a21ec4f-7020-4c70-9523-edccaaf2179f_IMG_4919.png?key=...&x-oss-process=image/resize,m_mfit,w_320,h_320"
-    ];
+    <div class="hint" id="hintButton">
+        <div class="hint-text">Что это?</div>
+        <div class="hint-icon">?</div>
+    </div>
 
-    // Вставь ключи ссылок обратно (обрезаны здесь для краткости)
+    <div class="tg-card" id="tgCard">
+        <div class="tg-gradient"></div>
+        <div class="tg-content">
+            <div class="tg-title">У нас есть Телеграм-канал!</div>
+            <div class="tg-subtitle">Там каждый день много интересного
+                <span class="tg-chevron">›</span>
+            </div>
+        </div>
+        <div class="tg-icon-container">
+            <i class="fab fa-telegram tg-icon"></i>
+        </div>
+    </div>
 
-    const img = document.getElementById("randomImage");
-    const mask = document.getElementById("mask");
-    const randomImage = images[Math.floor(Math.random() * images.length)];
-    img.src = randomImage;
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card">
+            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/56050719-a529-485d-aafc-0bb07b429206_%D0%98%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F_%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI1NjA1MDcxOS1hNTI5LTQ4NWQtYWFmYy0wYmIwN2I0MjkyMDYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hyYij8VqCJklCdZUYe0479PjSCidT-iV_LcGniWLGvc&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Батальон NoLego" class="modal-image">
+            <div class="modal-content">
+                <div class="modal-title">Батальон NoLego</div>
+                <div class="modal-text">Общайтесь в нашем чате, чтобы зарабатывать сообщения!</div>
+            </div>
+            <div class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+    </div>
 
-    let currentHeight = 100; // % от блока
-    const minPause = 150;  // минимальная задержка
-    const maxPause = 400;  // максимальная задержка
-    const stepMin = 2;
-    const stepMax = 5;
+    <script>
+        // Анимация блесток
+        function createSparkle(event) {
+            const card = document.getElementById('tgCard');
+            const rect = card.getBoundingClientRect();
+            
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 20 + Math.random() * 30;
+            const sparkleX = Math.cos(angle) * distance;
+            const sparkleY = Math.sin(angle) * distance;
+            
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = `${x}px`;
+            sparkle.style.top = `${y}px`;
+            sparkle.style.width = `${2 + Math.random() * 4}px`;
+            sparkle.style.height = sparkle.style.width;
+            sparkle.style.setProperty('--sparkle-x', `${sparkleX}px`);
+            sparkle.style.setProperty('--sparkle-y', `${sparkleY}px`);
+            
+            card.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+            }, 2000);
+        }
 
-    function animateMask() {
-      if (currentHeight <= 0) {
-        // Всё прогружено — удаляем и переходим на основной сайт
-        document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = "https://nikabika.github.io/NoLego-Web/main.html"; // основная страница
-        }, 800);
-        return;
-      }
+        let lastTime = 0;
+        
+        document.getElementById('tgCard').addEventListener('mousemove', (event) => {
+            const now = Date.now();
+            if (now - lastTime > 100) {
+                createSparkle(event);
+                lastTime = now;
+            }
+        });
 
-      const step = Math.floor(Math.random() * (stepMax - stepMin + 1)) + stepMin;
-      currentHeight -= step;
+        document.getElementById('tgCard').addEventListener('touchmove', (event) => {
+            const touch = event.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            createSparkle(mouseEvent);
+        });
 
-      if (currentHeight < 0) currentHeight = 0;
-      mask.style.height = `${currentHeight}%`;
+        // Обработка клика по карточке Telegram
+        document.getElementById('tgCard').addEventListener('click', function() {
+            window.location.href = 'https://t.me/noLEGObutGreat';
+        });
 
-      const pause = Math.floor(Math.random() * (maxPause - minPause + 1)) + minPause;
-      setTimeout(animateMask, pause);
-    }
+        // Модальное окно
+        const hintButton = document.getElementById('hintButton');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
 
-    window.onload = () => {
-      setTimeout(animateMask, 500); // старт анимации через полсекунды
-    };
-  </script>
+        hintButton.addEventListener('click', function() {
+            modalOverlay.classList.add('active');
+        });
+
+        modalClose.addEventListener('click', function() {
+            modalOverlay.classList.remove('active');
+        });
+
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 </html>
