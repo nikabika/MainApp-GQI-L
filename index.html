@@ -3,86 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Подписка на канал</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Загрузка...</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
     }
     body {
-      background-color: #ffffff;
+      background-color: #a8d8f8; /* Голубой фон */
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      padding: 20px;
+      height: 100vh;
+      overflow: hidden;
     }
-    .card {
-      background: linear-gradient(135deg, #229ED9, #0F7DC3);
-      color: white;
-      border-radius: 20px;
-      padding: 24px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      text-align: center;
+    .img-container {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 1.5s ease, transform 1.5s ease;
     }
-    .greeting {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 16px;
+    .img-container.show {
+      opacity: 1;
+      transform: translateY(0);
     }
-    .message {
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-    .button {
-      background-color: white;
-      color: #229ED9;
-      border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
-    }
-    .button:hover {
-      background-color: #f0f0f0;
-    }
-    .button img {
-      width: 20px;
-      height: 20px;
-      margin-right: 8px;
+    img {
+      max-width: 80vw;
+      max-height: 60vh;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="greeting" id="greeting">Привет!</div>
-    <div class="message">
-      Подпишись на наш Telegram-канал<br><strong>@noLEGObutGreat</strong>
-    </div>
-    <a href="https://t.me/noLEGObutGreat" class="button" target="_blank">
-      <img src="https://telegram.org/img/t_logo.svg" alt="Telegram">
-      Подписаться
-    </a>
+  <div class="img-container" id="loader">
+    <img id="randomImage" src="" alt="Loading image...">
   </div>
 
   <script>
-    // Получаем имя пользователя из Telegram WebApp
-    window.onload = () => {
-      const tg = window.Telegram.WebApp;
-      tg.expand();
-      const user = tg.initDataUnsafe?.user;
-      const name = user?.first_name || "гость";
-      document.getElementById("greeting").textContent = `Привет, ${name}!`;
-    };
+    const images = [
+      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/01bd9c22-de38-416e-bb75-742a21900865_IMG_4918.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIwMWJkOWMyMi1kZTM4LTQxNmUtYmI3NS03NDJhMjE5MDA4NjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.eLGUTSFp33sU-tglTa-TYD6FWYjegOLHthTP9ToWdUA&x-oss-process=image/resize,m_mfit,w_320,h_320",
+      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/3d17d005-cb54-4867-b092-2cd50057d502_IMG_4917.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIzZDE3ZDAwNS1jYjU0LTQ4NjctYjA5Mi0yY2Q1MDA1N2Q1MDIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.EQsjP0xy-wDrhQIbcHuvA293tfZNTCADRkTP9r6Lg98&x-oss-process=image/resize,m_mfit,w_320,h_320",
+      "https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/9a21ec4f-7020-4c70-9523-edccaaf2179f_IMG_4919.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI5YTIxZWM0Zi03MDIwLTRjNzAtOTUyMy1lZGNjYWFmMjE3OWYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.PrtVbGcfIIQdlY6gttvVePKL7R1bFGlfpBc5Pup1Xps&x-oss-process=image/resize,m_mfit,w_320,h_320"
+    ];
+
+    const randomIndex = Math.floor(Math.random() * images.length);
+    const imgElement = document.getElementById("randomImage");
+    imgElement.src = images[randomIndex];
+
+    const loader = document.getElementById("loader");
+    const delay = Math.random() * (8 - 5) + 5; // от 5 до 8 секунд
+
+    setTimeout(() => {
+      loader.classList.add("show");
+    }, delay * 1000);
   </script>
 </body>
 </html>
