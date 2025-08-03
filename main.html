@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Подписка на канал</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: linear-gradient(135deg, #229ED9, #0F7DC3);
+      color: white;
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .greeting {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .message {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    .button {
+      background-color: white;
+      color: #229ED9;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    .button:hover {
+      background-color: #f0f0f0;
+    }
+    .button img {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="greeting" id="greeting">Привет!</div>
+    <div class="message">
+      Подпишись на наш Telegram-канал<br><strong>@noLEGObutGreat</strong>
+    </div>
+    <a href="https://t.me/noLEGObutGreat" class="button" target="_blank">
+      <img src="https://telegram.org/img/t_logo.svg" alt="Telegram">
+      Подписаться
+    </a>
+  </div>
+
+  <script>
+    // Получаем имя пользователя из Telegram WebApp
+    window.onload = () => {
+      const tg = window.Telegram.WebApp;
+      tg.expand();
+      const user = tg.initDataUnsafe?.user;
+      const name = user?.first_name || "гость";
+      document.getElementById("greeting").textContent = `Привет, ${name}!`;
+    };
+  </script>
+</body>
+</html>
