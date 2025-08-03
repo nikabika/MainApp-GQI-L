@@ -10,19 +10,13 @@
         :root {
             --bg: #000000;
             --text: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.5);
+            --text-secondary: rgba(255, 255, 255, 0.7);
             --card-bg: #1C1C1E;
             --card-border: rgba(255, 255, 255, 0.1);
             --primary: #0088CC;
             --tiktok-pink: #FE2C55;
-            --tiktok-blue: #25F4EE;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            --section-label: rgba(255, 255, 255, 0.7);
+            --tg-card-bg: rgba(0, 109, 183, 0.25);
         }
 
         body {
@@ -41,20 +35,17 @@
             align-items: baseline;
             gap: 8px;
             margin-bottom: 15px;
-            position: relative;
         }
 
         .counter-number {
             font-size: 64px;
             font-weight: 800;
             color: var(--text);
-            line-height: 1;
         }
 
         .counter-label {
             font-size: 24px;
             color: var(--text);
-            font-weight: 600;
             opacity: 0.7;
             display: flex;
             align-items: center;
@@ -71,11 +62,9 @@
             justify-content: center;
             color: var(--bg);
             font-size: 13px;
-            font-weight: bold;
             cursor: pointer;
         }
 
-        /* Карточки */
         .cards-container {
             width: 100%;
             max-width: 400px;
@@ -89,39 +78,20 @@
             background: var(--card-bg);
             border-radius: 14px;
             border: 1px solid var(--card-border);
-            width: 100%;
             padding: 16px;
             display: flex;
             align-items: center;
-            position: relative;
-            overflow: hidden;
         }
 
-        /* Градиенты внутри карточек */
-        .card::before {
-            content: '';
-            position: absolute;
-            right: -30px;
-            top: -30px;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            z-index: 1;
-        }
-
-        .tg-card::before {
-            background: radial-gradient(circle, rgba(0, 136, 204, 0.2) 0%, rgba(0, 136, 204, 0) 70%);
-        }
-
-        .tiktok-card::before {
-            background: radial-gradient(circle, rgba(254, 44, 85, 0.2) 0%, rgba(37, 244, 238, 0) 70%);
+        .tg-card {
+            background: var(--tg-card-bg);
+            backdrop-filter: blur(20px);
+            border: none;
         }
 
         .card-content {
             flex: 1;
             padding-right: 16px;
-            position: relative;
-            z-index: 2;
         }
 
         .card-title {
@@ -135,227 +105,63 @@
             color: var(--text-secondary);
             display: flex;
             align-items: center;
-            font-weight: 500;
-        }
-
-        .card-icon-container {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
         }
 
         .card-icon {
-            font-size: 22px;
+            font-size: 24px;
         }
 
-        .card-chevron {
-            margin-left: 4px;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        /* Цвета иконок */
-        .tg-icon {
-            color: var(--primary);
-        }
-
-        .tiktok-icon {
-            color: var(--tiktok-pink);
-        }
-
-        /* Модальное окно */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 20;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal-card {
-            position: fixed;
-            bottom: 15px;
-            left: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 16px;
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 21;
-        }
-
-        .modal-overlay.active .modal-card {
-            transform: translateY(0);
-        }
-
-        .modal-image {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            object-fit: cover;
-        }
-
-        .modal-content {
-            flex: 1;
-        }
-
-        .modal-title {
-            font-size: 17px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .modal-text {
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .modal-close {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.7;
-            cursor: pointer;
-        }
+        .tg-icon { color: var(--primary); }
+        .tiktok-icon { color: var(--tiktok-pink); }
     </style>
 </head>
 <body>
     <div class="counter-container">
-        <div class="counter-number">0</div>
+        <div class="counter-number" id="messageCount">0</div>
         <div class="counter-label">
-            соо
+            сооб.
             <div class="hint-icon" id="hintButton">?</div>
         </div>
     </div>
 
     <div class="cards-container">
-        <!-- Telegram карточка -->
-        <div class="card tg-card" id="tgCard">
+        <div class="card tg-card">
             <div class="card-content">
                 <div class="card-title">У нас есть Телеграм-канал!</div>
-                <div class="card-subtitle">Там каждый день много интересного
-                    <span class="card-chevron">›</span>
-                </div>
+                <div class="card-subtitle">Там каждый день много интересного ›</div>
             </div>
-            <div class="card-icon-container">
-                <i class="fab fa-telegram card-icon tg-icon"></i>
-            </div>
+            <i class="fab fa-telegram card-icon tg-icon"></i>
         </div>
 
-        <!-- Команда -->
-        <div class="card" id="teamCard">
-            <div class="card-content">
-                <div class="card-title">Наша команда</div>
-                <div class="card-subtitle">Просмотр
-                    <span class="card-chevron">›</span>
-                </div>
-            </div>
-            <div class="card-icon-container">
-                <i class="fas fa-users card-icon"></i>
-            </div>
-        </div>
-
-        <!-- Жалоба -->
-        <div class="card" id="reportCard">
-            <div class="card-content">
-                <div class="card-title">Подать жалобу</div>
-                <div class="card-subtitle">Сообщите нам о нарушителях
-                    <span class="card-chevron">›</span>
-                </div>
-            </div>
-            <div class="card-icon-container">
-                <i class="fas fa-flag card-icon"></i>
-            </div>
-        </div>
-
-        <!-- TikTok -->
-        <div class="card tiktok-card" id="tiktokCard">
+        <div class="card">
             <div class="card-content">
                 <div class="card-title">Наш TikTok</div>
-                <div class="card-subtitle">Подписаться
-                    <span class="card-chevron">›</span>
-                </div>
+                <div class="card-subtitle">Подписаться ›</div>
             </div>
-            <div class="card-icon-container">
-                <i class="fab fa-tiktok card-icon tiktok-icon"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-card">
-            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/56050719-a529-485d-aafc-0bb07b429206_%D0%98%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F_%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI1NjA1MDcxOS1hNTI5LTQ4NWQtYWFmYy0wYmIwN2I0MjkyMDYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hyYij8VqCJklCdZUYe0479PjSCidT-iV_LcGniWLGvc&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Батальон NoLego" class="modal-image">
-            <div class="modal-content">
-                <div class="modal-title">Батальон NoLego</div>
-                <div class="modal-text">Общайтесь в нашем чате, чтобы зарабатывать сообщения!</div>
-            </div>
-            <div class="modal-close" id="modalClose">
-                <i class="fas fa-times"></i>
-            </div>
+            <i class="fab fa-tiktok card-icon tiktok-icon"></i>
         </div>
     </div>
 
     <script>
-        // Обработка клика по карточкам
-        document.getElementById('tgCard').addEventListener('click', function() {
-            window.location.href = 'https://t.me/noLEGObutGreat';
-        });
-
-        document.getElementById('teamCard').addEventListener('click', function() {
-            alert('Раздел "Наша команда" в разработке');
-        });
-
-        document.getElementById('reportCard').addEventListener('click', function() {
-            alert('Форма подачи жалобы в разработке');
-        });
-
-        document.getElementById('tiktokCard').addEventListener('click', function() {
-            window.location.href = 'https://tiktok.com/@temik.nls';
-        });
-
-        // Модальное окно
-        const hintButton = document.getElementById('hintButton');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const modalClose = document.getElementById('modalClose');
-
-        hintButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            modalOverlay.classList.add('active');
-        });
-
-        modalClose.addEventListener('click', function() {
-            modalOverlay.classList.remove('active');
-        });
-
-        modalOverlay.addEventListener('click', function(e) {
-            if (e.target === modalOverlay) {
-                modalOverlay.classList.remove('active');
-            }
-        });
+        // Получаем данные из Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Показываем данные пользователя
+        tg.expand();
+        
+        // Функция для обновления счётчика
+        function updateMessageCount(count) {
+            document.getElementById('messageCount').textContent = count;
+        }
+        
+        // Получаем начальное количество сообщений
+        if (tg.initDataUnsafe.user) {
+            const userId = tg.initDataUnsafe.user.id;
+            fetch(`/api/messages/${userId}`)
+                .then(response => response.json())
+                .then(data => updateMessageCount(data.count))
+                .catch(() => updateMessageCount(0));
+        }
     </script>
 </body>
 </html>
