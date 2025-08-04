@@ -96,8 +96,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 210px; /* Увеличен на 10px */
-            height: 210px; /* Увеличен на 10px */
+            width: 210px;
+            height: 210px;
             cursor: pointer;
             z-index: 900;
         }
@@ -111,7 +111,7 @@
 
         .click-target:active img {
             transform: scale(0.92) rotate(5deg);
-            transition: transform 0.07s ease-out; /* Быстрая, но плавная анимация */
+            transition: transform 0.07s ease-out;
         }
 
         .score-display {
@@ -239,29 +239,25 @@
         }
 
         async function shareScore() {
-            const shareText = `🔥 Хей, я набрал ${coins} монет в Game!\nПрисоединяйся и попробуй пробить мой рекорд, если смелости хватит!`;
-            const shareUrl = window.location.href;
-            
+            const shareData = {
+                title: 'Мой рекорд в Хомячьем кликере',
+                text: `🔥 Хей, я набрал ${coins} монет в Хомячьем кликере!\nПрисоединяйся и попробуй пробить мой рекорд!`,
+                url: window.location.href
+            };
+
             try {
-                if (navigator.share) {
-                    // Для мобильных устройств (iOS/Android)
-                    await navigator.share({
-                        title: 'Мой рекорд в Game',
-                        text: shareText,
-                        url: shareUrl
-                    });
-                } else if (navigator.clipboard) {
-                    // Для десктопов (копирование ссылки)
-                    await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-                    alert('Ссылка скопирована в буфер обмена!');
+                // Пытаемся использовать нативный шаринг
+                if (navigator.share && navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
                 } else {
-                    // Фолбэк для старых браузеров
-                    const newWindow = window.open('', '_blank');
-                    newWindow.document.write(`<p>${shareText}</p><p>${shareUrl}</p>`);
+                    // Фолбэк для десктопов - открываем Telegram с предзаполненным сообщением
+                    const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(shareData.text)}`;
+                    window.open(tgUrl, '_blank');
                 }
             } catch (err) {
-                console.error('Ошибка при попытке поделиться:', err);
-                prompt('Скопируйте это сообщение:', `${shareText}\n\n${shareUrl}`);
+                console.log('Ошибка шаринга:', err);
+                // Если всё совсем плохо - показываем alert
+                alert('Скопируйте ссылку и отправьте другу:\n\n' + shareData.url);
             }
         }
 
