@@ -2,424 +2,201 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Хомячий кликер</title>
-    <link href="https://fonts.cdnfonts.com/css/avenir-next-cyr" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Clicker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #000000;
-            --text: #FFFFFF;
-            --card-bg: #1C1C1E;
-            --card-border: rgba(255, 255, 255, 0.1);
-            --coin-color: #FFFFFF;
-            --yellow: #FFD700;
-            --dark-yellow: #FFA500;
-            --light-yellow: #FFEC8B;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            --bg: #18222d;
+            --text: #ffffff;
+            --card-bg: #2b5278;
+            --coin-color: #ffd700;
+            --crystal-color: #00ffff;
         }
 
         body {
-            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            overflow: hidden;
-            touch-action: none;
-            position: relative;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50vh;
-            background: linear-gradient(to top, rgba(255, 215, 0, 0.15), transparent);
-            pointer-events: none;
-            z-index: 800;
-        }
-
-        .resource-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+            margin: 0;
             display: flex;
-            gap: 8px;
-            z-index: 2100; /* Выше модального окна */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            overflow: hidden;
+            position: relative;
         }
 
-        .resource-box {
-            position: relative;
-            height: 34px;
-            width: 69px;
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .resource {
             background: var(--card-bg);
-            border-radius: 11px;
-            border: 1px solid var(--card-border);
-            padding-right: 8px;
+            border-radius: 15px;
+            padding: 8px 15px;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            overflow: visible;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .resource-icon {
-            width: 42px;
-            height: 42px;
-            position: absolute;
-            left: -13px;
+            width: 24px;
+            height: 24px;
             object-fit: contain;
-            z-index: 2;
-            pointer-events: none;
         }
 
-        .resource-count {
-            font-size: 15px;
-            font-weight: 600;
-            font-feature-settings: "tnum";
-            color: var(--text);
-            width: 100%;
-            text-align: right;
-            padding-right: 3px;
-            pointer-events: none;
-        }
-
-        .click-target {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 220px;
-            height: 220px;
+        .click-area {
+            width: 200px;
+            height: 200px;
+            margin: 20px 0;
             cursor: pointer;
-            z-index: 900;
-        }
-
-        .click-target img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: transform 0.1s cubic-bezier(0.25, 0.1, 0.25, 1.5);
-        }
-
-        .click-target:active img {
-            transform: scale(0.92);
-        }
-
-        .score-display {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 42px;
-            font-weight: 700;
-            color: var(--coin-color);
-            text-align: center;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            z-index: 950;
-            white-space: nowrap;
-        }
-
-        .score-display small {
-            font-size: 24px;
-            opacity: 0.7;
-            display: inline-block;
-            margin-left: 8px;
-        }
-
-        .coin-popup {
-            position: absolute;
-            color: white;
-            font-weight: 700;
-            font-size: 36px;
-            animation: floatUp 0.8s ease-out forwards;
-            pointer-events: none;
-            z-index: 1000;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .stormtrooper-card {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: auto;
-            max-width: 80%;
-            height: 50px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            opacity: 0.7;
-            z-index: 1000;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .stormtrooper-card:hover {
-            opacity: 1;
-        }
-
-        .stormtrooper-icon {
-            width: 30px;
-            height: 30px;
-            margin-right: 10px;
-        }
-
-        .stormtrooper-text {
-            font-size: 16px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .chevron-right {
-            width: 12px;
-            height: 12px;
-            opacity: 0.7;
-            margin-left: 10px;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 100%;
-            width: 100%;
-            height: 100%;
-            background: var(--bg);
-            z-index: 2000;
-            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .modal-content {
-            width: 100%;
-            max-width: 500px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: white;
-        }
-
-        .avatar-container {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-top: 40px;
-            border: 3px solid var(--yellow);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .avatar-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .nickname {
-            font-size: 28px;
-            font-weight: 700;
-            margin-top: 20px;
-            color: var(--yellow);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
-
-        .progress-container {
-            width: 100%;
-            max-width: 400px;
-            margin-top: 40px;
-        }
-
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #333;
-            border-radius: 10px;
-            overflow: hidden;
+            transition: transform 0.1s;
             position: relative;
+            z-index: 10;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--dark-yellow), var(--light-yellow));
-            border-radius: 10px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .progress-text {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 12px;
-            font-weight: 600;
-            color: #000;
-            mix-blend-mode: overlay;
-        }
-
-        .modal-back-button {
-            width: 100%;
-            max-width: 300px;
-            height: 50px;
-            background: var(--yellow);
-            border-radius: 25px;
-            border: none;
-            color: #000;
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
-        }
-
-        .modal-back-button:active {
+        .click-area:active {
             transform: scale(0.95);
         }
 
-        @keyframes floatUp {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            70% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-60px) scale(1.2);
-            }
+        .click-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .username {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: var(--coin-color);
+        }
+
+        .popup {
+            position: absolute;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--coin-color);
+            animation: float 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
         }
     </style>
 </head>
 <body>
-    <div class="score-display" id="score-display">0<small>монет</small></div>
-
-    <div class="stormtrooper-card" id="stormtrooper-card">
-        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/beef515a-ba4b-4a31-b9a3-b9fd9646dce3_IMG_5285.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJiZWVmNTE1YS1iYTRiLTRhMzEtYjlhMy1iOWZkOTY0NmRjZTMiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.pQbDC1OeHOZSddZ3-uMFDEmG1Lf5XQwtSs6XEYwxiV0&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Штурмовик" class="stormtrooper-icon">
-        <span class="stormtrooper-text">Штурмовик</span>
-        <svg class="chevron-right" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </div>
-
-    <div class="click-target" id="click-target">
-        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Кликер">
-    </div>
-
-    <div class="resource-container">
-        <div class="resource-box crystal-box">
-            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/1ba4a4f3-5ef4-46c0-b837-385acd5e41f5_IMG_5157.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIxYmE0YTRmMy01ZWY0LTQ2YzAtYjgzNy0zODVhY2Q1ZTQxZjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.1qaNrO01QAhNWxSJxnqgX7p_QvoemWOXyzaANPAiMh4&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Crystals" class="resource-icon">
-            <span class="resource-count" id="crystal-count">0</span>
+    <div class="header">
+        <div class="resource">
+            <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" class="resource-icon">
+            <span id="coins">0</span>
+        </div>
+        <div class="resource">
+            <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" class="resource-icon" style="filter: hue-rotate(180deg);">
+            <span id="crystals">0</span>
         </div>
     </div>
 
-    <div class="modal-overlay" id="modal-overlay">
-        <div class="modal-content">
-            <div class="avatar-container">
-                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Аватар">
-            </div>
-            <div class="nickname">Хомяк-Штурмовик</div>
-            
-            <div class="progress-container">
-                <div class="progress-label">
-                    <span>Штурмовик</span>
-                    <span id="progress-percent">0%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                    <div class="progress-text" id="progress-text">0/500</div>
-                </div>
-            </div>
+    <div class="username" id="username">Loading...</div>
+    
+    <div class="click-area" id="clicker">
+        <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" alt="Click me">
+    </div>
+
+    <div class="stats">
+        <div class="resource">
+            <span id="cps">0</span> монет/сек
         </div>
-        <button class="modal-back-button" id="modal-back-button">Назад</button>
     </div>
 
     <script>
+        // Telegram WebApp integration
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // Game state
         let coins = 0;
         let crystals = 0;
+        let coinsPerSecond = 0;
         let lastClickTime = 0;
-        const clickCooldown = 170;
-        const scoreDisplay = document.getElementById('score-display');
-        const crystalCount = document.getElementById('crystal-count');
-        const clickTarget = document.getElementById('click-target');
-        const stormtrooperCard = document.getElementById('stormtrooper-card');
-        const modalOverlay = document.getElementById('modal-overlay');
-        const modalBackButton = document.getElementById('modal-back-button');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
-        const progressPercent = document.getElementById('progress-percent');
-
-        function updateDisplay() {
-            scoreDisplay.innerHTML = `${coins}<small>монет</small>`;
-            crystalCount.textContent = crystals;
-            
-            // Обновляем прогресс бар
-            const progress = Math.min(coins, 500);
-            const percent = Math.floor((progress / 500) * 100);
-            progressFill.style.width = `${percent}%`;
-            progressText.textContent = `${progress}/500`;
-            progressPercent.textContent = `${percent}%`;
+        const clickCooldown = 100;
+        
+        // DOM elements
+        const coinsEl = document.getElementById('coins');
+        const crystalsEl = document.getElementById('crystals');
+        const cpsEl = document.getElementById('cps');
+        const usernameEl = document.getElementById('username');
+        const clicker = document.getElementById('clicker');
+        
+        // Set username from Telegram
+        usernameEl.textContent = tg.initDataUnsafe.user?.username || 'Player';
+        
+        // Update display
+        function update() {
+            coinsEl.textContent = Math.floor(coins);
+            crystalsEl.textContent = Math.floor(crystals);
+            cpsEl.textContent = coinsPerSecond.toFixed(1);
         }
-
-        function createCoinPopup(x, y) {
+        
+        // Create popup effect
+        function createPopup(x, y, amount) {
             const popup = document.createElement('div');
-            popup.className = 'coin-popup';
-            popup.textContent = '+1';
+            popup.className = 'popup';
+            popup.textContent = `+${amount}`;
             popup.style.left = `${x}px`;
             popup.style.top = `${y}px`;
             document.body.appendChild(popup);
-            
-            setTimeout(() => {
-                popup.remove();
-            }, 800);
+            setTimeout(() => popup.remove(), 1000);
         }
-
-        clickTarget.addEventListener('click', (e) => {
+        
+        // Handle click
+        clicker.addEventListener('click', (e) => {
             const now = Date.now();
             if (now - lastClickTime < clickCooldown) return;
             lastClickTime = now;
-
-            coins++;
-            updateDisplay();
-            createCoinPopup(e.clientX, e.clientY);
+            
+            coins += 1;
+            createPopup(e.clientX, e.clientY, 1);
+            update();
         });
-
-        stormtrooperCard.addEventListener('click', () => {
-            modalOverlay.style.transform = 'translateX(-100%)';
-        });
-
-        modalBackButton.addEventListener('click', () => {
-            modalOverlay.style.transform = 'translateX(0)';
-        });
-
-        updateDisplay();
+        
+        // Game loop for passive income
+        setInterval(() => {
+            coins += coinsPerSecond / 10;
+            update();
+        }, 100);
+        
+        // Initial update
+        update();
+        
+        // Example of adding passive income (you can expand this)
+        setTimeout(() => {
+            coinsPerSecond = 0.5;
+            update();
+        }, 5000);
     </script>
 </body>
 </html>
