@@ -2,201 +2,321 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Clicker</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Хомячий кликер</title>
+    <link href="https://fonts.cdnfonts.com/css/avenir-next-cyr" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --bg: #18222d;
-            --text: #ffffff;
-            --card-bg: #2b5278;
-            --coin-color: #ffd700;
-            --crystal-color: #00ffff;
+            --bg: #000000;
+            --text: #FFFFFF;
+            --card-bg: #1C1C1E;
+            --card-border: rgba(255, 255, 255, 0.1);
+            --coin-color: #FFFFFF;
+            --profile-bg: rgba(28, 28, 30, 0.9);
+            --username-color: #FFFFFF;
+            --role-color: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            touch-action: manipulation;
             overflow: hidden;
+            touch-action: none;
             position: relative;
         }
 
-        .header {
+        body::after {
+            content: '';
             position: fixed;
-            top: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            box-sizing: border-box;
-            z-index: 100;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50vh;
+            background: linear-gradient(to top, rgba(255, 215, 0, 0.15), transparent);
+            pointer-events: none;
+            z-index: 800;
         }
 
-        .resource {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 8px 15px;
+        /* Профиль пользователя */
+        .profile-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 72px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
         }
 
-        .resource-icon {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
+        .profile-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
         }
 
-        .click-area {
-            width: 200px;
-            height: 200px;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: transform 0.1s;
-            position: relative;
-            z-index: 10;
+        .avatar-container {
+            width: 48px;
+            height: 48px;
+            border-radius: 7px;
+            overflow: hidden;
+            margin-right: 12px;
         }
 
-        .click-area:active {
-            transform: scale(0.95);
-        }
-
-        .click-area img {
+        .avatar {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
+        }
+
+        .user-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--profile-bg);
+            height: 56px;
+            border-radius: 14px;
+            padding: 0 16px;
+            margin-right: 8px; /* Отступ перед кнопкой */
         }
 
         .username {
             font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            color: var(--coin-color);
+            font-weight: 600;
+            color: var(--username-color);
+            margin-bottom: 2px;
         }
 
-        .popup {
-            position: absolute;
-            font-weight: bold;
-            font-size: 24px;
-            color: var(--coin-color);
-            animation: float 1s ease-out forwards;
-            pointer-events: none;
-            z-index: 20;
+        .role {
+            font-size: 14px;
+            color: var(--role-color);
+            opacity: 0.7;
         }
 
-        @keyframes float {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-50px); opacity: 0; }
-        }
-
-        .stats {
-            position: fixed;
-            bottom: 20px;
-            width: 100%;
+        .share-container {
             display: flex;
+            align-items: center;
+        }
+
+        .share-btn {
+            width: 56px;
+            height: 56px;
+            background: var(--profile-bg);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 15px;
+        }
+
+        .share-icon {
+            color: white;
+            font-size: 24px;
+        }
+
+        /* Остальные элементы */
+        .resource-container {
+            position: fixed;
+            top: 92px; /* Над профилем */
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .resource-box {
+            position: relative;
+            height: 34px;
+            width: 69px;
+            background: var(--card-bg);
+            border-radius: 11px;
+            border: 1px solid var(--card-border);
+            padding-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: visible;
+        }
+
+        .resource-icon {
+            width: 42px;
+            height: 42px;
+            position: absolute;
+            left: -13px;
+            object-fit: contain;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .resource-count {
+            font-size: 15px;
+            font-weight: 600;
+            font-feature-settings: "tnum";
+            color: var(--text);
+            width: 100%;
+            text-align: right;
+            padding-right: 3px;
+            pointer-events: none;
+        }
+
+        .click-target {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 215px;
+            height: 215px;
+            cursor: pointer;
+            z-index: 900;
+        }
+
+        .click-target img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.1s cubic-bezier(0.25, 0.1, 0.25, 1.5);
+        }
+
+        .click-target:active img {
+            transform: scale(0.92);
+        }
+
+        .score-display {
+            position: fixed;
+            top: 140px; /* Под профилем и ресурсами */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--coin-color);
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 950;
+            white-space: nowrap;
+        }
+
+        .score-display small {
+            font-size: 24px;
+            opacity: 0.7;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .coin-popup {
+            position: absolute;
+            color: white;
+            font-weight: 700;
+            font-size: 36px;
+            animation: floatUp 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 1000;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(1.2);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="resource">
-            <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" class="resource-icon">
-            <span id="coins">0</span>
+    <!-- Профиль пользователя -->
+    <div class="profile-container">
+        <div class="profile-content">
+            <div class="avatar-container">
+                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Аватар" class="avatar">
+            </div>
+            <div class="user-info">
+                <div class="username">@username</div>
+                <div class="role">Штурмовик</div>
+            </div>
         </div>
-        <div class="resource">
-            <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" class="resource-icon" style="filter: hue-rotate(180deg);">
-            <span id="crystals">0</span>
+        <div class="share-container">
+            <div class="share-btn">
+                <i class="material-icons share-icon">share</i>
+            </div>
         </div>
     </div>
 
-    <div class="username" id="username">Loading...</div>
-    
-    <div class="click-area" id="clicker">
-        <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" alt="Click me">
+    <!-- Счетчик кристаллов -->
+    <div class="resource-container">
+        <div class="resource-box crystal-box">
+            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/1ba4a4f3-5ef4-46c0-b837-385acd5e41f5_IMG_5157.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIxYmE0YTRmMy01ZWY0LTQ2YzAtYjgzNy0zODVhY2Q1ZTQxZjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.1qaNrO01QAhNWxSJxnqgX7p_QvoemWOXyzaANPAiMh4&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Crystals" class="resource-icon">
+            <span class="resource-count" id="crystal-count">0</span>
+        </div>
     </div>
 
-    <div class="stats">
-        <div class="resource">
-            <span id="cps">0</span> монет/сек
-        </div>
+    <!-- Основные элементы игры -->
+    <div class="score-display" id="score-display">0<small>монет</small></div>
+
+    <div class="click-target" id="click-target">
+        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Кликер">
     </div>
 
     <script>
-        // Telegram WebApp integration
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        // Game state
         let coins = 0;
         let crystals = 0;
-        let coinsPerSecond = 0;
         let lastClickTime = 0;
-        const clickCooldown = 100;
-        
-        // DOM elements
-        const coinsEl = document.getElementById('coins');
-        const crystalsEl = document.getElementById('crystals');
-        const cpsEl = document.getElementById('cps');
-        const usernameEl = document.getElementById('username');
-        const clicker = document.getElementById('clicker');
-        
-        // Set username from Telegram
-        usernameEl.textContent = tg.initDataUnsafe.user?.username || 'Player';
-        
-        // Update display
-        function update() {
-            coinsEl.textContent = Math.floor(coins);
-            crystalsEl.textContent = Math.floor(crystals);
-            cpsEl.textContent = coinsPerSecond.toFixed(1);
+        const clickCooldown = 170; // 0.17 секунды в миллисекундах
+        const scoreDisplay = document.getElementById('score-display');
+        const crystalCount = document.getElementById('crystal-count');
+        const clickTarget = document.getElementById('click-target');
+
+        function updateDisplay() {
+            scoreDisplay.innerHTML = `${coins}<small>монет</small>`;
+            crystalCount.textContent = crystals;
         }
-        
-        // Create popup effect
-        function createPopup(x, y, amount) {
+
+        function createCoinPopup(x, y) {
             const popup = document.createElement('div');
-            popup.className = 'popup';
-            popup.textContent = `+${amount}`;
+            popup.className = 'coin-popup';
+            popup.textContent = '+1';
             popup.style.left = `${x}px`;
             popup.style.top = `${y}px`;
             document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 1000);
+            
+            setTimeout(() => {
+                popup.remove();
+            }, 800);
         }
-        
-        // Handle click
-        clicker.addEventListener('click', (e) => {
+
+        clickTarget.addEventListener('click', (e) => {
             const now = Date.now();
             if (now - lastClickTime < clickCooldown) return;
             lastClickTime = now;
+
+            // Анимация клика
+            coins++;
+            updateDisplay();
             
-            coins += 1;
-            createPopup(e.clientX, e.clientY, 1);
-            update();
+            // Создаем всплывающий "+1"
+            createCoinPopup(e.clientX, e.clientY);
         });
-        
-        // Game loop for passive income
-        setInterval(() => {
-            coins += coinsPerSecond / 10;
-            update();
-        }, 100);
-        
-        // Initial update
-        update();
-        
-        // Example of adding passive income (you can expand this)
-        setTimeout(() => {
-            coinsPerSecond = 0.5;
-            update();
-        }, 5000);
+
+        updateDisplay();
     </script>
 </body>
 </html>
