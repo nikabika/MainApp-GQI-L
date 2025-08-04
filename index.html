@@ -17,6 +17,7 @@
             --profile-bg: rgba(28, 28, 30, 0.9);
             --username-color: #FFFFFF;
             --role-color: rgba(255, 255, 255, 0.7);
+            --panel-bg: rgba(255, 255, 255, 0.25);
         }
 
         * {
@@ -249,6 +250,134 @@
                 transform: translateY(-60px) scale(1.2);
             }
         }
+
+        /* Нижняя панель с иконками */
+        .bottom-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            height: 56px;
+            background: var(--panel-bg);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 12px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-icon {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .panel-icon:active {
+            transform: scale(0.9);
+        }
+
+        /* Всплывающее окно приглашения */
+        .invite-popup {
+            position: fixed;
+            bottom: 81px;
+            right: 20px;
+            width: 280px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px;
+            z-index: 1100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .invite-popup::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 30px;
+            width: 16px;
+            height: 16px;
+            background: var(--card-bg);
+            transform: rotate(45deg);
+            z-index: -1;
+        }
+
+        .invite-popup.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .invite-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .invite-text {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .invite-text img {
+            width: 16px;
+            height: 16px;
+            margin-left: 4px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 12px;
+            text-align: right;
+        }
+
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 11px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .copy-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .copy-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
@@ -285,6 +414,30 @@
         <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Кликер">
     </div>
 
+    <!-- Нижняя панель с иконками -->
+    <div class="bottom-panel">
+        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/86f3f847-8941-4c59-8123-427e43ecf186_IMG_5266.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4NmYzZjg0Ny04OTQxLTRjNTktODEyMy00MjdlNDNlY2YxODYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.pzxBfFbqYA2NsJ7Y3cw32F2JDP62OCOPYKN-eVWbPRU&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Промокод" class="panel-icon" id="promo-btn">
+        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/acd79a22-0b1c-4495-a31f-150f6dac88e6_%D0%98%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F_%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJhY2Q3OWEyMi0wYjFjLTQ0OTUtYTMxZi0xNTBmNmRhYzg4ZTYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.rZLB8L08B7I7__Zk9KGB_AbGcKod9NQtRy-I3m_le9I&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Пригласить друзей" class="panel-icon" id="invite-btn">
+        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/ac913256-713a-466f-adeb-25dc8bf9c1b6_IMG_5290.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJhYzkxMzI1Ni03MTNhLTQ2NmYtYWRlYi0yNWRjOGJmOWMxYjYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.a79tA-Yn9OelNtGlzgHtfoKCF5FnGnmgdoNjDuo6LzY&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Настройки" class="panel-icon">
+    </div>
+
+    <!-- Всплывающее окно приглашения -->
+    <div class="invite-popup" id="invite-popup">
+        <div class="invite-title">Приглашение друзей</div>
+        <div class="invite-text">
+            Пригласите 10 друзей, чтобы получить 10 
+            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/1ba4a4f3-5ef4-46c0-b837-385acd5e41f5_IMG_5157.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIxYmE0YTRmMy01ZWY0LTQ2YzAtYjgzNy0zODVhY2Q1ZTQxZjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.1qaNrO01QAhNWxSJxnqgX7p_QvoemWOXyzaANPAiMh4&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Кристалл">
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text">0/10</div>
+        <div class="copy-btn" id="copy-btn">
+            <i class="material-icons copy-icon">content_copy</i>
+            Скопировать ссылку
+        </div>
+    </div>
+
     <script>
         // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
@@ -299,6 +452,16 @@
         const shareBtn = document.getElementById('share-btn');
         const usernameElement = document.getElementById('username');
         const userAvatar = document.getElementById('user-avatar');
+        const promoBtn = document.getElementById('promo-btn');
+        const inviteBtn = document.getElementById('invite-btn');
+        const invitePopup = document.getElementById('invite-popup');
+        const copyBtn = document.getElementById('copy-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        
+        // Статистика приглашений (пока заглушка)
+        let invitedFriends = 0;
+        const maxFriends = 10;
 
         // Загружаем данные пользователя
         function loadUserData() {
@@ -332,6 +495,10 @@
         function updateDisplay() {
             scoreDisplay.innerHTML = `${coins}<small>монет</small>`;
             crystalCount.textContent = crystals;
+            
+            // Обновляем прогресс приглашений
+            progressFill.style.width = `${(invitedFriends / maxFriends) * 100}%`;
+            progressText.textContent = `${invitedFriends}/${maxFriends}`;
         }
 
         function createCoinPopup(x, y) {
@@ -366,11 +533,18 @@
                 tg.showPopup({
                     title: 'Поделиться',
                     message: shareText,
-                    buttons: [{
-                        id: 'share',
-                        type: 'default',
-                        text: 'Поделиться в Telegram'
-                    }]
+                    buttons: [
+                        {
+                            id: 'share',
+                            type: 'default',
+                            text: 'Поделиться'
+                        },
+                        {
+                            id: 'cancel',
+                            type: 'cancel',
+                            text: 'Отмена'
+                        }
+                    ]
                 }, (buttonId) => {
                     if (buttonId === 'share') {
                         tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/nolego_bot&text=${encodeURIComponent(shareText)}`);
@@ -392,6 +566,57 @@
                 // Fallback
                 const telegramUrl = `https://t.me/share/url?url=https://t.me/nolego_bot&text=${encodeURIComponent(shareText)}`;
                 window.open(telegramUrl, '_blank');
+            }
+        });
+
+        // Обработка кнопки промокода
+        promoBtn.addEventListener('click', () => {
+            alert("Введите промокод:");
+        });
+
+        // Обработка кнопки приглашения
+        inviteBtn.addEventListener('click', () => {
+            invitePopup.classList.toggle('show');
+        });
+
+        // Копирование ссылки для приглашения
+        copyBtn.addEventListener('click', () => {
+            const inviteLink = `https://t.me/nolego_bot?start=invite_${tg.initDataUnsafe.user?.id || 'guest'}`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(inviteLink)
+                    .then(() => {
+                        // Временная смена текста кнопки
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="material-icons copy-icon">check</i> Скопировано!';
+                        
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                        }, 2000);
+                    })
+                    .catch(console.error);
+            } else {
+                // Fallback для старых браузеров
+                const textarea = document.createElement('textarea');
+                textarea.value = inviteLink;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="material-icons copy-icon">check</i> Скопировано!';
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            }
+        });
+
+        // Закрытие попапа при клике вне его
+        document.addEventListener('click', (e) => {
+            if (!invitePopup.contains(e.target) && e.target !== inviteBtn) {
+                invitePopup.classList.remove('show');
             }
         });
 
