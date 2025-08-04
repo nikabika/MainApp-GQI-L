@@ -12,6 +12,9 @@
             --card-bg: #1C1C1E;
             --card-border: rgba(255, 255, 255, 0.1);
             --coin-color: #FFFFFF;
+            --yellow: #FFD700;
+            --dark-yellow: #FFA500;
+            --light-yellow: #FFEC8B;
         }
 
         * {
@@ -53,7 +56,7 @@
             right: 20px;
             display: flex;
             gap: 8px;
-            z-index: 1000;
+            z-index: 2100; /* Выше модального окна */
         }
 
         .resource-box {
@@ -96,8 +99,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 210px;
-            height: 210px;
+            width: 220px;
+            height: 220px;
             cursor: pointer;
             z-index: 900;
         }
@@ -110,8 +113,7 @@
         }
 
         .click-target:active img {
-            transform: scale(0.92) rotate(5deg);
-            transition: transform 0.07s ease-out;
+            transform: scale(0.92);
         }
 
         .score-display {
@@ -135,36 +137,6 @@
             margin-left: 8px;
         }
 
-        .share-container {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            opacity: 0.7;
-            cursor: pointer;
-            z-index: 950;
-            transition: all 0.2s;
-        }
-
-        .share-container:active {
-            transform: translateX(-50%) scale(0.95);
-            opacity: 1;
-        }
-
-        .share-icon {
-            width: 16px;
-            height: 16px;
-            filter: brightness(0) invert(1);
-        }
-
         .coin-popup {
             position: absolute;
             color: white;
@@ -174,6 +146,161 @@
             pointer-events: none;
             z-index: 1000;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .stormtrooper-card {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            max-width: 80%;
+            height: 50px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            opacity: 0.7;
+            z-index: 1000;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .stormtrooper-card:hover {
+            opacity: 1;
+        }
+
+        .stormtrooper-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .stormtrooper-text {
+            font-size: 16px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .chevron-right {
+            width: 12px;
+            height: 12px;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 100%;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 2000;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+        }
+
+        .avatar-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-top: 40px;
+            border: 3px solid var(--yellow);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .nickname {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 20px;
+            color: var(--yellow);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 40px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--dark-yellow), var(--light-yellow));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: #000;
+            mix-blend-mode: overlay;
+        }
+
+        .modal-back-button {
+            width: 100%;
+            max-width: 300px;
+            height: 50px;
+            background: var(--yellow);
+            border-radius: 25px;
+            border: none;
+            color: #000;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .modal-back-button:active {
+            transform: scale(0.95);
         }
 
         @keyframes floatUp {
@@ -193,10 +320,13 @@
 </head>
 <body>
     <div class="score-display" id="score-display">0<small>монет</small></div>
-    
-    <div class="share-container" id="share-button">
-        <span>Поделиться</span>
-        <img src="https://cdn-icons-png.flaticon.com/512/786/786407.png" class="share-icon" alt="Поделиться">
+
+    <div class="stormtrooper-card" id="stormtrooper-card">
+        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/beef515a-ba4b-4a31-b9a3-b9fd9646dce3_IMG_5285.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJiZWVmNTE1YS1iYTRiLTRhMzEtYjlhMy1iOWZkOTY0NmRjZTMiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.pQbDC1OeHOZSddZ3-uMFDEmG1Lf5XQwtSs6XEYwxiV0&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Штурмовик" class="stormtrooper-icon">
+        <span class="stormtrooper-text">Штурмовик</span>
+        <svg class="chevron-right" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
     </div>
 
     <div class="click-target" id="click-target">
@@ -210,6 +340,27 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content">
+            <div class="avatar-container">
+                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Аватар">
+            </div>
+            <div class="nickname">Хомяк-Штурмовик</div>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Штурмовик</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <div class="progress-text" id="progress-text">0/500</div>
+                </div>
+            </div>
+        </div>
+        <button class="modal-back-button" id="modal-back-button">Назад</button>
+    </div>
+
     <script>
         let coins = 0;
         let crystals = 0;
@@ -218,11 +369,23 @@
         const scoreDisplay = document.getElementById('score-display');
         const crystalCount = document.getElementById('crystal-count');
         const clickTarget = document.getElementById('click-target');
-        const shareButton = document.getElementById('share-button');
+        const stormtrooperCard = document.getElementById('stormtrooper-card');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalBackButton = document.getElementById('modal-back-button');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const progressPercent = document.getElementById('progress-percent');
 
         function updateDisplay() {
             scoreDisplay.innerHTML = `${coins}<small>монет</small>`;
             crystalCount.textContent = crystals;
+            
+            // Обновляем прогресс бар
+            const progress = Math.min(coins, 500);
+            const percent = Math.floor((progress / 500) * 100);
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = `${progress}/500`;
+            progressPercent.textContent = `${percent}%`;
         }
 
         function createCoinPopup(x, y) {
@@ -238,29 +401,6 @@
             }, 800);
         }
 
-        async function shareScore() {
-            const shareData = {
-                title: 'Мой рекорд в Хомячьем кликере',
-                text: `🔥 Хей, я набрал ${coins} монет в Хомячьем кликере!\nПрисоединяйся и попробуй пробить мой рекорд!`,
-                url: window.location.href
-            };
-
-            try {
-                // Пытаемся использовать нативный шаринг
-                if (navigator.share && navigator.canShare(shareData)) {
-                    await navigator.share(shareData);
-                } else {
-                    // Фолбэк для десктопов - открываем Telegram с предзаполненным сообщением
-                    const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(shareData.text)}`;
-                    window.open(tgUrl, '_blank');
-                }
-            } catch (err) {
-                console.log('Ошибка шаринга:', err);
-                // Если всё совсем плохо - показываем alert
-                alert('Скопируйте ссылку и отправьте другу:\n\n' + shareData.url);
-            }
-        }
-
         clickTarget.addEventListener('click', (e) => {
             const now = Date.now();
             if (now - lastClickTime < clickCooldown) return;
@@ -271,7 +411,13 @@
             createCoinPopup(e.clientX, e.clientY);
         });
 
-        shareButton.addEventListener('click', shareScore);
+        stormtrooperCard.addEventListener('click', () => {
+            modalOverlay.style.transform = 'translateX(-100%)';
+        });
+
+        modalBackButton.addEventListener('click', () => {
+            modalOverlay.style.transform = 'translateX(0)';
+        });
 
         updateDisplay();
     </script>
