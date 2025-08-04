@@ -6,6 +6,7 @@
     <title>Хомячий кликер</title>
     <link href="https://fonts.cdnfonts.com/css/avenir-next-cyr" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg: #000000;
@@ -99,7 +100,7 @@
         /* Профиль пользователя */
         .profile-container {
             position: fixed;
-            top: 74px; /* Под счетчиком кристаллов */
+            top: 74px;
             left: 20px;
             right: 20px;
             height: 72px;
@@ -145,12 +146,18 @@
             font-weight: 600;
             color: var(--username-color);
             margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .role {
             font-size: 14px;
             color: var(--role-color);
             opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .share-container {
@@ -199,7 +206,7 @@
 
         .score-display {
             position: fixed;
-            top: 146px; /* Под профилем */
+            top: 146px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 42px;
@@ -257,10 +264,10 @@
     <div class="profile-container">
         <div class="profile-content">
             <div class="avatar-container">
-                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Аватар" class="avatar">
+                <img id="user-avatar" class="avatar" alt="Аватар">
             </div>
             <div class="user-info">
-                <div class="username">@username</div>
+                <div class="username" id="username">Загрузка...</div>
                 <div class="role">Штурмовик</div>
             </div>
         </div>
@@ -279,6 +286,9 @@
     </div>
 
     <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
         let coins = 0;
         let crystals = 0;
         let lastClickTime = 0;
@@ -287,6 +297,37 @@
         const crystalCount = document.getElementById('crystal-count');
         const clickTarget = document.getElementById('click-target');
         const shareBtn = document.getElementById('share-btn');
+        const usernameElement = document.getElementById('username');
+        const userAvatar = document.getElementById('user-avatar');
+
+        // Загружаем данные пользователя
+        function loadUserData() {
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                
+                // Устанавливаем имя пользователя
+                let displayName = user.username ? `@${user.username}` : 
+                                 user.first_name ? user.first_name : 
+                                 'Пользователь';
+                
+                if (user.last_name) {
+                    displayName += ` ${user.last_name}`;
+                }
+                
+                usernameElement.textContent = displayName;
+                
+                // Устанавливаем аватар
+                if (user.photo_url) {
+                    userAvatar.src = user.photo_url;
+                } else {
+                    // Запасной аватар, если фото нет
+                    userAvatar.src = 'https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320';
+                }
+            } else {
+                usernameElement.textContent = 'Гость';
+                userAvatar.src = 'https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/8df81a7a-24e8-4d6d-8c6a-63084a24b538_IMG_5239.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4ZGY4MWE3YS0yNGU4LTRkNmQtOGM2YS02MzA4NGEyNGI1MzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.qWeEsDYNKkTnO62mIlpH-pJqm8oxUTzisVOAIJ9llWw&x-oss-process=image/resize,m_mfit,w_320,h_320';
+            }
+        }
 
         function updateDisplay() {
             scoreDisplay.innerHTML = `${coins}<small>монет</small>`;
@@ -320,7 +361,22 @@
         shareBtn.addEventListener('click', () => {
             const shareText = "Присоединяйся к Хомячьему кликеру через бота @nolego_bot! 🐹💰";
             
-            if (navigator.share) {
+            if (tg.isExpanded) {
+                // В Telegram WebApp
+                tg.showPopup({
+                    title: 'Поделиться',
+                    message: shareText,
+                    buttons: [{
+                        id: 'share',
+                        type: 'default',
+                        text: 'Поделиться в Telegram'
+                    }]
+                }, (buttonId) => {
+                    if (buttonId === 'share') {
+                        tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/nolego_bot&text=${encodeURIComponent(shareText)}`);
+                    }
+                });
+            } else if (navigator.share) {
                 // Для мобильных устройств
                 navigator.share({
                     title: 'Хомячий кликер',
@@ -328,7 +384,7 @@
                     url: 'https://t.me/nolego_bot'
                 }).catch(console.error);
             } else if (navigator.clipboard) {
-                // Для десктопов - копирование в буфер
+                // Для десктопов
                 navigator.clipboard.writeText(shareText + " https://t.me/nolego_bot")
                     .then(() => alert("Ссылка скопирована в буфер! Теперь можешь поделиться ей в Telegram"))
                     .catch(console.error);
@@ -339,7 +395,16 @@
             }
         });
 
-        updateDisplay();
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserData();
+            updateDisplay();
+            
+            // Развернуть WebApp на весь экран
+            if (tg && tg.expand) {
+                tg.expand();
+            }
+        });
     </script>
 </body>
 </html>
