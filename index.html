@@ -18,6 +18,9 @@
             --username-color: #FFFFFF;
             --role-color: rgba(255, 255, 255, 0.7);
             --panel-bg: rgba(255, 255, 255, 0.25);
+            --gold: #FFD700;
+            --highlight-bg: rgba(40, 40, 42, 0.95);
+            --border-color: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -163,7 +166,7 @@
 
         .level-progress {
             height: 100%;
-            background: var(--bg);
+            background: linear-gradient(to right, #FFD700, #FFA500);
             border-radius: 7px;
             transition: width 0.3s ease;
         }
@@ -180,6 +183,28 @@
             font-size: 10px;
             font-weight: 600;
             color: white;
+        }
+
+        /* Кнопка магазина */
+        .shop-btn {
+            position: fixed;
+            top: 167px;
+            left: 20px;
+            width: 56px;
+            height: 56px;
+            background: var(--profile-bg);
+            border-radius: 0 17px 17px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .shop-btn img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
         }
 
         .share-container {
@@ -500,6 +525,240 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Модальное окно магазина */
+        .shop-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--profile-bg);
+            z-index: 1200;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .shop-modal.show {
+            transform: translateX(0);
+        }
+
+        /* Баннер обновления */
+        .update-banner {
+            width: 100%;
+            height: 33vh;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%), 
+                        url('https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/1a6941fc-9618-4179-9205-de9c1bda15f6_IMG_5452.jpeg?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIxYTY5NDFmYy05NjE4LTQxNzktOTIwNS1kZTljMWJkYTE1ZjYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.6raPaVrHOjK3G56BX-01h85nEL8tu2b6Aya3FemxerY&x-oss-process=image/resize,m_mfit,w_320,h_320');
+            background-size: cover;
+            background-position: center;
+            border-radius: 0 0 17px 17px;
+            padding: 25px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shop-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            position: relative;
+        }
+
+        .shop-title {
+            font-size: 22px;
+            font-weight: 700;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            text-align: center;
+        }
+
+        .close-btn {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .update-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .update-image {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+        }
+
+        .update-text {
+            font-size: 14px;
+            flex: 1;
+        }
+
+        /* Список сундуков */
+        .chests-container {
+            padding: 20px;
+            padding-bottom: 20px;
+        }
+
+        .chest-item {
+            display: flex;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .chest-item:nth-child(odd) {
+            flex-direction: row;
+        }
+
+        .chest-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .chest-image {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .chest-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .chest-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .chest-description {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+
+        .chest-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chest-button {
+            background: var(--highlight-bg);
+            color: var(--text);
+            border-radius: 11px;
+            padding: 10px 16px;
+            font-size: 16px;
+            font-weight: 600;
+            width: fit-content;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .chest-button img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .info-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--highlight-bg);
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .info-btn i {
+            color: var(--text);
+            font-size: 20px;
+        }
+
+        /* Информационное окно */
+        .info-tooltip {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            background: var(--highlight-bg);
+            border-radius: 12px;
+            padding: 15px;
+            width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 10;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+        }
+
+        .info-tooltip.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .info-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 20px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--highlight-bg);
+        }
+
+        .tooltip-rarity {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tooltip-rarity-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tooltip-rarity-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--card-bg);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .tooltip-rarity-icon img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .tooltip-rarity-text {
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -530,6 +789,11 @@
                 <i class="material-icons share-icon">share</i>
             </div>
         </div>
+    </div>
+
+    <!-- Кнопка магазина -->
+    <div class="shop-btn" id="shop-btn">
+        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/37334021-e0a8-4630-91fd-410e42ea3338_IMG_5252.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIzNzMzNDAyMS1lMGE4LTQ2MzAtOTFmZC00MTBlNDJlYTMzMzgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.gdNSyxF8FNxmrCmnemfcQ3YoB4cUyzMRaMxw-HKpcxU&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Магазин">
     </div>
 
     <!-- Основные элементы игры -->
@@ -573,6 +837,146 @@
         <div class="promo-btn" id="promo-submit">Применить</div>
     </div>
 
+    <!-- Модальное окно магазина -->
+    <div class="shop-modal" id="shop-modal">
+        <!-- Шапка магазина -->
+        <div class="shop-header">
+            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/ef0d755b-75dc-45f5-8af7-47c1c354a148_IMG_5424.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJlZjBkNzU1Yi03NWRjLTQ1ZjUtOGFmNy00N2MxYzM1NGExNDgiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.mMVBtcKFbxrRTFQHA18hfYFL3V1ELeo5um9eOqdO5hc&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Закрыть" class="close-btn" id="close-btn">
+            <div class="shop-title">Магазин</div>
+        </div>
+
+        <!-- Баннер обновления -->
+        <div class="update-banner">
+            <div class="update-content">
+                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/4aaeddd3-3ff5-49a0-93a9-a1239ea96326_IMG_5415.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI0YWFlZGRkMy0zZmY1LTQ5YTAtOTNhOS1hMTIzOWVhOTYzMjYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.vgL5ZUujeaeRwEnLMeF1_tI6ousxDkQ_jFzLvxphvfk&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Обновление" class="update-image">
+                <div class="update-text">Обновление ALPHA уже здесь - встречайте пак карт по первым трем эпизодам саги!</div>
+            </div>
+        </div>
+
+        <!-- Список сундуков -->
+        <div class="chests-container">
+            <!-- Деревянный сундук -->
+            <div class="chest-item">
+                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/0412f569-9a45-464a-819a-8b9df0439931_IMG_5154.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIwNDEyZjU2OS05YTQ1LTQ2NGEtODE5YS04YjlkZjA0Mzk5MzEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.jxoDF5f1efvCC7AC0mJDmMfJEM6R6QIYBS1MIayVr6E&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Деревянный сундук" class="chest-image">
+                <div class="chest-info">
+                    <div class="chest-name">Деревянный сундук</div>
+                    <div class="chest-description">Отличный вариант для новичков - падают как обычные, так и редкие карты</div>
+                    <div class="chest-actions">
+                        <button class="chest-button">
+                            Купить за 50
+                            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/1ba4a4f3-5ef4-46c0-b837-385acd5e41f5_IMG_5157.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIxYmE0YTRmMy01ZWY0LTQ2YzAtYjgzNy0zODVhY2Q1ZTQxZjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.1qaNrO01QAhNWxSJxnqgX7p_QvoemWOXyzaANPAiMh4&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Кристаллы">
+                        </button>
+                        <div class="info-btn" data-tooltip="wooden-tooltip">
+                            <i class="material-icons">info</i>
+                        </div>
+                        <div class="info-tooltip" id="wooden-tooltip">
+                            <div class="tooltip-rarity">
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/7e904c7d-dc34-436b-a86d-08b36fc70e2a_IMG_5408.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI3ZTkwNGM3ZC1kYzM0LTQzNmItYTg2ZC0wOGIzNmZjNzBlMmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.21v7w-vuEK0hyWkIOorbfwSTuLxZHUObT4n8bNq5y9s&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Common">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Обычные - 70%</div>
+                                </div>
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/85095049-d491-447d-ad77-2cd7b8ea47f4_IMG_5406.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4NTA5NTA0OS1kNDkxLTQ0N2QtYWQ3Ny0yY2Q3YjhlYTQ3ZjQiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.JPDSoIG26v_BrKCQt4eUKzdS69BfC1ckkl2r_TQO4Z0&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Rare">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Редкие - 30%</div>
+                                </div>
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/ce8a4b3c-905d-4707-b1be-9511aaae9844_IMG_5412.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJjZThhNGIzYy05MDVkLTQ3MDctYjFiZS05NTExYWFhZTk4NDQiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.7_O6RMO8JkUo8nEa-EH58f-IOQhUxBDKhWlNI6ebVaU&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Epic">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Эпические - 0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Серебряный сундук -->
+            <div class="chest-item">
+                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/2a3fdc7a-441e-4642-9d05-eda2aa4f0037_IMG_5155.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIyYTNmZGM3YS00NDFlLTQ2NDItOWQwNS1lZGEyYWE0ZjAwMzciLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.DsNlwYfH0uQh4Lsk8cA4PqVC0pcBkfzsR27zB-gioww&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Серебряный сундук" class="chest-image">
+                <div class="chest-info">
+                    <div class="chest-name">Серебряный сундук</div>
+                    <div class="chest-description">Самый выгодный сундук. Помимо обычных и редких карт также падают и эпические</div>
+                    <div class="chest-actions">
+                        <button class="chest-button">
+                            Купить за 120
+                            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/1ba4a4f3-5ef4-46c0-b837-385acd5e41f5_IMG_5157.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIxYmE0YTRmMy01ZWY0LTQ2YzAtYjgzNy0zODVhY2Q1ZTQxZjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.1qaNrO01QAhNWxSJxnqgX7p_QvoemWOXyzaANPAiMh4&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Кристаллы">
+                        </button>
+                        <div class="info-btn" data-tooltip="silver-tooltip">
+                            <i class="material-icons">info</i>
+                        </div>
+                        <div class="info-tooltip" id="silver-tooltip">
+                            <div class="tooltip-rarity">
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/7e904c7d-dc34-436b-a86d-08b36fc70e2a_IMG_5408.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI3ZTkwNGM3ZC1kYzM0LTQzNmItYTg2ZC0wOGIzNmZjNzBlMmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.21v7w-vuEK0hyWkIOorbfwSTuLxZHUObT4n8bNq5y9s&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Common">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Обычные - 45%</div>
+                                </div>
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/85095049-d491-447d-ad77-2cd7b8ea47f4_IMG_5406.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4NTA5NTA0OS1kNDkxLTQ0N2QtYWQ3Ny0yY2Q3YjhlYTQ3ZjQiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.JPDSoIG26v_BrKCQt4eUKzdS69BfC1ckkl2r_TQO4Z0&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Rare">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Редкие - 45%</div>
+                                </div>
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/ce8a4b3c-905d-4707-b1be-9511aaae9844_IMG_5412.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJjZThhNGIzYy05MDVkLTQ3MDctYjFiZS05NTExYWFhZTk4NDQiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.7_O6RMO8JkUo8nEa-EH58f-IOQhUxBDKhWlNI6ebVaU&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Epic">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Эпические - 10%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Золотой сундук -->
+            <div class="chest-item">
+                <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/f017a1db-7688-4fbe-be56-62ccd4c5bbcb_IMG_5148.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJmMDE3YTFkYi03Njg4LTRmYmUtYmU1Ni02MmNjZDRjNWJiY2IiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OaIo3F21vyXKRDbeg_0GBar6SWk1fF7_rTi2Cf_ACCE&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Золотой сундук" class="chest-image">
+                <div class="chest-info">
+                    <div class="chest-name">Золотой сундук</div>
+                    <div class="chest-description">О, да ты богач! Падают эпические карты с редкими свойствами</div>
+                    <div class="chest-actions">
+                        <button class="chest-button">
+                            Купить за 200
+                            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/1ba4a4f3-5ef4-46c0-b837-385acd5e41f5_IMG_5157.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiIxYmE0YTRmMy01ZWY0LTQ2YzAtYjgzNy0zODVhY2Q1ZTQxZjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.1qaNrO01QAhNWxSJxnqgX7p_QvoemWOXyzaANPAiMh4&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Кристаллы">
+                        </button>
+                        <div class="info-btn" data-tooltip="gold-tooltip">
+                            <i class="material-icons">info</i>
+                        </div>
+                        <div class="info-tooltip" id="gold-tooltip">
+                            <div class="tooltip-rarity">
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/7e904c7d-dc34-436b-a86d-08b36fc70e2a_IMG_5408.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI3ZTkwNGM3ZC1kYzM0LTQzNmItYTg2ZC0wOGIzNmZjNzBlMmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.21v7w-vuEK0hyWkIOorbfwSTuLxZHUObT4n8bNq5y9s&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Common">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Обычные - 0%</div>
+                                </div>
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/85095049-d491-447d-ad77-2cd7b8ea47f4_IMG_5406.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI4NTA5NTA0OS1kNDkxLTQ0N2QtYWQ3Ny0yY2Q3YjhlYTQ3ZjQiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.JPDSoIG26v_BrKCQt4eUKzdS69BfC1ckkl2r_TQO4Z0&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Rare">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Редкие - 0%</div>
+                                </div>
+                                <div class="tooltip-rarity-item">
+                                    <div class="tooltip-rarity-icon">
+                                        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/ce8a4b3c-905d-4707-b1be-9511aaae9844_IMG_5412.webp?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiJjZThhNGIzYy05MDVkLTQ3MDctYjFiZS05NTExYWFhZTk4NDQiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.7_O6RMO8JkUo8nEa-EH58f-IOQhUxBDKhWlNI6ebVaU&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Epic">
+                                    </div>
+                                    <div class="tooltip-rarity-text">Эпические - 100%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
@@ -605,6 +1009,10 @@
         const energyLoader = document.getElementById('energy-loader');
         const levelProgress = document.getElementById('level-progress');
         const levelText = document.getElementById('level-text');
+        const shopBtn = document.getElementById('shop-btn');
+        const shopModal = document.getElementById('shop-modal');
+        const closeBtn = document.getElementById('close-btn');
+        const infoBtns = document.querySelectorAll('.info-btn');
         
         // Загружаем данные пользователя
         function loadUserData() {
@@ -849,7 +1257,36 @@
             window.open('https://t.me/noLEGObutGreat', '_blank');
         });
 
-        // Закрытие попапа промокода при клике вне его
+        // Обработка кнопки магазина
+        shopBtn.addEventListener('click', () => {
+            shopModal.classList.add('show');
+        });
+
+        // Обработка кнопки закрытия магазина
+        closeBtn.addEventListener('click', () => {
+            shopModal.classList.remove('show');
+        });
+
+        // Обработка кнопок информации
+        infoBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const tooltipId = btn.getAttribute('data-tooltip');
+                const tooltip = document.getElementById(tooltipId);
+                
+                // Скрываем все другие подсказки
+                document.querySelectorAll('.info-tooltip').forEach(t => {
+                    if (t.id !== tooltipId) {
+                        t.classList.remove('show');
+                    }
+                });
+                
+                // Показываем/скрываем текущую подсказку
+                tooltip.classList.toggle('show');
+            });
+        });
+
+        // Закрытие попапов при клике вне их
         document.addEventListener('click', (e) => {
             if (!promoPopup.contains(e.target) && e.target !== promoBtn) {
                 promoPopup.classList.remove('show');
@@ -858,6 +1295,24 @@
             if (!invitePopup.contains(e.target) && e.target !== inviteBtn) {
                 invitePopup.classList.remove('show');
             }
+            
+            if (!shopModal.contains(e.target) && e.target !== shopBtn) {
+                shopModal.classList.remove('show');
+            }
+            
+            // Закрытие подсказок
+            document.querySelectorAll('.info-tooltip').forEach(tooltip => {
+                if (!tooltip.contains(e.target)) {
+                    tooltip.classList.remove('show');
+                }
+            });
+        });
+
+        // Предотвращаем закрытие при клике на саму подсказку
+        document.querySelectorAll('.info-tooltip').forEach(tooltip => {
+            tooltip.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
         });
 
         // Отправка промокода
