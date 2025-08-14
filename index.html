@@ -13,6 +13,14 @@
             font-style: normal;
         }
 
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -122,31 +130,50 @@
             align-items: center;
             justify-content: center;
             z-index: 5;
-            margin-top: -25px;
+            margin-top: -40px;
             padding: 0 15px;
             box-sizing: border-box;
         }
 
-        .duck-gif {
+        .duck-container {
+            position: relative;
             width: 65vw;
             height: 65vw;
             max-width: 260px;
             max-height: 260px;
+        }
+
+        .duck-gif {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             z-index: 10;
             border-radius: 12px;
             image-rendering: high-quality;
             cursor: pointer;
-            user-select: none;
             touch-action: manipulation;
             transition: transform 0.1s ease;
+            transform-origin: center;
         }
 
         .duck-gif:active {
             transform: scale(0.98);
         }
 
+        .duck-gif.hidden {
+            opacity: 0;
+            transform: scale(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .duck-gif.visible {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
         .balance-text {
-            margin-bottom: 25px;
+            margin-bottom: 40px;
             font-size: 7vw;
             font-weight: 700;
             color: white;
@@ -155,11 +182,41 @@
         }
 
         .balance-number {
-            font-size: 8vw;
+            font-size: 9vw;
         }
 
         .balance-word {
             opacity: 0.7;
+            font-size: 7vw;
+        }
+
+        /* Энергия */
+        .energy-container {
+            position: absolute;
+            left: 15px;
+            bottom: 90px;
+            background: rgba(30, 30, 32, 0.9); /* Темнее */
+            border-radius: 15px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            z-index: 20;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .energy-icon {
+            font-size: 18px;
+            margin-right: 6px;
+        }
+
+        .energy-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .energy-value.recharging {
+            color: #FF453A;
         }
 
         /* Подвал */
@@ -214,6 +271,62 @@
             opacity: 1;
         }
 
+        /* Loading screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #FFD700;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-duck {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Duck loading spinner */
+        .duck-loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(255, 215, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #FFD700;
+            animation: spin 0.8s linear infinite;
+            z-index: 15;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .duck-loading-spinner.visible {
+            opacity: 1;
+        }
+
         @media (min-width: 500px) {
             .balance-text {
                 font-size: 32px;
@@ -221,52 +334,76 @@
             .balance-number {
                 font-size: 42px;
             }
+            .balance-word {
+                font-size: 32px;
+            }
             .footer {
                 padding: 0 20px;
+            }
+            .energy-value {
+                font-size: 18px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="bottom-gradient"></div>
-    
-    <div class="top-panel-container">
-        <div class="top-panel">
-            <div class="avatar-box" id="avatarBox">
-                <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
-            </div>
-            <div class="user-info">
-                <div class="username" id="username">Гость</div>
-                <div class="level">Уровень 1</div>
-            </div>
-        </div>
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <img src="https://media.tenor.com/uADIAc7wT2wAAAAi/utya.gif" class="loading-duck">
+        <div class="loading-spinner"></div>
     </div>
-    
-    <div class="content">
-        <div class="balance-text" id="balance">
-            <span class="balance-number" id="balanceNumber">0</span>
-            <span class="balance-word"> монет</span>
+
+    <!-- Main app content (hidden initially) -->
+    <div id="appContent" style="display: none;">
+        <div class="bottom-gradient"></div>
+        
+        <div class="top-panel-container">
+            <div class="top-panel">
+                <div class="avatar-box" id="avatarBox">
+                    <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
+                </div>
+                <div class="user-info">
+                    <div class="username" id="username">Гость</div>
+                    <div class="level">Уровень 1</div>
+                </div>
+            </div>
         </div>
         
-        <img src="https://media.tenor.com/YXZL61MYsfYAAAAi/utya-utya-duck.gif" class="duck-gif" id="duck">
-    </div>
-    
-    <div class="footer">
-        <div class="footer-item">
-            <i class="footer-icon feather active" data-feather="dollar-sign"></i>
-            <span class="footer-text active">Ферма</span>
+        <div class="content">
+            <div class="balance-text" id="balance">
+                <span class="balance-number" id="balanceNumber">0</span>
+                <span class="balance-word"> монет</span>
+            </div>
+            
+            <div class="duck-container" id="duckContainer">
+                <div class="duck-loading-spinner" id="duckLoadingSpinner"></div>
+                <img src="https://media.tenor.com/YXZL61MYsfYAAAAi/utya-utya-duck.gif" class="duck-gif visible" id="activeDuck">
+                <img src="https://media.tenor.com/8E_FQ4EH4CkAAAAi/utya-telegram-duck.gif" class="duck-gif hidden" id="sleepingDuck">
+            </div>
         </div>
-        <div class="footer-item">
-            <i class="footer-icon feather" data-feather="shopping-bag"></i>
-            <span class="footer-text">Магаз</span>
+        
+        <div class="energy-container" id="energyContainer">
+            <span class="energy-icon">⚡️</span>
+            <span class="energy-value" id="energyValue">500</span>
         </div>
-        <div class="footer-item">
-            <i class="footer-icon feather" data-feather="gift"></i>
-            <span class="footer-text">Развлечения</span>
-        </div>
-        <div class="footer-item">
-            <i class="footer-icon feather" data-feather="user"></i>
-            <span class="footer-text">Профиль</span>
+        
+        <div class="footer">
+            <div class="footer-item">
+                <i class="footer-icon feather active" data-feather="dollar-sign"></i>
+                <span class="footer-text active">Ферма</span>
+            </div>
+            <div class="footer-item">
+                <i class="footer-icon feather" data-feather="shopping-bag"></i>
+                <span class="footer-text">Магаз</span>
+            </div>
+            <div class="footer-item">
+                <i class="footer-icon feather" data-feather="gift"></i>
+                <span class="footer-text">Развлечения</span>
+            </div>
+            <div class="footer-item">
+                <i class="footer-icon feather" data-feather="user"></i>
+                <span class="footer-text">Профиль</span>
+            </div>
         </div>
     </div>
     
@@ -275,36 +412,59 @@
     <script>
         // Инициализация
         let coins = 0;
+        let energy = 500;
+        let isRecharging = false;
+        let rechargeTimer = null;
+        let inactivityTimer = null;
+        let cooldownTimer = null;
+        let cooldownSeconds = 180;
+        
         const balanceNumber = document.getElementById('balanceNumber');
         const balanceWord = document.querySelector('.balance-word');
-        const duckElement = document.getElementById('duck');
+        const activeDuck = document.getElementById('activeDuck');
+        const sleepingDuck = document.getElementById('sleepingDuck');
+        const duckContainer = document.getElementById('duckContainer');
         const avatarBox = document.getElementById('avatarBox');
         const avatarImg = document.getElementById('avatarImg');
         const usernameElement = document.getElementById('username');
+        const energyValue = document.getElementById('energyValue');
+        const energyContainer = document.getElementById('energyContainer');
+        const loadingScreen = document.getElementById('loadingScreen');
+        const appContent = document.getElementById('appContent');
+        const duckLoadingSpinner = document.getElementById('duckLoadingSpinner');
 
         // Инициализация feather icons
         feather.replace();
+
+        // Показать загрузочный экран на 5 секунд
+        setTimeout(() => {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                appContent.style.display = 'block';
+                
+                // Показать спиннер на утке на короткое время
+                duckLoadingSpinner.classList.add('visible');
+                setTimeout(() => {
+                    duckLoadingSpinner.classList.remove('visible');
+                }, 15);
+            }, 500);
+        }, 5000);
 
         // Telegram MiniApp инициализация
         function initTelegramWebApp() {
             if (window.Telegram && window.Telegram.WebApp) {
                 const webApp = Telegram.WebApp;
                 
-                // Развернуть приложение на весь экран
                 webApp.expand();
-                
-                // Установить цвета
                 webApp.setHeaderColor('#1C1C1E');
                 webApp.setBackgroundColor('#1C1C1E');
                 
-                // Получаем данные пользователя
                 const user = webApp.initDataUnsafe.user;
                 
                 if (user) {
-                    // Устанавливаем имя пользователя
                     usernameElement.textContent = user.first_name || 'Гость';
                     
-                    // Устанавливаем аватар
                     if (user.photo_url) {
                         avatarImg.src = user.photo_url;
                         avatarImg.onerror = function() {
@@ -315,7 +475,6 @@
                     }
                 }
                 
-                // Показать кнопку назад, если нужно
                 webApp.BackButton.show();
                 webApp.BackButton.onClick(function() {
                     webApp.close();
@@ -339,7 +498,6 @@
             initials.style.fontSize = '24px';
             initials.style.fontWeight = 'bold';
             
-            // Очищаем предыдущие элементы
             while (avatarBox.firstChild) {
                 avatarBox.removeChild(avatarBox.firstChild);
             }
@@ -347,9 +505,93 @@
             avatarBox.appendChild(initials);
         }
 
-        // Инициализируем Telegram WebApp или показываем fallback
+        function updateEnergy(value) {
+            energy = Math.max(0, Math.min(500, value));
+            
+            if (energy === 0) {
+                startCooldown();
+            } else {
+                energyValue.textContent = energy;
+                energyValue.classList.remove('recharging');
+            }
+        }
+
+        function switchDuck(toSleeping) {
+            if (toSleeping) {
+                activeDuck.classList.remove('visible');
+                activeDuck.classList.add('hidden');
+                sleepingDuck.classList.remove('hidden');
+                sleepingDuck.classList.add('visible');
+            } else {
+                sleepingDuck.classList.remove('visible');
+                sleepingDuck.classList.add('hidden');
+                activeDuck.classList.remove('hidden');
+                activeDuck.classList.add('visible');
+            }
+        }
+
+        function startCooldown() {
+            if (cooldownTimer) return;
+            
+            // Анимация перехода к спящей утке
+            switchDuck(true);
+            
+            cooldownSeconds = 180;
+            energyValue.textContent = formatTime(cooldownSeconds);
+            energyValue.classList.add('recharging');
+            
+            cooldownTimer = setInterval(() => {
+                cooldownSeconds--;
+                energyValue.textContent = formatTime(cooldownSeconds);
+                
+                if (cooldownSeconds <= 0) {
+                    clearInterval(cooldownTimer);
+                    cooldownTimer = null;
+                    
+                    // Восстанавливаем энергию и уточку
+                    updateEnergy(100);
+                    switchDuck(false);
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function startEnergyRecharge() {
+            if (isRecharging || energy >= 500) return;
+            
+            isRecharging = true;
+            clearInterval(rechargeTimer);
+            
+            rechargeTimer = setInterval(() => {
+                updateEnergy(energy + 1);
+                
+                if (energy >= 500) {
+                    clearInterval(rechargeTimer);
+                    isRecharging = false;
+                }
+            }, 5000);
+        }
+
+        function stopEnergyRecharge() {
+            isRecharging = false;
+            clearInterval(rechargeTimer);
+        }
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            
+            inactivityTimer = setTimeout(() => {
+                startEnergyRecharge();
+            }, 3000);
+        }
+
+        // Инициализация
         if (!initTelegramWebApp()) {
-            // Fallback для тестирования вне Telegram
             usernameElement.textContent = 'Тестовый пользователь';
             avatarImg.src = 'https://via.placeholder.com/50';
             avatarImg.onerror = function() {
@@ -358,36 +600,45 @@
         }
 
         // Обработчик клика
-        duckElement.addEventListener('click', function() {
-            // Обновляем счетчик
+        duckContainer.addEventListener('click', function() {
+            if (energy <= 0) return;
+            
             coins++;
             balanceNumber.textContent = coins;
+            updateEnergy(energy - 1);
             
-            // Устанавливаем прозрачность слова "монет"
+            stopEnergyRecharge();
+            resetInactivityTimer();
+            
             if (coins > 0) {
                 balanceWord.style.opacity = '0.7';
-                balanceNumber.style.fontSize = document.documentElement.clientWidth < 500 ? '7vw' : '42px';
+                balanceNumber.style.fontSize = document.documentElement.clientWidth < 500 ? '9vw' : '42px';
             } else {
                 balanceWord.style.opacity = '1';
-                balanceNumber.style.fontSize = document.documentElement.clientWidth < 500 ? '8vw' : '48px';
+                balanceNumber.style.fontSize = document.documentElement.clientWidth < 500 ? '10vw' : '48px';
             }
         });
 
-        // Обработчики для нижнего меню
+        // Обработчики меню
         const footerItems = document.querySelectorAll('.footer-item');
         footerItems.forEach(item => {
             item.addEventListener('click', function() {
-                // Удаляем активные классы у всех элементов
+                // Вибрация при переключении вкладок
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+                
                 footerItems.forEach(i => {
                     i.querySelector('.footer-icon').classList.remove('active');
                     i.querySelector('.footer-text').classList.remove('active');
                 });
                 
-                // Добавляем активные классы к текущему элементу
                 this.querySelector('.footer-icon').classList.add('active');
                 this.querySelector('.footer-text').classList.add('active');
             });
         });
+
+        resetInactivityTimer();
     </script>
 </body>
 </html>
