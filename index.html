@@ -2,132 +2,321 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Slot Machine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Уточка с монетами</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
     <style>
+        @font-face {
+            font-family: 'Avenir Next';
+            src: local('Avenir Next'), local('Avenir-Next');
+            font-weight: bold;
+            font-style: normal;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background-color: #000;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            background-color: #1C1C1E;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             overflow: hidden;
-            user-select: none;
+            font-family: 'Avenir Next', -apple-system, sans-serif;
+            position: relative;
+            touch-action: manipulation;
         }
-        
-        .container {
+
+        /* Градиент снизу вверх */
+        .bottom-gradient {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(
+                to top,
+                rgba(255, 215, 0, 0.2) 0%,
+                rgba(28, 28, 30, 0) 100%
+            );
+            z-index: 1;
+        }
+
+        /* Верхняя панель */
+        .top-panel {
+            position: absolute;
+            top: 15px;
+            left: 75px;
+            width: calc(100% - 100px);
+            height: 54px;
+            background: rgba(44, 44, 46, 1);
+            z-index: 2;
+            border-radius: 12px;
+            padding: 0 15px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Квадрат с аватаркой */
+        .avatar-box {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 50px;
+            height: 54px;
+            background: rgba(44, 44, 46, 1);
+            z-index: 3;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Текст в панели */
+        .username {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .level {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 2px 0 0;
+        }
+
+        /* Основное содержимое */
+        .content {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: calc(100% - 80px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            margin-top: -25px; /* Поднято на 25px выше */
+        }
+
+        .duck-gif {
+            width: 65vw;
+            height: 65vw;
+            max-width: 260px;
+            max-height: 260px;
+            z-index: 10;
+            border-radius: 12px;
+            image-rendering: high-quality;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            transition: transform 0.1s ease;
+        }
+
+        .duck-gif:active {
+            transform: scale(0.98);
+        }
+
+        .balance-text {
+            margin-bottom: 25px; /* Добавлен отступ снизу для уточки */
+            font-size: 7vw;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .balance-number {
+            font-size: 8vw;
+        }
+
+        .balance-word {
+            opacity: 0.7;
+        }
+
+        /* Подвал */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        .footer-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .footer-icon {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .footer-text {
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
             text-align: center;
         }
-        
-        .sticker {
-            font-size: 200px;
-            cursor: pointer;
-            transition: transform 0.1s;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .sticker:active {
-            transform: scale(0.95);
-        }
-        
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
+
+        @media (min-width: 500px) {
+            .balance-text {
+                font-size: 32px;
             }
-            50% {
-                transform: translateY(-10px);
+            .balance-number {
+                font-size: 42px;
             }
-        }
-        
-        @keyframes slot-machine {
-            0% {
-                transform: rotate(0) scale(1);
+            .footer {
+                padding: 0 20px;
             }
-            10% {
-                transform: rotate(-5deg) scale(1.1);
-            }
-            20% {
-                transform: rotate(5deg) scale(1.1);
-            }
-            30% {
-                transform: rotate(-5deg) scale(1.1);
-            }
-            40% {
-                transform: rotate(5deg) scale(1.1);
-            }
-            50% {
-                transform: rotate(0) scale(1.1);
-            }
-            60% {
-                transform: rotate(0) scale(1.1) rotateY(180deg);
-            }
-            70% {
-                transform: rotate(0) scale(1.1) rotateY(0);
-            }
-            80% {
-                transform: rotate(0) scale(1.1) rotateY(180deg);
-            }
-            90% {
-                transform: rotate(0) scale(1.1) rotateY(0);
-            }
-            100% {
-                transform: rotate(0) scale(1);
-            }
-        }
-        
-        .animate {
-            animation: slot-machine 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-        }
-        
-        .caption {
-            margin-top: 30px;
-            font-size: 24px;
-            font-weight: 500;
-            opacity: 0.8;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="sticker" id="slotSticker">🎰</div>
-        <div class="caption">Нажмите на стикер</div>
-    </div>
-
-    <!-- Подключаем Telegram Web App SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <div class="bottom-gradient"></div>
     
+    <div class="avatar-box" id="avatarBox">
+        <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
+    </div>
+    
+    <div class="top-panel">
+        <div class="username" id="username">Гость</div>
+        <div class="level">Уровень 1</div>
+    </div>
+    
+    <div class="content">
+        <div class="balance-text" id="balance">
+            <span class="balance-number" id="balanceNumber">0</span>
+            <span class="balance-word"> монет</span>
+        </div>
+        
+        <img src="https://media.tenor.com/YXZL61MYsfYAAAAi/utya-utya-duck.gif" class="duck-gif" id="duck">
+    </div>
+    
+    <div class="footer">
+        <div class="footer-item">
+            <i class="footer-icon feather" data-feather="dollar-sign" style="opacity: 1;"></i>
+            <span class="footer-text">Ферма</span>
+        </div>
+        <div class="footer-item">
+            <i class="footer-icon feather" data-feather="shopping-bag" style="opacity: 0.5;"></i>
+            <span class="footer-text">Магаз</span>
+        </div>
+        <div class="footer-item">
+            <i class="footer-icon feather" data-feather="gift" style="opacity: 0.5;"></i>
+            <span class="footer-text">Развлечения</span>
+        </div>
+        <div class="footer-item">
+            <i class="footer-icon feather" data-feather="user" style="opacity: 0.5;"></i>
+            <span class="footer-text">Профиль</span>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script>
-        const sticker = document.getElementById('slotSticker');
-        const tg = window.Telegram.WebApp;
-        
-        // Развернуть приложение на весь экран (опционально)
-        tg.expand();
-        
-        // Проверяем, поддерживается ли вибрация в Telegram
-        function vibrate() {
-            if (tg.isVersionAtLeast('6.1')) {  // Вибрация доступна с версии 6.1+
-                tg.HapticFeedback.impactOccurred('heavy');  // Сильная вибрация
-            } else {
-                // Фоллбэк для браузеров с поддержкой вибрации
-                if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+        // Инициализация
+        let coins = 0;
+        const balanceNumber = document.getElementById('balanceNumber');
+        const balanceWord = document.querySelector('.balance-word');
+        const duckElement = document.getElementById('duck');
+        const avatarBox = document.getElementById('avatarBox');
+        const avatarImg = document.getElementById('avatarImg');
+        const usernameElement = document.getElementById('username');
+
+        // Инициализация feather icons
+        feather.replace();
+
+        // Telegram MiniApp инициализация
+        if (window.Telegram && window.Telegram.WebApp) {
+            const webApp = Telegram.WebApp;
+            webApp.expand();
+            webApp.setHeaderColor('#1C1C1E');
+            webApp.setBackgroundColor('#1C1C1E');
+            
+            // Получаем данные пользователя
+            const user = webApp.initDataUnsafe.user;
+            
+            if (user) {
+                // Устанавливаем имя пользователя
+                usernameElement.textContent = user.first_name || 'Гость';
+                
+                // Устанавливаем аватар
+                if (user.photo_url) {
+                    avatarImg.src = user.photo_url;
+                } else {
+                    // Fallback аватар
+                    avatarBox.style.backgroundColor = '#5ac8fa';
+                    avatarImg.style.display = 'none';
+                    const initials = document.createElement('div');
+                    initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
+                    initials.style.color = 'white';
+                    initials.style.fontSize = '24px';
+                    initials.style.fontWeight = 'bold';
+                    avatarBox.appendChild(initials);
+                }
             }
+        } else {
+            // Fallback для тестирования вне Telegram
+            avatarImg.src = 'https://via.placeholder.com/50';
         }
-        
-        sticker.addEventListener('click', function() {
-            // Запускаем анимацию
-            this.classList.add('animate');
-            
-            // Вибрируем
-            vibrate();
-            
-            // Через 1 секунду убираем анимацию
+
+        // Плавная перезагрузка гифки без дерганий
+        function reloadGif() {
+            duckElement.style.opacity = 0;
             setTimeout(() => {
-                this.classList.remove('animate');
-            }, 1000);
+                duckElement.src = duckElement.src.split('?')[0] + '?t=' + Date.now();
+                duckElement.style.opacity = 1;
+            }, 50);
+        }
+
+        // Автоперезагрузка гифки каждые 5 сек
+        setInterval(reloadGif, 5000);
+
+        // Обработчик клика
+        duckElement.addEventListener('click', function() {
+            // Обновляем счетчик
+            coins++;
+            balanceNumber.textContent = coins;
+            
+            // Устанавливаем прозрачность слова "монет"
+            if (coins > 0) {
+                balanceWord.style.opacity = '0.7';
+                balanceNumber.style.fontSize = document.documentElement.clientWidth < 500 ? '7vw' : '42px';
+            } else {
+                balanceWord.style.opacity = '1';
+                balanceNumber.style.fontSize = document.documentElement.clientWidth < 500 ? '8vw' : '48px';
+            }
         });
     </script>
 </body>
