@@ -43,29 +43,27 @@
         }
 
         /* Верхняя панель */
-        .top-panel {
+        .top-panel-container {
             position: absolute;
             top: 15px;
-            left: 75px;
-            width: calc(100% - 100px);
-            height: 54px;
-            background: rgba(44, 44, 46, 1);
-            z-index: 2;
-            border-radius: 12px;
-            padding: 0 15px;
-            box-sizing: border-box;
+            left: 0;
+            width: 100%;
             display: flex;
-            flex-direction: column;
             justify-content: center;
+            z-index: 2;
+        }
+
+        .top-panel {
+            display: flex;
+            align-items: center;
+            width: calc(100% - 30px);
+            max-width: 400px;
         }
 
         /* Квадрат с аватаркой */
         .avatar-box {
-            position: absolute;
-            top: 15px;
-            left: 15px;
             width: 50px;
-            height: 54px;
+            height: 50px;
             background: rgba(44, 44, 46, 1);
             z-index: 3;
             border-radius: 12px;
@@ -73,12 +71,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .avatar-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .user-info {
+            margin-left: 10px;
+            flex-grow: 1;
+            min-width: 0;
+            background: rgba(44, 44, 46, 1);
+            height: 54px;
+            border-radius: 12px;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         /* Текст в панели */
@@ -110,7 +122,9 @@
             align-items: center;
             justify-content: center;
             z-index: 5;
-            margin-top: -25px; /* Поднято на 25px выше */
+            margin-top: -25px;
+            padding: 0 15px;
+            box-sizing: border-box;
         }
 
         .duck-gif {
@@ -132,7 +146,7 @@
         }
 
         .balance-text {
-            margin-bottom: 25px; /* Добавлен отступ снизу для уточки */
+            margin-bottom: 25px;
             font-size: 7vw;
             font-weight: 700;
             color: white;
@@ -177,6 +191,11 @@
             color: white;
             font-size: 24px;
             margin-bottom: 5px;
+            opacity: 0.5;
+        }
+
+        .footer-icon.active {
+            opacity: 1;
         }
 
         .footer-text {
@@ -188,6 +207,11 @@
             text-overflow: ellipsis;
             width: 100%;
             text-align: center;
+            opacity: 0.5;
+        }
+
+        .footer-text.active {
+            opacity: 1;
         }
 
         @media (min-width: 500px) {
@@ -206,13 +230,16 @@
 <body>
     <div class="bottom-gradient"></div>
     
-    <div class="avatar-box" id="avatarBox">
-        <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
-    </div>
-    
-    <div class="top-panel">
-        <div class="username" id="username">Гость</div>
-        <div class="level">Уровень 1</div>
+    <div class="top-panel-container">
+        <div class="top-panel">
+            <div class="avatar-box" id="avatarBox">
+                <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
+            </div>
+            <div class="user-info">
+                <div class="username" id="username">Гость</div>
+                <div class="level">Уровень 1</div>
+            </div>
+        </div>
     </div>
     
     <div class="content">
@@ -226,24 +253,25 @@
     
     <div class="footer">
         <div class="footer-item">
-            <i class="footer-icon feather" data-feather="dollar-sign" style="opacity: 1;"></i>
-            <span class="footer-text">Ферма</span>
+            <i class="footer-icon feather active" data-feather="dollar-sign"></i>
+            <span class="footer-text active">Ферма</span>
         </div>
         <div class="footer-item">
-            <i class="footer-icon feather" data-feather="shopping-bag" style="opacity: 0.5;"></i>
+            <i class="footer-icon feather" data-feather="shopping-bag"></i>
             <span class="footer-text">Магаз</span>
         </div>
         <div class="footer-item">
-            <i class="footer-icon feather" data-feather="gift" style="opacity: 0.5;"></i>
+            <i class="footer-icon feather" data-feather="gift"></i>
             <span class="footer-text">Развлечения</span>
         </div>
         <div class="footer-item">
-            <i class="footer-icon feather" data-feather="user" style="opacity: 0.5;"></i>
+            <i class="footer-icon feather" data-feather="user"></i>
             <span class="footer-text">Профиль</span>
         </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         // Инициализация
         let coins = 0;
@@ -258,50 +286,76 @@
         feather.replace();
 
         // Telegram MiniApp инициализация
-        if (window.Telegram && window.Telegram.WebApp) {
-            const webApp = Telegram.WebApp;
-            webApp.expand();
-            webApp.setHeaderColor('#1C1C1E');
-            webApp.setBackgroundColor('#1C1C1E');
-            
-            // Получаем данные пользователя
-            const user = webApp.initDataUnsafe.user;
-            
-            if (user) {
-                // Устанавливаем имя пользователя
-                usernameElement.textContent = user.first_name || 'Гость';
+        function initTelegramWebApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const webApp = Telegram.WebApp;
                 
-                // Устанавливаем аватар
-                if (user.photo_url) {
-                    avatarImg.src = user.photo_url;
-                } else {
-                    // Fallback аватар
-                    avatarBox.style.backgroundColor = '#5ac8fa';
-                    avatarImg.style.display = 'none';
-                    const initials = document.createElement('div');
-                    initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
-                    initials.style.color = 'white';
-                    initials.style.fontSize = '24px';
-                    initials.style.fontWeight = 'bold';
-                    avatarBox.appendChild(initials);
+                // Развернуть приложение на весь экран
+                webApp.expand();
+                
+                // Установить цвета
+                webApp.setHeaderColor('#1C1C1E');
+                webApp.setBackgroundColor('#1C1C1E');
+                
+                // Получаем данные пользователя
+                const user = webApp.initDataUnsafe.user;
+                
+                if (user) {
+                    // Устанавливаем имя пользователя
+                    usernameElement.textContent = user.first_name || 'Гость';
+                    
+                    // Устанавливаем аватар
+                    if (user.photo_url) {
+                        avatarImg.src = user.photo_url;
+                        avatarImg.onerror = function() {
+                            showFallbackAvatar(user);
+                        };
+                    } else {
+                        showFallbackAvatar(user);
+                    }
                 }
+                
+                // Показать кнопку назад, если нужно
+                webApp.BackButton.show();
+                webApp.BackButton.onClick(function() {
+                    webApp.close();
+                });
+                
+                return true;
             }
-        } else {
+            return false;
+        }
+
+        function showFallbackAvatar(user) {
+            avatarImg.style.display = 'none';
+            avatarBox.style.backgroundColor = '#5ac8fa';
+            avatarBox.style.display = 'flex';
+            avatarBox.style.alignItems = 'center';
+            avatarBox.style.justifyContent = 'center';
+            
+            const initials = document.createElement('div');
+            initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
+            initials.style.color = 'white';
+            initials.style.fontSize = '24px';
+            initials.style.fontWeight = 'bold';
+            
+            // Очищаем предыдущие элементы
+            while (avatarBox.firstChild) {
+                avatarBox.removeChild(avatarBox.firstChild);
+            }
+            
+            avatarBox.appendChild(initials);
+        }
+
+        // Инициализируем Telegram WebApp или показываем fallback
+        if (!initTelegramWebApp()) {
             // Fallback для тестирования вне Telegram
+            usernameElement.textContent = 'Тестовый пользователь';
             avatarImg.src = 'https://via.placeholder.com/50';
+            avatarImg.onerror = function() {
+                showFallbackAvatar({ first_name: 'Т' });
+            };
         }
-
-        // Плавная перезагрузка гифки без дерганий
-        function reloadGif() {
-            duckElement.style.opacity = 0;
-            setTimeout(() => {
-                duckElement.src = duckElement.src.split('?')[0] + '?t=' + Date.now();
-                duckElement.style.opacity = 1;
-            }, 50);
-        }
-
-        // Автоперезагрузка гифки каждые 5 сек
-        setInterval(reloadGif, 5000);
 
         // Обработчик клика
         duckElement.addEventListener('click', function() {
@@ -317,6 +371,22 @@
                 balanceWord.style.opacity = '1';
                 balanceNumber.style.fontSize = document.documentElement.clientWidth < 500 ? '8vw' : '48px';
             }
+        });
+
+        // Обработчики для нижнего меню
+        const footerItems = document.querySelectorAll('.footer-item');
+        footerItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Удаляем активные классы у всех элементов
+                footerItems.forEach(i => {
+                    i.querySelector('.footer-icon').classList.remove('active');
+                    i.querySelector('.footer-text').classList.remove('active');
+                });
+                
+                // Добавляем активные классы к текущему элементу
+                this.querySelector('.footer-icon').classList.add('active');
+                this.querySelector('.footer-text').classList.add('active');
+            });
         });
     </script>
 </body>
