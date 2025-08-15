@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Развлечения уточки</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
+    <title>Друзья</title>
     <style>
         @font-face {
             font-family: 'Avenir Next';
@@ -25,61 +24,22 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            background-color: #5ac8fa;
+            background-color: #1C1C1E;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             overflow: hidden;
             font-family: 'Avenir Next', -apple-system, sans-serif;
             position: relative;
             touch-action: manipulation;
         }
 
-        /* Градиенты сверху и снизу */
-        .top-gradient {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 30%;
-            background: linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0.7) 0%,
-                rgba(90, 200, 250, 0) 100%
-            );
-            z-index: 1;
-        }
-
-        .bottom-gradient {
-            position: absolute;
-            bottom: 80px;
-            left: 0;
-            width: 100%;
-            height: 30%;
-            background: linear-gradient(
-                to top,
-                rgba(0, 122, 255, 0.5) 0%,
-                rgba(90, 200, 250, 0) 100%
-            );
-            z-index: 1;
-        }
-
         /* Верхняя панель */
-        .top-panel-container {
-            position: absolute;
-            top: 15px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            z-index: 2;
-        }
-
         .top-panel {
             display: flex;
             align-items: center;
+            padding: 15px;
             width: calc(100% - 30px);
-            max-width: 400px;
+            transition: opacity 0.2s ease;
         }
 
         /* Квадрат с аватаркой */
@@ -87,7 +47,6 @@
             width: 50px;
             height: 50px;
             background: rgba(44, 44, 46, 1);
-            z-index: 3;
             border-radius: 12px;
             overflow: hidden;
             display: flex;
@@ -102,363 +61,598 @@
             object-fit: cover;
         }
 
-        /* Текст "Развлечения" */
-        .fun-title {
+        /* Текст "Друзья" */
+        .friends-title {
             font-size: 24px;
             font-weight: 700;
             color: white;
-            opacity: 0.9;
             margin-left: 10px;
             flex-grow: 1;
         }
 
+        /* Крестик закрытия */
+        .close-button {
+            width: 30px;
+            height: 30px;
+            opacity: 0.7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close-button::before,
+        .close-button::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 2px;
+            background-color: white;
+        }
+
+        .close-button::before {
+            transform: rotate(45deg);
+        }
+
+        .close-button::after {
+            transform: rotate(-45deg);
+        }
+
         /* Основное содержимое */
         .content {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            height: calc(100% - 80px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 5;
-            padding: 70px 15px 0;
-            box-sizing: border-box;
-        }
-
-        /* Карточка развлечения */
-        .fun-card {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .fun-card-image {
-            width: 90px;
-            height: 90px;
-            border-radius: 10px;
-            overflow: hidden;
-            flex-shrink: 0;
-            margin-right: 15px;
-        }
-
-        .fun-card-content {
             flex: 1;
-        }
-
-        .fun-card-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
-            margin: 0 0 5px;
-        }
-
-        .fun-card-description {
-            font-size: 14px;
-            color: white;
-            opacity: 0.7;
-            margin: 0;
-            line-height: 1.3;
-        }
-
-        /* Фиолетовая карточка друзей */
-        .friends-card {
-            width: 100%;
-            background: linear-gradient(
-                to bottom,
-                #af52de 0%,
-                #5856d6 100%
-            );
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        /* Модальное окно рулетки */
-        .roulette-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #1C1C1E;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding-bottom: 100px;
+            transition: opacity 0.2s ease;
         }
 
-        .roulette-modal.open {
-            opacity: 1;
-            visibility: visible;
+        .duck-container {
+            width: 55vw;
+            height: 55vw;
+            max-width: 220px;
+            max-height: 220px;
+            margin-bottom: 20px;
         }
 
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 28px;
-            color: white;
-            opacity: 0.7;
-            z-index: 101;
-        }
-
-        .roulette-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            height: 250px;
-            margin-bottom: 30px;
-            overflow: hidden;
-        }
-
-        .roulette-track {
-            display: flex;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: transform 0.1s linear;
-        }
-
-        .roulette-slot {
-            width: 120px;
-            height: 120px;
-            margin: 0 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 80px;
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-
-        .roulette-slot img {
+        .duck-gif {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
 
-        .roulette-center {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            border: 2px solid rgba(255, 255, 255, 0);
-            border-radius: 12px;
-            pointer-events: none;
-            z-index: 2;
+        .no-friends-text {
+            font-size: 20px;
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
         }
 
-        .spin-btn {
+        .invite-text {
+            font-size: 16px;
+            color: white;
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        /* Кнопка пригласить */
+        .invite-button {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             width: calc(100% - 40px);
-            max-width: 400px;
+            max-width: 360px;
             height: 50px;
-            background: #3A7BD5;
-            border: none;
-            border-radius: 12px;
+            background-color: #007AFF;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: white;
             font-size: 18px;
             font-weight: 600;
-            margin-top: 30px;
-            position: absolute;
-            bottom: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            z-index: 10;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.2s ease;
         }
 
-        .spin-btn:disabled {
-            opacity: 0.7;
+        .invite-button:active:not(:disabled) {
+            transform: translateX(-50%) scale(0.98);
         }
 
-        .spin-btn.collected {
-            background: #34C759;
+        /* Разделенные кнопки */
+        .split-buttons-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 360px;
+            height: 50px;
+            display: none;
+            justify-content: space-between;
+            z-index: 10;
         }
 
-        .spinner {
+        .split-button {
+            width: calc(50% - 5px);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 15px;
+            border: none;
+            outline: none;
+            transform: scale(0);
+            transition: transform 0.2s ease;
+        }
+
+        .request-button {
+            background-color: #007AFF;
+        }
+
+        .copy-button {
+            background-color: #34C759;
+        }
+
+        /* Поле поиска */
+        .search-container {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            height: 50px;
+            background-color: rgba(44, 44, 46, 1);
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            padding: 0 15px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 5;
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-family: 'Avenir Next', -apple-system, sans-serif;
+            font-size: 16px;
+            margin-left: 10px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-clear {
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Подвал */
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 80px;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 10;
+            opacity: 0.7;
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
             align-items: center;
-            padding: 0 10px;
-            box-sizing: border-box;
         }
 
-        .footer-item {
-            display: flex;
+        .search-clear::before,
+        .search-clear::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background-color: white;
+        }
+
+        .search-clear::before {
+            transform: rotate(45deg);
+        }
+
+        .search-clear::after {
+            transform: rotate(-45deg);
+        }
+
+        /* Иконка лупы */
+        .search-icon {
+            opacity: 0.4;
+            color: white;
+        }
+
+        /* Результаты поиска */
+        .search-result {
+            position: absolute;
+            top: 80px;
+            left: 15px;
+            right: 15px;
+            background: rgba(60, 60, 67, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 4;
+        }
+
+        /* Найденный пользователь */
+        .user-profile {
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex: 1;
-            min-width: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 6;
         }
 
-        .footer-icon {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 5px;
-            opacity: 0.7;
-        }
-
-        .footer-icon.active {
-            opacity: 1;
-        }
-
-        .footer-text {
-            color: white;
-            font-size: 12px;
-            font-weight: 500;
-            white-space: nowrap;
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 25px;
+            background: rgba(44, 44, 46, 1);
+            margin-bottom: 20px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-            text-align: center;
-            opacity: 0.7;
         }
 
-        .footer-text.active {
-            opacity: 1;
+        .user-name {
+            font-size: 22px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .send-request-btn {
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .send-request-btn.sent {
+            background-color: rgba(120, 120, 128, 0.36);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Белый ползунок */
+        .loading-bar {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 4px;
+            background-color: white;
+            border-radius: 2px;
+            display: none;
+            z-index: 7;
+            animation: loading 0.3s ease-out;
+        }
+
+        @keyframes loading {
+            0% { width: 0; opacity: 0; }
+            50% { width: 100px; opacity: 1; }
+            100% { width: 0; opacity: 0; }
         }
 
         @media (min-width: 500px) {
-            .fun-title {
+            .friends-title {
                 font-size: 28px;
             }
-            .fun-card-title {
-                font-size: 20px;
+            .no-friends-text {
+                font-size: 24px;
             }
-            .fun-card-description {
-                font-size: 15px;
+            .invite-text {
+                font-size: 18px;
             }
-            .footer {
-                padding: 0 20px;
+            .user-avatar {
+                width: 120px;
+                height: 120px;
+            }
+            .user-name {
+                font-size: 24px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="top-gradient"></div>
-    <div class="bottom-gradient"></div>
-    
-    <div class="top-panel-container">
-        <div class="top-panel">
-            <div class="avatar-box" id="avatarBox">
-                <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
-            </div>
-            <div class="fun-title">Развлечения</div>
+    <!-- Верхняя панель -->
+    <div class="top-panel" id="topPanel">
+        <div class="avatar-box" id="avatarBox">
+            <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
         </div>
+        <div class="friends-title">Друзья</div>
+        <div class="close-button" id="closeButton"></div>
     </div>
     
-    <div class="content">
-        <!-- Карточка рулетки -->
-        <div class="fun-card" id="rouletteCard">
-            <div class="fun-card-image">
-                <img src="https://media.tenor.com/tZc3nOnqpF8AAAAi/utya-utya-duck.gif" style="width:100%;height:100%;object-fit:cover;">
-            </div>
-            <div class="fun-card-content">
-                <h3 class="fun-card-title">Ежедневная рулетка</h3>
-                <p class="fun-card-description">Укрась свой день бесплатной рулеткой - испытай удачу и получи ценные призы!</p>
-            </div>
-        </div>
-        
-        <!-- Фиолетовая карточка друзей -->
-        <div class="friends-card">
-            <div class="fun-card-content" style="flex:2;">
-                <h3 class="fun-card-title">Друзья</h3>
-                <p class="fun-card-description">Заводите друзей и следите за их успехами!</p>
-            </div>
-            <div class="fun-card-image" style="margin-right:0;margin-left:15px;">
-                <img src="https://media.tenor.com/q5kJ8lrjhFYAAAAi/utya.gif" style="width:100%;height:100%;object-fit:cover;">
-            </div>
-        </div>
-        
-        <!-- Карточка заданий -->
-        <div class="fun-card">
-            <div class="fun-card-image">
-                <img src="https://media.tenor.com/8VtLvAR4l5YAAAAi/utya-utya-duck.gif" style="width:100%;height:100%;object-fit:cover;">
-            </div>
-            <div class="fun-card-content">
-                <h3 class="fun-card-title">Задания</h3>
-                <p class="fun-card-description">Выполняйте задания и получайте бонусы!</p>
-            </div>
-        </div>
+    <!-- Поле поиска -->
+    <div class="search-container" id="searchContainer">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" class="search-input" placeholder="Поиск по имени..." id="searchInput">
+        <div class="search-clear" id="searchClear"></div>
     </div>
     
-    <!-- Модальное окно рулетки -->
-    <div class="roulette-modal" id="rouletteModal">
-        <i class="feather close-btn" data-feather="x" id="closeRoulette"></i>
-        
-        <div class="roulette-container">
-            <div class="roulette-track" id="rouletteTrack"></div>
-            <div class="roulette-center"></div>
+    <!-- Результаты поиска -->
+    <div class="search-result" id="searchResult">
+        Ничего не найдено
+    </div>
+    
+    <!-- Основное содержимое -->
+    <div class="content" id="content">
+        <div class="duck-container">
+            <img src="https://media.tenor.com/q5kJ8lrjhFYAAAAi/utya.gif" class="duck-gif">
         </div>
-        
-        <button class="spin-btn" id="spinBtn">
-            <span id="spinText">Крутить</span>
-            <div class="spinner" id="spinner"></div>
+        <div class="no-friends-text">У вас нет друзей</div>
+        <div class="invite-text">Отличный повод завести!</div>
+    </div>
+    
+    <!-- Профиль пользователя -->
+    <div class="user-profile" id="userProfile">
+        <div class="user-avatar" id="userAvatar">
+            <img src="" style="width:100%;height:100%;object-fit:cover;">
+        </div>
+        <div class="user-name" id="userName">Ноунейм</div>
+        <button class="send-request-btn" id="sendRequestBtn">Отправить запрос</button>
+        <div class="close-button" id="profileCloseButton" style="position:absolute;top:25px;right:20px;"></div>
+    </div>
+    
+    <!-- Белый ползунок -->
+    <div class="loading-bar" id="loadingBar"></div>
+    
+    <!-- Основная кнопка -->
+    <button class="invite-button" id="inviteButton">
+        Пригласить друга
+    </button>
+    
+    <!-- Разделенные кнопки -->
+    <div class="split-buttons-container" id="splitButtons">
+        <button class="split-button request-button" id="requestButton">
+            Запрос
+        </button>
+        <button class="split-button copy-button" id="copyButton">
+            Ссылка
         </button>
     </div>
-    
-    <div class="footer">
-        <div class="footer-item" onclick="navigateTo('farm')">
-            <i class="footer-icon feather" data-feather="dollar-sign"></i>
-            <span class="footer-text">Ферма</span>
-        </div>
-        <div class="footer-item" onclick="navigateTo('shop')">
-            <i class="footer-icon feather" data-feather="shopping-bag"></i>
-            <span class="footer-text">Магаз</span>
-        </div>
-        <div class="footer-item">
-            <i class="footer-icon feather active" data-feather="gift"></i>
-            <span class="footer-text active">Развлечения</span>
-        </div>
-        <div class="footer-item" onclick="navigateTo('profile')">
-            <i class="footer-icon feather" data-feather="user"></i>
-            <span class="footer-text">Профиль</span>
-        </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        // Инициализация feather icons
-        feather.replace();
+        // Элементы
+        const topPanel = document.getElementById('topPanel');
+        const content = document.getElementById('content');
+        const inviteButton = document.getElementById('inviteButton');
+        const splitButtons = document.getElementById('splitButtons');
+        const requestButton = document.getElementById('requestButton');
+        const copyButton = document.getElementById('copyButton');
+        const searchContainer = document.getElementById('searchContainer');
+        const searchInput = document.getElementById('searchInput');
+        const searchClear = document.getElementById('searchClear');
+        const searchResult = document.getElementById('searchResult');
+        const closeButton = document.getElementById('closeButton');
+        const userProfile = document.getElementById('userProfile');
+        const userAvatar = document.getElementById('userAvatar').querySelector('img');
+        const userName = document.getElementById('userName');
+        const sendRequestBtn = document.getElementById('sendRequestBtn');
+        const profileCloseButton = document.getElementById('profileCloseButton');
+        const loadingBar = document.getElementById('loadingBar');
 
-        // Telegram MiniApp инициализация
+        // Тестовые данные пользователей (в реальном приложении будет запрос к API)
+        const testUsers = [
+            { username: "utya_lover", first_name: "Уткофан", photo_url: "https://i.imgur.com/JqYeYn7.jpg" },
+            { username: "duck_friend", first_name: "Кряк", photo_url: "https://i.imgur.com/VY3qElI.jpg" },
+            { username: "quack_master", first_name: "Крякер", photo_url: "" }
+        ];
+
+        // Обработчик кнопки "Пригласить друга"
+        inviteButton.addEventListener('click', function() {
+            // Быстро уменьшаем основную кнопку
+            inviteButton.style.transform = 'translateX(-50%) scale(0)';
+            
+            // Показываем и анимируем разделенные кнопки
+            setTimeout(() => {
+                splitButtons.style.display = 'flex';
+                
+                // Анимация появления кнопок
+                setTimeout(() => {
+                    requestButton.style.transform = 'scale(1)';
+                    copyButton.style.transform = 'scale(1)';
+                }, 10);
+            }, 200);
+        });
+
+        // Обработчик кнопки "Запрос"
+        requestButton.addEventListener('click', function() {
+            // Скрываем верхнюю панель
+            topPanel.style.opacity = '0';
+            
+            // Показываем поле поиска
+            searchContainer.style.display = 'flex';
+            setTimeout(() => {
+                searchContainer.style.opacity = '1';
+            }, 10);
+            
+            // Фокус на поле ввода
+            setTimeout(() => {
+                searchInput.focus();
+            }, 200);
+        });
+
+        // Обработчик кнопки "Ссылка"
+        copyButton.addEventListener('click', function() {
+            // Копируем ссылку в буфер обмена
+            navigator.clipboard.writeText('https://t.me/utya_gbot');
+            
+            // Визуальный фидбэк
+            copyButton.textContent = 'Скопировано!';
+            setTimeout(() => {
+                copyButton.textContent = 'Ссылка';
+            }, 2000);
+        });
+
+        // Очистка поля поиска и возврат к исходному состоянию
+        searchClear.addEventListener('click', function() {
+            searchInput.value = '';
+            searchContainer.style.opacity = '0';
+            hideSearchResult();
+            
+            setTimeout(() => {
+                searchContainer.style.display = 'none';
+                topPanel.style.opacity = '1';
+            }, 200);
+        });
+
+        // Поиск пользователя
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                if (searchTerm.length === 0) return;
+                
+                // Имитация поиска (в реальном приложении будет запрос к API)
+                setTimeout(() => {
+                    const foundUser = testUsers.find(user => 
+                        user.username.toLowerCase().includes(searchTerm) || 
+                        (user.first_name && user.first_name.toLowerCase().includes(searchTerm))
+                    );
+                    
+                    if (foundUser) {
+                        // Пользователь найден
+                        showLoadingBar();
+                        hideContent();
+                        
+                        setTimeout(() => {
+                            showUserProfile(foundUser);
+                        }, 300);
+                    } else {
+                        // Пользователь не найден
+                        showNotFound();
+                    }
+                }, 1000);
+            }
+        });
+
+        // Отправка запроса в друзья
+        sendRequestBtn.addEventListener('click', function() {
+            if (navigator.vibrate) navigator.vibrate(50);
+            
+            sendRequestBtn.textContent = 'Запрос отправлен';
+            sendRequestBtn.classList.add('sent');
+            sendRequestBtn.disabled = true;
+        });
+
+        // Закрытие профиля пользователя
+        profileCloseButton.addEventListener('click', function() {
+            hideUserProfile();
+            showContent();
+        });
+
+        // Закрытие страницы
+        closeButton.addEventListener('click', function() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.close();
+            } else {
+                window.history.back();
+            }
+        });
+
+        // Функции для управления UI
+        function showLoadingBar() {
+            loadingBar.style.display = 'block';
+            setTimeout(() => {
+                loadingBar.style.display = 'none';
+            }, 300);
+        }
+
+        function hideContent() {
+            content.style.opacity = '0';
+            setTimeout(() => {
+                content.style.display = 'none';
+            }, 200);
+        }
+
+        function showContent() {
+            content.style.display = 'flex';
+            setTimeout(() => {
+                content.style.opacity = '1';
+            }, 10);
+        }
+
+        function showUserProfile(user) {
+            // Заполняем данные пользователя
+            userName.textContent = user.first_name || user.username || 'Ноунейм';
+            
+            if (user.photo_url) {
+                userAvatar.src = user.photo_url;
+                userAvatar.style.display = 'block';
+            } else {
+                userAvatar.style.display = 'none';
+                document.getElementById('userAvatar').style.backgroundColor = '#5ac8fa';
+                const initials = document.createElement('div');
+                initials.textContent = (user.first_name || user.username || 'Н').charAt(0).toUpperCase();
+                initials.style.color = 'white';
+                initials.style.fontSize = '48px';
+                initials.style.fontWeight = 'bold';
+                initials.style.display = 'flex';
+                initials.style.alignItems = 'center';
+                initials.style.justifyContent = 'center';
+                initials.style.height = '100%';
+                
+                while (document.getElementById('userAvatar').firstChild) {
+                    document.getElementById('userAvatar').removeChild(document.getElementById('userAvatar').firstChild);
+                }
+                
+                document.getElementById('userAvatar').appendChild(initials);
+            }
+            
+            // Сбрасываем состояние кнопки
+            sendRequestBtn.textContent = 'Отправить запрос';
+            sendRequestBtn.classList.remove('sent');
+            sendRequestBtn.disabled = false;
+            
+            // Показываем профиль
+            userProfile.style.display = 'flex';
+        }
+
+        function hideUserProfile() {
+            userProfile.style.display = 'none';
+        }
+
+        function showNotFound() {
+            searchResult.textContent = 'Ничего не найдено';
+            searchResult.style.display = 'block';
+            setTimeout(() => {
+                searchResult.style.opacity = '1';
+            }, 10);
+            
+            setTimeout(() => {
+                hideSearchResult();
+            }, 2000);
+        }
+
+        function hideSearchResult() {
+            searchResult.style.opacity = '0';
+            setTimeout(() => {
+                searchResult.style.display = 'none';
+            }, 300);
+        }
+
+        // Инициализация Telegram WebApp
         function initTelegramWebApp() {
             if (window.Telegram && window.Telegram.WebApp) {
                 const webApp = Telegram.WebApp;
@@ -513,343 +707,9 @@
             avatarBox.appendChild(initials);
         }
 
-        function navigateTo(page) {
-            if (navigator.vibrate) {
-                navigator.vibrate(10);
-            }
-            console.log('Переход на страницу:', page);
-        }
-
-        // Рулетка
-        const rouletteCard = document.getElementById('rouletteCard');
-        const rouletteModal = document.getElementById('rouletteModal');
-        const closeRoulette = document.getElementById('closeRoulette');
-        const rouletteTrack = document.getElementById('rouletteTrack');
-        const spinBtn = document.getElementById('spinBtn');
-        const spinText = document.getElementById('spinText');
-        const spinner = document.getElementById('spinner');
-
-        // Массив предметов рулетки
-        const rouletteItems = [
-            { 
-                type: 'emoji', 
-                value: '⚡️', 
-                chance: 75,
-                name: 'Энергия',
-                color: 'rgba(255, 204, 0, 0.5)'
-            },
-            { 
-                type: 'emoji', 
-                value: '💎', 
-                chance: 20,
-                name: 'Кристалл',
-                color: 'rgba(0, 122, 255, 0.5)'
-            },
-            { 
-                type: 'image', 
-                value: 'https://media.tenor.com/6Tfvy0WhhtUAAAAi/jelly-jelly-rabbit.gif', 
-                chance: 1.5,
-                name: 'Кролик',
-                color: 'rgba(175, 82, 222, 0.5)'
-            },
-            { 
-                type: 'image', 
-                value: 'https://media.tenor.com/TpcVXqjEPNsAAAAi/pepe-the-frog-pepe-heart.gif', 
-                chance: 1.5,
-                name: 'Сердечный Пепе',
-                color: 'rgba(175, 82, 222, 0.5)'
-            },
-            { 
-                type: 'image', 
-                value: 'https://media.tenor.com/7YnJqdA46gwAAAAi/bluestud-bruh-brrr-spinning.gif', 
-                chance: 1.5,
-                name: 'Вращающийся',
-                color: 'rgba(175, 82, 222, 0.5)'
-            },
-            { 
-                type: 'image', 
-                value: 'https://media.tenor.com/2uARypeDJUYAAAAi/plush-pepe-telegram-pepe.gif', 
-                chance: 1.5,
-                name: 'Плюшевый Пепе',
-                color: 'rgba(175, 82, 222, 0.5)'
-            },
-            { 
-                type: 'image', 
-                value: 'https://media.tenor.com/ZYEOT144zlMAAAAi/emojis-telegram.gif', 
-                chance: 0.8,
-                name: 'Редкий стикер',
-                color: 'rgba(175, 82, 222, 0.5)'
-            },
-            { 
-                type: 'image', 
-                value: 'https://media.tenor.com/vsqTGV-a5boAAAAi/star-skull.gif', 
-                chance: 0.7,
-                name: 'Легендарный череп',
-                color: 'rgba(175, 82, 222, 0.5)'
-            }
-        ];
-
-        // Генерация последовательности для рулетки (200 элементов)
-        function generateRouletteSequence() {
-            const sequence = [];
-            const totalItems = 200;
-            
-            // Определяем выигрышную позицию (предпоследнюю)
-            const winPosition = totalItems - 2;
-            
-            // Заполняем всю последовательность случайными элементами
-            for (let i = 0; i < totalItems; i++) {
-                if (i === winPosition) {
-                    // Для выигрышной позиции выбираем элемент по шансам
-                    sequence.push(getRandomItem());
-                } else {
-                    // Для остальных - полностью случайные
-                    const randomIndex = Math.floor(Math.random() * rouletteItems.length);
-                    sequence.push(rouletteItems[randomIndex]);
-                }
-            }
-            
-            return sequence;
-        }
-
-        // Получение случайного предмета с учетом шансов
-        function getRandomItem() {
-            const totalChance = rouletteItems.reduce((sum, item) => sum + item.chance, 0);
-            let random = Math.random() * totalChance;
-            
-            for (const item of rouletteItems) {
-                if (random < item.chance) {
-                    return item;
-                }
-                random -= item.chance;
-            }
-            
-            return rouletteItems[0]; // fallback
-        }
-
-        // Создание элементов рулетки
-        function createRouletteItems(sequence) {
-            rouletteTrack.innerHTML = '';
-            
-            sequence.forEach((item, index) => {
-                const slot = document.createElement('div');
-                slot.className = 'roulette-slot';
-                slot.dataset.index = index;
-                slot.dataset.item = JSON.stringify(item);
-                
-                if (item.type === 'emoji') {
-                    slot.textContent = item.value;
-                } else {
-                    const img = document.createElement('img');
-                    img.src = item.value;
-                    slot.appendChild(img);
-                }
-                
-                rouletteTrack.appendChild(slot);
-            });
-            
-            // Центрируем первые три элемента
-            updateRoulettePosition(0);
-        }
-
-        // Обновление позиции рулетки
-        function updateRoulettePosition(currentIndex) {
-            const slotWidth = 120 + 40; // width + margin
-            const centerOffset = Math.floor(window.innerWidth / 2) - slotWidth * 1.5;
-            rouletteTrack.style.transform = `translateX(${centerOffset - (currentIndex * slotWidth)}px)`;
-        }
-
-        // Анимация вращения рулетки
-        let isSpinning = false;
-        let spinAnimation;
-        let currentSequence = [];
-        let winItem = null;
-        let winIndex = 0;
-
-        function spinRoulette() {
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            spinBtn.disabled = true;
-            spinText.style.display = 'none';
-            spinner.style.display = 'block';
-            
-            // Генерируем новую последовательность
-            currentSequence = generateRouletteSequence();
-            createRouletteItems(currentSequence);
-            
-            // Определяем выигрышный предмет (предпоследний в последовательности)
-            winIndex = currentSequence.length - 2;
-            winItem = currentSequence[winIndex];
-            
-            const totalItems = currentSequence.length;
-            const spinDuration = 3000; // 3 секунды
-            const startTime = Date.now();
-            let lastFrameTime = startTime;
-            
-            // Начальная позиция (первые три элемента)
-            let currentIndex = 0;
-            updateRoulettePosition(currentIndex);
-            
-            // Функция анимации
-            function animate() {
-                const now = Date.now();
-                const elapsed = now - startTime;
-                const progress = elapsed / spinDuration;
-                
-                if (progress >= 1) {
-                    // Анимация завершена
-                    finishSpin();
-                    return;
-                }
-                
-                // Ускорение/замедление
-                let speed;
-                if (progress < 0.2) {
-                    // Разгон
-                    speed = easeOutQuad(progress / 0.2) * 0.5 + 0.5;
-                } else if (progress > 0.8) {
-                    // Торможение с учетом шанса выпадения
-                    const slowFactor = 1 - (winItem.chance / 100);
-                    speed = easeInQuad((1 - progress) / 0.2) * 0.3 * slowFactor;
-                } else {
-                    // Максимальная скорость
-                    speed = 1;
-                }
-                
-                // Обновляем позицию
-                const deltaTime = now - lastFrameTime;
-                lastFrameTime = now;
-                
-                currentIndex += speed * (deltaTime / 50);
-                updateRoulettePosition(Math.floor(currentIndex));
-                
-                // Вибрация в конце
-                if (progress > 0.95 && navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                spinAnimation = requestAnimationFrame(animate);
-            }
-            
-            // Запускаем анимацию
-            spinAnimation = requestAnimationFrame(animate);
-        }
-
-        // Функции для плавного ускорения/замедления
-        function easeOutQuad(t) {
-            return t * (2 - t);
-        }
-        
-        function easeInQuad(t) {
-            return t * t;
-        }
-
-        // Завершение вращения
-        function finishSpin() {
-            cancelAnimationFrame(spinAnimation);
-            
-            // Показываем только выигрышный элемент
-            const slots = document.querySelectorAll('.roulette-slot');
-            slots.forEach((slot, index) => {
-                const slotIndex = parseInt(slot.dataset.index);
-                
-                if (slotIndex !== winIndex) {
-                    setTimeout(() => {
-                        slot.style.opacity = '0';
-                        slot.style.transform = 'scale(0)';
-                    }, 100);
-                } else {
-                    // Увеличиваем выигрышный элемент
-                    setTimeout(() => {
-                        slot.style.transform = 'scale(1.2)';
-                    }, 300);
-                }
-            });
-            
-            // Меняем кнопку на "Забрать"
-            spinText.textContent = 'Забрать';
-            spinText.style.display = 'block';
-            spinner.style.display = 'none';
-            spinBtn.classList.add('collected');
-            spinBtn.disabled = false;
-            isSpinning = false;
-            
-            // Разрешаем закрытие
-            spinBtn.onclick = collectPrize;
-        }
-
-        // Сбор приза
-        function collectPrize() {
-            if (isSpinning) return;
-            
-            // Плавное закрытие модального окна
-            rouletteModal.classList.remove('open');
-            
-            // Возвращаем кнопку в исходное состояние
-            setTimeout(() => {
-                spinText.textContent = 'Крутить';
-                spinBtn.classList.remove('collected');
-                spinBtn.onclick = spinRoulette;
-                
-                // Восстанавливаем все элементы
-                const slots = document.querySelectorAll('.roulette-slot');
-                slots.forEach(slot => {
-                    slot.style.opacity = '1';
-                    slot.style.transform = 'scale(1)';
-                });
-            }, 300);
-        }
-
-        // Обработчики событий
-        rouletteCard.addEventListener('click', () => {
-            rouletteModal.classList.add('open');
-            
-            // Генерируем начальную последовательность
-            currentSequence = generateRouletteSequence();
-            createRouletteItems(currentSequence);
-        });
-
-        closeRoulette.addEventListener('click', () => {
-            rouletteModal.classList.remove('open');
-            
-            // Остановка анимации если была
-            if (isSpinning) {
-                cancelAnimationFrame(spinAnimation);
-                isSpinning = false;
-                spinBtn.disabled = false;
-                spinText.style.display = 'block';
-                spinner.style.display = 'none';
-                
-                // Восстанавливаем кнопку
-                spinText.textContent = 'Крутить';
-                spinBtn.classList.remove('collected');
-                spinBtn.onclick = spinRoulette;
-            }
-        });
-
-        spinBtn.addEventListener('click', spinRoulette);
-
-        // Обработчики меню
-        const footerItems = document.querySelectorAll('.footer-item');
-        footerItems.forEach(item => {
-            item.addEventListener('click', function() {
-                if (navigator.vibrate) {
-                    navigator.vibrate(10);
-                }
-                
-                footerItems.forEach(i => {
-                    i.querySelector('.footer-icon').classList.remove('active');
-                    i.querySelector('.footer-text').classList.remove('active');
-                });
-                
-                this.querySelector('.footer-icon').classList.add('active');
-                this.querySelector('.footer-text').classList.add('active');
-            });
-        });
-
         // Инициализация
         if (!initTelegramWebApp()) {
+            // Тестовые данные, если не в Telegram
             const avatarImg = document.getElementById('avatarImg');
             avatarImg.src = 'https://via.placeholder.com/50';
             avatarImg.onerror = function() {
