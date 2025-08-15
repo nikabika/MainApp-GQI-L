@@ -78,6 +78,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            cursor: pointer;
         }
 
         .close-button::before,
@@ -158,6 +159,7 @@
             outline: none;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .invite-button:active:not(:disabled) {
@@ -192,6 +194,7 @@
             outline: none;
             transform: scale(0);
             transition: transform 0.2s ease;
+            cursor: pointer;
         }
 
         .request-button {
@@ -241,6 +244,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            cursor: pointer;
         }
 
         .search-clear::before,
@@ -288,6 +292,7 @@
             align-items: center;
             padding: 10px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
         }
 
         .search-user:last-child {
@@ -368,6 +373,7 @@
             font-size: 18px;
             font-weight: 600;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .send-request-btn.sent {
@@ -432,7 +438,7 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="text" class="search-input" placeholder="Поиск по имени..." id="searchInput">
+        <input type="text" class="search-input" placeholder="Поиск по имени или @username..." id="searchInput">
         <div class="search-clear" id="searchClear"></div>
     </div>
     
@@ -499,51 +505,89 @@
         const profileCloseButton = document.getElementById('profileCloseButton');
         const loadingBar = document.getElementById('loadingBar');
 
-        // Хранилище пользователей (в реальном приложении будет запрос к API)
-        let usersStorage = [];
+        // Хранилище пользователей
+        let activePlayers = [];
         let currentUser = null;
+        let webApp = null;
 
-        // Инициализация хранилища пользователей
-        function initUsersStorage() {
-            // Проверяем, есть ли сохраненные пользователи в localStorage
-            const savedUsers = localStorage.getItem('botUsers');
-            if (savedUsers) {
-                usersStorage = JSON.parse(savedUsers);
-            } else {
-                // Начальные тестовые данные
-                usersStorage = [
-                    { 
-                        id: 1, 
-                        username: "utya_lover", 
-                        first_name: "Уткофан", 
-                        last_name: "", 
-                        photo_url: "https://i.imgur.com/JqYeYn7.jpg",
-                        added: false 
-                    },
-                    { 
-                        id: 2, 
-                        username: "duck_friend", 
-                        first_name: "Кряк", 
-                        last_name: "Уткин", 
-                        photo_url: "https://i.imgur.com/VY3qElI.jpg",
-                        added: false 
-                    },
-                    { 
-                        id: 3, 
-                        username: "quack_master", 
-                        first_name: "Крякер", 
-                        last_name: "", 
-                        photo_url: "",
-                        added: false 
-                    }
-                ];
-                saveUsersToStorage();
+        // Инициализация Telegram WebApp
+        function initTelegramWebApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                webApp = Telegram.WebApp;
+                
+                // Инициализация WebApp
+                webApp.expand();
+                webApp.enableClosingConfirmation();
+                webApp.setHeaderColor('#1C1C1E');
+                webApp.setBackgroundColor('#1C1C1E');
+                
+                // Получаем данные пользователя
+                const user = webApp.initDataUnsafe.user;
+                
+                if (user) {
+                    // Устанавливаем аватар
+                    setUserAvatar(user);
+                    
+                    // Добавляем текущего пользователя в хранилище
+                    addCurrentUserToStorage(user);
+                    
+                    // Загружаем активных игроков
+                    loadActivePlayers();
+                }
+                
+                // Настройка кнопки "Назад"
+                webApp.BackButton.show();
+                webApp.BackButton.onClick(handleBackButton);
+                
+                return true;
             }
+            return false;
         }
 
-        // Сохранение пользователей в localStorage
-        function saveUsersToStorage() {
-            localStorage.setItem('botUsers', JSON.stringify(usersStorage));
+        // Загрузка активных игроков (имитация запроса к серверу)
+        function loadActivePlayers() {
+            // В реальном приложении здесь будет fetch запрос к вашему бекенду
+            setTimeout(() => {
+                // Получаем сохраненных пользователей из localStorage
+                const savedPlayers = localStorage.getItem('telegramActivePlayers');
+                if (savedPlayers) {
+                    activePlayers = JSON.parse(savedPlayers);
+                } else {
+                    // Тестовые данные, если нет сохраненных игроков
+                    activePlayers = [
+                        { 
+                            id: 1, 
+                            username: "mimimu", 
+                            first_name: "Мимими", 
+                            last_name: "", 
+                            photo_url: "https://i.imgur.com/JqYeYn7.jpg",
+                            added: false 
+                        },
+                        { 
+                            id: 2, 
+                            username: "duck_friend", 
+                            first_name: "Кряк", 
+                            last_name: "Уткин", 
+                            photo_url: "https://i.imgur.com/VY3qElI.jpg",
+                            added: false 
+                        },
+                        { 
+                            id: 3, 
+                            username: "quack_master", 
+                            first_name: "Крякер", 
+                            last_name: "", 
+                            photo_url: "",
+                            added: false 
+                        }
+                    ];
+                    saveActivePlayers();
+                }
+            }, 500);
+        }
+
+        // Сохранение активных игроков
+        function saveActivePlayers() {
+            localStorage.setItem('telegramActivePlayers', JSON.stringify(activePlayers));
         }
 
         // Добавление текущего пользователя в хранилище
@@ -551,10 +595,10 @@
             if (!user) return;
             
             // Проверяем, есть ли уже такой пользователь
-            const userExists = usersStorage.some(u => u.id === user.id);
+            const userExists = activePlayers.some(u => u.id === user.id);
             
             if (!userExists) {
-                usersStorage.push({
+                activePlayers.push({
                     id: user.id,
                     username: user.username || '',
                     first_name: user.first_name || '',
@@ -562,10 +606,50 @@
                     photo_url: user.photo_url || '',
                     added: false
                 });
-                saveUsersToStorage();
+                saveActivePlayers();
             }
             
             currentUser = user;
+        }
+
+        // Установка аватара пользователя
+        function setUserAvatar(user) {
+            const avatarImg = document.getElementById('avatarImg');
+            const avatarBox = document.getElementById('avatarBox');
+            
+            if (user.photo_url) {
+                avatarImg.src = user.photo_url;
+                avatarImg.style.display = 'block';
+                avatarImg.onerror = function() {
+                    showFallbackAvatar(user);
+                };
+            } else {
+                showFallbackAvatar(user);
+            }
+        }
+
+        // Показать аватар с инициалами
+        function showFallbackAvatar(user) {
+            const avatarImg = document.getElementById('avatarImg');
+            const avatarBox = document.getElementById('avatarBox');
+            
+            avatarImg.style.display = 'none';
+            avatarBox.style.backgroundColor = '#5ac8fa';
+            avatarBox.style.display = 'flex';
+            avatarBox.style.alignItems = 'center';
+            avatarBox.style.justifyContent = 'center';
+            
+            const initials = document.createElement('div');
+            initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
+            initials.style.color = 'white';
+            initials.style.fontSize = '24px';
+            initials.style.fontWeight = 'bold';
+            
+            while (avatarBox.firstChild) {
+                avatarBox.removeChild(avatarBox.firstChild);
+            }
+            
+            avatarBox.appendChild(initials);
         }
 
         // Обработчик кнопки "Пригласить друга"
@@ -604,8 +688,12 @@
 
         // Обработчик кнопки "Ссылка"
         copyButton.addEventListener('click', function() {
-            // Вибрация
-            if (navigator.vibrate) navigator.vibrate(50);
+            // Вибрация в Telegram
+            if (webApp && webApp.HapticFeedback) {
+                webApp.HapticFeedback.impactOccurred('light');
+            } else if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
             
             // Копируем ссылку в буфер обмена
             navigator.clipboard.writeText('https://t.me/utya_gbot');
@@ -639,12 +727,13 @@
             }
             
             // Ищем пользователей
-            const foundUsers = usersStorage.filter(user => {
+            const foundUsers = activePlayers.filter(user => {
                 const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim().toLowerCase();
                 const username = user.username ? user.username.toLowerCase() : '';
                 
                 return fullName.includes(searchTerm) || 
-                       username.includes(searchTerm);
+                       username.includes(searchTerm) ||
+                       (searchTerm.startsWith('@') && username.includes(searchTerm.substring(1)));
             });
             
             if (foundUsers.length > 0) {
@@ -679,6 +768,13 @@
                 `;
                 
                 userElement.addEventListener('click', () => {
+                    // Вибрация при выборе пользователя
+                    if (webApp && webApp.HapticFeedback) {
+                        webApp.HapticFeedback.impactOccurred('light');
+                    } else if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                    
                     showLoadingBar();
                     hideContent();
                     
@@ -698,18 +794,25 @@
 
         // Отправка запроса в друзья
         sendRequestBtn.addEventListener('click', function() {
-            if (navigator.vibrate) navigator.vibrate(50);
+            // Вибрация
+            if (webApp && webApp.HapticFeedback) {
+                webApp.HapticFeedback.impactOccurred('medium');
+            } else if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
             
             sendRequestBtn.textContent = 'Запрос отправлен';
             sendRequestBtn.classList.add('sent');
             sendRequestBtn.disabled = true;
             
             // Обновляем статус в хранилище
-            const user = usersStorage.find(u => u.id === currentUser.id);
+            const user = activePlayers.find(u => u.id === currentUser.id);
             if (user) {
                 user.added = true;
-                saveUsersToStorage();
+                saveActivePlayers();
             }
+            
+            // В реальном приложении здесь будет отправка запроса на сервер
         });
 
         // Закрытие профиля пользователя
@@ -718,10 +821,38 @@
             showContent();
         });
 
+        // Обработчик кнопки "Назад" в Telegram
+        function handleBackButton() {
+            if (userProfile.style.display === 'flex') {
+                hideUserProfile();
+                showContent();
+            } else if (searchContainer.style.display === 'flex') {
+                searchInput.value = '';
+                searchContainer.style.opacity = '0';
+                hideSearchResult();
+                
+                setTimeout(() => {
+                    searchContainer.style.display = 'none';
+                    topPanel.style.opacity = '1';
+                }, 200);
+            } else if (splitButtons.style.display === 'flex') {
+                // Возврат к основной кнопке
+                requestButton.style.transform = 'scale(0)';
+                copyButton.style.transform = 'scale(0)';
+                
+                setTimeout(() => {
+                    splitButtons.style.display = 'none';
+                    inviteButton.style.transform = 'translateX(-50%) scale(1)';
+                }, 200);
+            } else {
+                webApp.close();
+            }
+        }
+
         // Закрытие страницы
         closeButton.addEventListener('click', function() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.close();
+            if (webApp) {
+                webApp.close();
             } else {
                 window.history.back();
             }
@@ -818,85 +949,22 @@
             }, 300);
         }
 
-        // Инициализация Telegram WebApp
-        function initTelegramWebApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                const webApp = Telegram.WebApp;
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!initTelegramWebApp()) {
+                // Тестовые данные, если не в Telegram
+                const testUser = {
+                    id: 999,
+                    first_name: 'Тест',
+                    username: 'test_user',
+                    photo_url: ''
+                };
                 
-                webApp.expand();
-                webApp.setHeaderColor('#1C1C1E');
-                webApp.setBackgroundColor('#1C1C1E');
-                
-                const user = webApp.initDataUnsafe.user;
-                
-                if (user) {                    
-                    if (user.photo_url) {
-                        document.getElementById('avatarImg').src = user.photo_url;
-                        document.getElementById('avatarImg').onerror = function() {
-                            showFallbackAvatar(user);
-                        };
-                    } else {
-                        showFallbackAvatar(user);
-                    }
-                    
-                    // Добавляем текущего пользователя в хранилище
-                    addCurrentUserToStorage(user);
-                }
-                
-                webApp.BackButton.show();
-                webApp.BackButton.onClick(function() {
-                    webApp.close();
-                });
-                
-                return true;
+                setUserAvatar(testUser);
+                addCurrentUserToStorage(testUser);
+                loadActivePlayers();
             }
-            return false;
-        }
-
-        function showFallbackAvatar(user) {
-            const avatarImg = document.getElementById('avatarImg');
-            const avatarBox = document.getElementById('avatarBox');
-            
-            avatarImg.style.display = 'none';
-            avatarBox.style.backgroundColor = '#5ac8fa';
-            avatarBox.style.display = 'flex';
-            avatarBox.style.alignItems = 'center';
-            avatarBox.style.justifyContent = 'center';
-            
-            const initials = document.createElement('div');
-            initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
-            initials.style.color = 'white';
-            initials.style.fontSize = '24px';
-            initials.style.fontWeight = 'bold';
-            
-            while (avatarBox.firstChild) {
-                avatarBox.removeChild(avatarBox.firstChild);
-            }
-            
-            avatarBox.appendChild(initials);
-        }
-
-        // Инициализация
-        initUsersStorage();
-        
-        if (!initTelegramWebApp()) {
-            // Тестовые данные, если не в Telegram
-            const testUser = {
-                id: 999,
-                first_name: 'Тест',
-                username: 'test_user',
-                photo_url: ''
-            };
-            
-            const avatarImg = document.getElementById('avatarImg');
-            avatarImg.src = 'https://via.placeholder.com/50';
-            avatarImg.onerror = function() {
-                showFallbackAvatar(testUser);
-            };
-            
-            // Добавляем тестового пользователя в хранилище
-            addCurrentUserToStorage(testUser);
-        }
+        });
     </script>
 </body>
 </html>
