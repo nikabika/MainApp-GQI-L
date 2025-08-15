@@ -280,6 +280,51 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             z-index: 4;
+            color: white;
+        }
+
+        .search-user {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-user:last-child {
+            border-bottom: none;
+        }
+
+        .search-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(44, 44, 46, 1);
+            overflow: hidden;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .search-user-info {
+            flex: 1;
+        }
+
+        .search-user-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .search-user-username {
+            font-size: 14px;
+            opacity: 0.7;
         }
 
         /* Найденный пользователь */
@@ -294,6 +339,7 @@
             right: 0;
             bottom: 0;
             z-index: 6;
+            background-color: #1C1C1E;
         }
 
         .user-avatar {
@@ -392,7 +438,7 @@
     
     <!-- Результаты поиска -->
     <div class="search-result" id="searchResult">
-        Ничего не найдено
+        <!-- Results will be added here dynamically -->
     </div>
     
     <!-- Основное содержимое -->
@@ -453,12 +499,74 @@
         const profileCloseButton = document.getElementById('profileCloseButton');
         const loadingBar = document.getElementById('loadingBar');
 
-        // Тестовые данные пользователей (в реальном приложении будет запрос к API)
-        const testUsers = [
-            { username: "utya_lover", first_name: "Уткофан", photo_url: "https://i.imgur.com/JqYeYn7.jpg" },
-            { username: "duck_friend", first_name: "Кряк", photo_url: "https://i.imgur.com/VY3qElI.jpg" },
-            { username: "quack_master", first_name: "Крякер", photo_url: "" }
-        ];
+        // Хранилище пользователей (в реальном приложении будет запрос к API)
+        let usersStorage = [];
+        let currentUser = null;
+
+        // Инициализация хранилища пользователей
+        function initUsersStorage() {
+            // Проверяем, есть ли сохраненные пользователи в localStorage
+            const savedUsers = localStorage.getItem('botUsers');
+            if (savedUsers) {
+                usersStorage = JSON.parse(savedUsers);
+            } else {
+                // Начальные тестовые данные
+                usersStorage = [
+                    { 
+                        id: 1, 
+                        username: "utya_lover", 
+                        first_name: "Уткофан", 
+                        last_name: "", 
+                        photo_url: "https://i.imgur.com/JqYeYn7.jpg",
+                        added: false 
+                    },
+                    { 
+                        id: 2, 
+                        username: "duck_friend", 
+                        first_name: "Кряк", 
+                        last_name: "Уткин", 
+                        photo_url: "https://i.imgur.com/VY3qElI.jpg",
+                        added: false 
+                    },
+                    { 
+                        id: 3, 
+                        username: "quack_master", 
+                        first_name: "Крякер", 
+                        last_name: "", 
+                        photo_url: "",
+                        added: false 
+                    }
+                ];
+                saveUsersToStorage();
+            }
+        }
+
+        // Сохранение пользователей в localStorage
+        function saveUsersToStorage() {
+            localStorage.setItem('botUsers', JSON.stringify(usersStorage));
+        }
+
+        // Добавление текущего пользователя в хранилище
+        function addCurrentUserToStorage(user) {
+            if (!user) return;
+            
+            // Проверяем, есть ли уже такой пользователь
+            const userExists = usersStorage.some(u => u.id === user.id);
+            
+            if (!userExists) {
+                usersStorage.push({
+                    id: user.id,
+                    username: user.username || '',
+                    first_name: user.first_name || '',
+                    last_name: user.last_name || '',
+                    photo_url: user.photo_url || '',
+                    added: false
+                });
+                saveUsersToStorage();
+            }
+            
+            currentUser = user;
+        }
 
         // Обработчик кнопки "Пригласить друга"
         inviteButton.addEventListener('click', function() {
@@ -496,6 +604,9 @@
 
         // Обработчик кнопки "Ссылка"
         copyButton.addEventListener('click', function() {
+            // Вибрация
+            if (navigator.vibrate) navigator.vibrate(50);
+            
             // Копируем ссылку в буфер обмена
             navigator.clipboard.writeText('https://t.me/utya_gbot');
             
@@ -518,34 +629,72 @@
             }, 200);
         });
 
-        // Поиск пользователя
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                if (searchTerm.length === 0) return;
+        // Поиск пользователя при вводе текста
+        searchInput.addEventListener('input', function() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            
+            if (searchTerm.length === 0) {
+                hideSearchResult();
+                return;
+            }
+            
+            // Ищем пользователей
+            const foundUsers = usersStorage.filter(user => {
+                const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim().toLowerCase();
+                const username = user.username ? user.username.toLowerCase() : '';
                 
-                // Имитация поиска (в реальном приложении будет запрос к API)
-                setTimeout(() => {
-                    const foundUser = testUsers.find(user => 
-                        user.username.toLowerCase().includes(searchTerm) || 
-                        (user.first_name && user.first_name.toLowerCase().includes(searchTerm))
-                    );
-                    
-                    if (foundUser) {
-                        // Пользователь найден
-                        showLoadingBar();
-                        hideContent();
-                        
-                        setTimeout(() => {
-                            showUserProfile(foundUser);
-                        }, 300);
-                    } else {
-                        // Пользователь не найден
-                        showNotFound();
-                    }
-                }, 1000);
+                return fullName.includes(searchTerm) || 
+                       username.includes(searchTerm);
+            });
+            
+            if (foundUsers.length > 0) {
+                showSearchResults(foundUsers);
+            } else {
+                showNotFound();
             }
         });
+
+        // Показ результатов поиска
+        function showSearchResults(users) {
+            // Очищаем предыдущие результаты
+            searchResult.innerHTML = '';
+            
+            // Добавляем найденных пользователей
+            users.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.className = 'search-user';
+                userElement.innerHTML = `
+                    <div class="search-user-avatar">
+                        ${user.photo_url ? 
+                            `<img src="${user.photo_url}" alt="${user.first_name}">` : 
+                            `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">
+                                ${(user.first_name || '?').charAt(0).toUpperCase()}
+                            </div>`
+                        }
+                    </div>
+                    <div class="search-user-info">
+                        <div class="search-user-name">${user.first_name || user.username}</div>
+                        <div class="search-user-username">@${user.username || 'нет_username'}</div>
+                    </div>
+                `;
+                
+                userElement.addEventListener('click', () => {
+                    showLoadingBar();
+                    hideContent();
+                    
+                    setTimeout(() => {
+                        showUserProfile(user);
+                    }, 300);
+                });
+                
+                searchResult.appendChild(userElement);
+            });
+            
+            searchResult.style.display = 'block';
+            setTimeout(() => {
+                searchResult.style.opacity = '1';
+            }, 10);
+        }
 
         // Отправка запроса в друзья
         sendRequestBtn.addEventListener('click', function() {
@@ -554,6 +703,13 @@
             sendRequestBtn.textContent = 'Запрос отправлен';
             sendRequestBtn.classList.add('sent');
             sendRequestBtn.disabled = true;
+            
+            // Обновляем статус в хранилище
+            const user = usersStorage.find(u => u.id === currentUser.id);
+            if (user) {
+                user.added = true;
+                saveUsersToStorage();
+            }
         });
 
         // Закрытие профиля пользователя
@@ -594,15 +750,27 @@
         }
 
         function showUserProfile(user) {
+            // Сохраняем текущего пользователя
+            currentUser = user;
+            
             // Заполняем данные пользователя
             userName.textContent = user.first_name || user.username || 'Ноунейм';
             
+            // Очищаем аватар
+            const avatarContainer = document.getElementById('userAvatar');
+            while (avatarContainer.firstChild) {
+                avatarContainer.removeChild(avatarContainer.firstChild);
+            }
+            
             if (user.photo_url) {
-                userAvatar.src = user.photo_url;
-                userAvatar.style.display = 'block';
+                const img = document.createElement('img');
+                img.src = user.photo_url;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                avatarContainer.appendChild(img);
             } else {
-                userAvatar.style.display = 'none';
-                document.getElementById('userAvatar').style.backgroundColor = '#5ac8fa';
+                avatarContainer.style.backgroundColor = '#5ac8fa';
                 const initials = document.createElement('div');
                 initials.textContent = (user.first_name || user.username || 'Н').charAt(0).toUpperCase();
                 initials.style.color = 'white';
@@ -612,18 +780,19 @@
                 initials.style.alignItems = 'center';
                 initials.style.justifyContent = 'center';
                 initials.style.height = '100%';
-                
-                while (document.getElementById('userAvatar').firstChild) {
-                    document.getElementById('userAvatar').removeChild(document.getElementById('userAvatar').firstChild);
-                }
-                
-                document.getElementById('userAvatar').appendChild(initials);
+                avatarContainer.appendChild(initials);
             }
             
-            // Сбрасываем состояние кнопки
-            sendRequestBtn.textContent = 'Отправить запрос';
-            sendRequestBtn.classList.remove('sent');
-            sendRequestBtn.disabled = false;
+            // Устанавливаем состояние кнопки
+            if (user.added) {
+                sendRequestBtn.textContent = 'Запрос отправлен';
+                sendRequestBtn.classList.add('sent');
+                sendRequestBtn.disabled = true;
+            } else {
+                sendRequestBtn.textContent = 'Отправить запрос';
+                sendRequestBtn.classList.remove('sent');
+                sendRequestBtn.disabled = false;
+            }
             
             // Показываем профиль
             userProfile.style.display = 'flex';
@@ -631,18 +800,15 @@
 
         function hideUserProfile() {
             userProfile.style.display = 'none';
+            currentUser = null;
         }
 
         function showNotFound() {
-            searchResult.textContent = 'Ничего не найдено';
+            searchResult.innerHTML = 'Ничего не найдено';
             searchResult.style.display = 'block';
             setTimeout(() => {
                 searchResult.style.opacity = '1';
             }, 10);
-            
-            setTimeout(() => {
-                hideSearchResult();
-            }, 2000);
         }
 
         function hideSearchResult() {
@@ -672,6 +838,9 @@
                     } else {
                         showFallbackAvatar(user);
                     }
+                    
+                    // Добавляем текущего пользователя в хранилище
+                    addCurrentUserToStorage(user);
                 }
                 
                 webApp.BackButton.show();
@@ -708,13 +877,25 @@
         }
 
         // Инициализация
+        initUsersStorage();
+        
         if (!initTelegramWebApp()) {
             // Тестовые данные, если не в Telegram
+            const testUser = {
+                id: 999,
+                first_name: 'Тест',
+                username: 'test_user',
+                photo_url: ''
+            };
+            
             const avatarImg = document.getElementById('avatarImg');
             avatarImg.src = 'https://via.placeholder.com/50';
             avatarImg.onerror = function() {
-                showFallbackAvatar({ first_name: 'Т' });
+                showFallbackAvatar(testUser);
             };
+            
+            // Добавляем тестового пользователя в хранилище
+            addCurrentUserToStorage(testUser);
         }
     </script>
 </body>
