@@ -2,967 +2,461 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Друзья</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEGO STAR WARS Collector</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Avenir+Next:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @font-face {
-            font-family: 'Avenir Next';
-            src: local('Avenir Next'), local('Avenir-Next');
-            font-weight: bold;
-            font-style: normal;
-        }
-
         * {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            background-color: #1C1C1E;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            font-family: 'Avenir Next', -apple-system, sans-serif;
-            position: relative;
-            touch-action: manipulation;
-        }
-
-        /* Верхняя панель */
-        .top-panel {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            width: calc(100% - 30px);
-            transition: opacity 0.2s ease;
-        }
-
-        /* Квадрат с аватаркой */
-        .avatar-box {
-            width: 50px;
-            height: 50px;
-            background: rgba(44, 44, 46, 1);
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            align-items: center;
+            background: #0a0a0a;
+            font-family: 'Avenir Next', sans-serif;
+            overflow: hidden;
+            position: relative;
         }
 
-        .avatar-img {
+        .card-container {
+            position: relative;
+            width: 344px;
+            height: 494px;
+            perspective: 1000px;
+        }
+
+        .card {
+            position: relative;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-        }
-
-        /* Текст "Друзья" */
-        .friends-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: white;
-            margin-left: 10px;
-            flex-grow: 1;
-        }
-
-        /* Крестик закрытия */
-        .close-button {
-            width: 30px;
-            height: 30px;
-            opacity: 0.7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
         }
 
-        .close-button::before,
-        .close-button::after {
-            content: '';
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
             position: absolute;
-            width: 30px;
-            height: 2px;
-            background-color: white;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 17px;
+            overflow: hidden;
         }
 
-        .close-button::before {
-            transform: rotate(45deg);
+        .card-front {
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .close-button::after {
-            transform: rotate(-45deg);
+        .card-back {
+            background: #1a1a1a;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Основное содержимое */
-        .content {
+        .back-content {
+            width: 294px;
+            height: 444px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .card-top {
+            text-align: center;
+            width: 284px;
+        }
+
+        .card-center {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            padding-bottom: 100px;
-            transition: opacity 0.2s ease;
-        }
-
-        .duck-container {
-            width: 55vw;
-            height: 55vw;
-            max-width: 220px;
-            max-height: 220px;
-            margin-bottom: 20px;
-        }
-
-        .duck-gif {
             width: 100%;
-            height: 100%;
+            margin-top: 25px;
+        }
+
+        .card-bottom {
+            margin-top: auto;
+        }
+
+        .card-image {
+            width: 294px;
+            height: 444px;
             object-fit: contain;
         }
 
-        .no-friends-text {
+        .character-name {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            margin: 0;
+        }
+
+        .character-name.small {
             font-size: 20px;
-            color: white;
-            text-align: center;
-            margin-bottom: 10px;
         }
 
-        .invite-text {
-            font-size: 16px;
-            color: white;
-            opacity: 0.7;
-            text-align: center;
-        }
-
-        /* Кнопка пригласить */
-        .invite-button {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 360px;
-            height: 50px;
-            background-color: #007AFF;
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
+        .character-name.xsmall {
             font-size: 18px;
+        }
+
+        .card-stats {
+            width: 100%;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            color: #cccccc;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #ffffff;
             font-weight: 600;
-            z-index: 10;
-            border: none;
-            outline: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        .rarity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff !important;
+        }
+
+        .common { background-color: #555555; }
+        .rare { background-color: #0077be; }
+        .epic { background-color: #8a2be2; }
+        .mythic { background-color: #ff8c00; }
+
+        .pattern-help {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
             cursor: pointer;
+            padding: 4px 8px;
+            transition: all 0.2s ease;
         }
 
-        .invite-button:active:not(:disabled) {
-            transform: translateX(-50%) scale(0.98);
+        .pattern-help:active {
+            transform: scale(0.95);
         }
 
-        /* Разделенные кнопки */
-        .split-buttons-container {
+        .help-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+
+        #new-card-btn {
             position: fixed;
-            bottom: 30px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 360px;
-            height: 50px;
-            display: none;
-            justify-content: space-between;
-            z-index: 10;
-        }
-
-        .split-button {
-            width: calc(50% - 5px);
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 16px;
+            padding: 12px 30px;
+            background: #2a2a2a;
+            color: #ffffff;
+            border: 1px solid #444;
+            border-radius: 25px;
+            font-family: 'Avenir Next', sans-serif;
             font-weight: 600;
-            border-radius: 15px;
-            border: none;
-            outline: none;
-            transform: scale(0);
-            transition: transform 0.2s ease;
-            cursor: pointer;
-        }
-
-        .request-button {
-            background-color: #007AFF;
-        }
-
-        .copy-button {
-            background-color: #34C759;
-        }
-
-        /* Поле поиска */
-        .search-container {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            height: 50px;
-            background-color: rgba(44, 44, 46, 1);
-            border-radius: 12px;
-            display: none;
-            align-items: center;
-            padding: 0 15px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 5;
-        }
-
-        .search-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            font-family: 'Avenir Next', -apple-system, sans-serif;
-            font-size: 16px;
-            margin-left: 10px;
-            outline: none;
-        }
-
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .search-clear {
-            width: 20px;
-            height: 20px;
-            opacity: 0.7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .search-clear::before,
-        .search-clear::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 2px;
-            background-color: white;
-        }
-
-        .search-clear::before {
-            transform: rotate(45deg);
-        }
-
-        .search-clear::after {
-            transform: rotate(-45deg);
-        }
-
-        /* Иконка лупы */
-        .search-icon {
-            opacity: 0.4;
-            color: white;
-        }
-
-        /* Результаты поиска */
-        .search-result {
-            position: absolute;
-            top: 80px;
-            left: 15px;
-            right: 15px;
-            background: rgba(60, 60, 67, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 15px;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 4;
-            color: white;
-        }
-
-        .search-user {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-        }
-
-        .search-user:last-child {
-            border-bottom: none;
-        }
-
-        .search-user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: rgba(44, 44, 46, 1);
-            overflow: hidden;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .search-user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .search-user-info {
-            flex: 1;
-        }
-
-        .search-user-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .search-user-username {
             font-size: 14px;
-            opacity: 0.7;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        /* Найденный пользователь */
-        .user-profile {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
+        #new-card-btn:hover {
+            background: #3a3a3a;
+            border-color: #666;
+        }
+
+        /* Стили для кастомного алерта */
+        .custom-alert {
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 6;
-            background-color: #1C1C1E;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
-        .user-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 25px;
-            background: rgba(44, 44, 46, 1);
-            margin-bottom: 20px;
-            overflow: hidden;
+        .custom-alert.active {
+            opacity: 1;
+            pointer-events: all;
         }
 
-        .user-name {
-            font-size: 22px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 30px;
+        .alert-content {
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid #FFD700;
+            max-width: 320px;
             text-align: center;
         }
 
-        .send-request-btn {
-            background-color: #007AFF;
-            color: white;
+        .alert-title {
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .alert-text {
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .alert-button {
+            padding: 10px 25px;
+            background: linear-gradient(45deg, #FFD700, #FF8C00);
+            color: #000;
             border: none;
-            border-radius: 12px;
-            padding: 12px 30px;
-            font-size: 18px;
+            border-radius: 20px;
+            font-family: 'Avenir Next', sans-serif;
             font-weight: 600;
-            transition: all 0.2s ease;
+            font-size: 14px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .send-request-btn.sent {
-            background-color: rgba(120, 120, 128, 0.36);
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Белый ползунок */
-        .loading-bar {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 4px;
-            background-color: white;
-            border-radius: 2px;
-            display: none;
-            z-index: 7;
-            animation: loading 0.3s ease-out;
-        }
-
-        @keyframes loading {
-            0% { width: 0; opacity: 0; }
-            50% { width: 100px; opacity: 1; }
-            100% { width: 0; opacity: 0; }
-        }
-
-        @media (min-width: 500px) {
-            .friends-title {
-                font-size: 28px;
-            }
-            .no-friends-text {
-                font-size: 24px;
-            }
-            .invite-text {
-                font-size: 18px;
-            }
-            .user-avatar {
-                width: 120px;
-                height: 120px;
-            }
-            .user-name {
-                font-size: 24px;
-            }
+        .alert-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
         }
     </style>
 </head>
 <body>
-    <!-- Верхняя панель -->
-    <div class="top-panel" id="topPanel">
-        <div class="avatar-box" id="avatarBox">
-            <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
+    <div class="card-container">
+        <div class="card" id="card">
+            <div class="card-face card-front">
+                <img id="character-image" class="card-image" src="" alt="LEGO Character" onerror="handleImageError(this)">
+            </div>
+            
+            <div class="card-face card-back">
+                <div class="back-content">
+                    <div class="card-top">
+                        <h2 class="character-name" id="character-name">ДЕНГАР</h2>
+                    </div>
+                    
+                    <div class="card-center">
+                        <div class="card-stats">
+                            <div class="stat">
+                                <span>Редкость:</span>
+                                <span class="stat-value"><span class="rarity-badge" id="stat-rarity">Эпик</span></span>
+                            </div>
+                            <div class="stat">
+                                <span>Паттерн:</span>
+                                <span class="stat-value" id="stat-pattern">17%</span>
+                            </div>
+                            <div class="stat">
+                                <span>Класс:</span>
+                                <span class="stat-value" id="stat-class">Наемники</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-bottom">
+                        <div class="pattern-help" onclick="showPatternHelp()">
+                            <div class="help-icon">?</div>
+                            <span>Что за паттерн?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="friends-title">Друзья</div>
-        <div class="close-button" id="closeButton"></div>
-    </div>
-    
-    <!-- Поле поиска -->
-    <div class="search-container" id="searchContainer">
-        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" class="search-input" placeholder="Поиск по имени или @username..." id="searchInput">
-        <div class="search-clear" id="searchClear"></div>
-    </div>
-    
-    <!-- Результаты поиска -->
-    <div class="search-result" id="searchResult">
-        <!-- Results will be added here dynamically -->
-    </div>
-    
-    <!-- Основное содержимое -->
-    <div class="content" id="content">
-        <div class="duck-container">
-            <img src="https://media.tenor.com/q5kJ8lrjhFYAAAAi/utya.gif" class="duck-gif">
-        </div>
-        <div class="no-friends-text">У вас нет друзей</div>
-        <div class="invite-text">Отличный повод завести!</div>
-    </div>
-    
-    <!-- Профиль пользователя -->
-    <div class="user-profile" id="userProfile">
-        <div class="user-avatar" id="userAvatar">
-            <img src="" style="width:100%;height:100%;object-fit:cover;">
-        </div>
-        <div class="user-name" id="userName">Ноунейм</div>
-        <button class="send-request-btn" id="sendRequestBtn">Отправить запрос</button>
-        <div class="close-button" id="profileCloseButton" style="position:absolute;top:25px;right:20px;"></div>
-    </div>
-    
-    <!-- Белый ползунок -->
-    <div class="loading-bar" id="loadingBar"></div>
-    
-    <!-- Основная кнопка -->
-    <button class="invite-button" id="inviteButton">
-        Пригласить друга
-    </button>
-    
-    <!-- Разделенные кнопки -->
-    <div class="split-buttons-container" id="splitButtons">
-        <button class="split-button request-button" id="requestButton">
-            Запрос
-        </button>
-        <button class="split-button copy-button" id="copyButton">
-            Ссылка
-        </button>
     </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <button id="new-card-btn">Новая карточка</button>
+
+    <!-- Кастомный алерт -->
+    <div class="custom-alert" id="custom-alert">
+        <div class="alert-content">
+            <div class="alert-title">🎯 Про паттерны</div>
+            <div class="alert-text">
+                Паттерн — это твой бонус к цене карточки!<br><br>
+                ✨ Чем выше процент — тем реже встречается карта и тем она ценнее. Паттерны от 17% до 19% — самые частые, а вот значения выше 50% — настоящая удача!<br><br>
+                💎 Редкие карты с высоким паттерном могут стоить целое состояние!
+            </div>
+            <button class="alert-button" onclick="closeAlert()">Понятно</button>
+        </div>
+    </div>
+
     <script>
-        // Элементы
-        const topPanel = document.getElementById('topPanel');
-        const content = document.getElementById('content');
-        const inviteButton = document.getElementById('inviteButton');
-        const splitButtons = document.getElementById('splitButtons');
-        const requestButton = document.getElementById('requestButton');
-        const copyButton = document.getElementById('copyButton');
-        const searchContainer = document.getElementById('searchContainer');
-        const searchInput = document.getElementById('searchInput');
-        const searchClear = document.getElementById('searchClear');
-        const searchResult = document.getElementById('searchResult');
-        const closeButton = document.getElementById('closeButton');
-        const userProfile = document.getElementById('userProfile');
-        const userAvatar = document.getElementById('userAvatar').querySelector('img');
-        const userName = document.getElementById('userName');
-        const sendRequestBtn = document.getElementById('sendRequestBtn');
-        const profileCloseButton = document.getElementById('profileCloseButton');
-        const loadingBar = document.getElementById('loadingBar');
-
-        // Хранилище пользователей
-        let activePlayers = [];
-        let currentUser = null;
-        let webApp = null;
-
         // Инициализация Telegram WebApp
-        function initTelegramWebApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                webApp = Telegram.WebApp;
-                
-                // Инициализация WebApp
-                webApp.expand();
-                webApp.enableClosingConfirmation();
-                webApp.setHeaderColor('#1C1C1E');
-                webApp.setBackgroundColor('#1C1C1E');
-                
-                // Получаем данные пользователя
-                const user = webApp.initDataUnsafe.user;
-                
-                if (user) {
-                    // Устанавливаем аватар
-                    setUserAvatar(user);
-                    
-                    // Добавляем текущего пользователя в хранилище
-                    addCurrentUserToStorage(user);
-                    
-                    // Загружаем активных игроков
-                    loadActivePlayers();
-                }
-                
-                // Настройка кнопки "Назад"
-                webApp.BackButton.show();
-                webApp.BackButton.onClick(handleBackButton);
-                
-                return true;
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Раскрываем на весь экран
+        tg.enableClosingConfirmation(); // Подтверждение закрытия
+
+        const characterCards = [
+            { 
+                imageUrl: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/959eb7b2-940f-48e9-ba2a-fb90c1c2adb5_%D0%94%D0%95%D0%9D%D0%93%D0%90%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5NTllYjdiMi05NDBmLTQ4ZTktYmEyYS1mYjkwYzFjMmFkYjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hKMznfJDj88tmMvkphyeKLDraLFf_WRfeQ5yHg4WRtQ&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                name: "ДЕНГАР",
+                class: "Наемники",
+                rarity: "epic"
+            },
+            { 
+                imageUrl: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/7c399af7-1a69-4c00-996f-ca8438a8747c_%D0%91%D0%9E%D0%91%D0%90_%D0%A4%D0%95%D0%A2%D0%A2.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI3YzM5OWFmNy0xYTY5LTRjMDAtOTk2Zi1jYTg0MzhhODc0N2MiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.8q-1PBMMKdPT9bpmh0k2IAOtyelpvjMnoL1aXgioGyo&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                name: "БОБА ФЕТТ",
+                class: "Наемники",
+                rarity: "epic"
+            },
+            { 
+                imageUrl: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/2e7c07e8-2adf-45af-9228-84d5c942dd29_%D0%A8%D0%A2%D0%A3%D0%A0%D0%9C%D0%9E%D0%92%D0%98%D0%9A_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIyZTdjMDdlOC0yYWRmLTQ1YWYtOTIyOC04NGQ1Yzk0MmRkMjkiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.n2ib1vj1Pke2VoDdWfMQfZWDG5XRih8WwowNRV6oyoA&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                name: "ШТУРМОВИК",
+                class: "Империя",
+                rarity: "common"
+            },
+            { 
+                imageUrl: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/48b442e2-6380-497a-916e-0b54db72bbd9_%D0%9B%D0%AE%D0%9A_%D0%A1%D0%9A%D0%90%D0%98%CC%86%D0%A3%D0%9E%D0%9A%D0%95%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI0OGI0NDJlMi02MzgwLTQ5N2EtOTE2ZS0wYjU0ZGI3MmJiZDkiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.JdRSAdbOowUj-AhsMBKeyW8Z_ZQ7FInld_lGFlspVAs&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                name: "ЛЮК СКАЙУОКЕР",
+                class: "Повстанцы",
+                rarity: "rare"
+            },
+            { 
+                imageUrl: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/828d0d9e-789a-4276-be08-af73fd5ba1a2_%D0%9A%D0%9B%D0%9E%D0%9D_%D0%90%D0%A1%D0%9E%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI4MjhkMGQ5ZS03ODlhLTQyNzYtYmUwOC1hZjczZmQ1YmExYTIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Hm4KdFLa4s7DQk9H8bz8PnvTYVtA_dJjhFnr2qLwYb4&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                name: "КЛОН АСОКИ",
+                class: "Республика",
+                rarity: "rare"
             }
-            return false;
+        ];
+
+        function handleImageError(img) {
+            console.log('Ошибка загрузки изображения');
+            // Просто не показываем битые картинки
         }
 
-        // Загрузка активных игроков (имитация запроса к серверу)
-        function loadActivePlayers() {
-            // В реальном приложении здесь будет fetch запрос к вашему бекенду
-            setTimeout(() => {
-                // Получаем сохраненных пользователей из localStorage
-                const savedPlayers = localStorage.getItem('telegramActivePlayers');
-                if (savedPlayers) {
-                    activePlayers = JSON.parse(savedPlayers);
-                } else {
-                    // Тестовые данные, если нет сохраненных игроков
-                    activePlayers = [
-                        { 
-                            id: 1, 
-                            username: "mimimu", 
-                            first_name: "Мимими", 
-                            last_name: "", 
-                            photo_url: "https://i.imgur.com/JqYeYn7.jpg",
-                            added: false 
-                        },
-                        { 
-                            id: 2, 
-                            username: "duck_friend", 
-                            first_name: "Кряк", 
-                            last_name: "Уткин", 
-                            photo_url: "https://i.imgur.com/VY3qElI.jpg",
-                            added: false 
-                        },
-                        { 
-                            id: 3, 
-                            username: "quack_master", 
-                            first_name: "Крякер", 
-                            last_name: "", 
-                            photo_url: "",
-                            added: false 
-                        }
-                    ];
-                    saveActivePlayers();
-                }
-            }, 500);
-        }
-
-        // Сохранение активных игроков
-        function saveActivePlayers() {
-            localStorage.setItem('telegramActivePlayers', JSON.stringify(activePlayers));
-        }
-
-        // Добавление текущего пользователя в хранилище
-        function addCurrentUserToStorage(user) {
-            if (!user) return;
-            
-            // Проверяем, есть ли уже такой пользователь
-            const userExists = activePlayers.some(u => u.id === user.id);
-            
-            if (!userExists) {
-                activePlayers.push({
-                    id: user.id,
-                    username: user.username || '',
-                    first_name: user.first_name || '',
-                    last_name: user.last_name || '',
-                    photo_url: user.photo_url || '',
-                    added: false
-                });
-                saveActivePlayers();
-            }
-            
-            currentUser = user;
-        }
-
-        // Установка аватара пользователя
-        function setUserAvatar(user) {
-            const avatarImg = document.getElementById('avatarImg');
-            const avatarBox = document.getElementById('avatarBox');
-            
-            if (user.photo_url) {
-                avatarImg.src = user.photo_url;
-                avatarImg.style.display = 'block';
-                avatarImg.onerror = function() {
-                    showFallbackAvatar(user);
-                };
-            } else {
-                showFallbackAvatar(user);
-            }
-        }
-
-        // Показать аватар с инициалами
-        function showFallbackAvatar(user) {
-            const avatarImg = document.getElementById('avatarImg');
-            const avatarBox = document.getElementById('avatarBox');
-            
-            avatarImg.style.display = 'none';
-            avatarBox.style.backgroundColor = '#5ac8fa';
-            avatarBox.style.display = 'flex';
-            avatarBox.style.alignItems = 'center';
-            avatarBox.style.justifyContent = 'center';
-            
-            const initials = document.createElement('div');
-            initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
-            initials.style.color = 'white';
-            initials.style.fontSize = '24px';
-            initials.style.fontWeight = 'bold';
-            
-            while (avatarBox.firstChild) {
-                avatarBox.removeChild(avatarBox.firstChild);
-            }
-            
-            avatarBox.appendChild(initials);
-        }
-
-        // Обработчик кнопки "Пригласить друга"
-        inviteButton.addEventListener('click', function() {
-            // Быстро уменьшаем основную кнопку
-            inviteButton.style.transform = 'translateX(-50%) scale(0)';
-            
-            // Показываем и анимируем разделенные кнопки
-            setTimeout(() => {
-                splitButtons.style.display = 'flex';
-                
-                // Анимация появления кнопок
-                setTimeout(() => {
-                    requestButton.style.transform = 'scale(1)';
-                    copyButton.style.transform = 'scale(1)';
-                }, 10);
-            }, 200);
-        });
-
-        // Обработчик кнопки "Запрос"
-        requestButton.addEventListener('click', function() {
-            // Скрываем верхнюю панель
-            topPanel.style.opacity = '0';
-            
-            // Показываем поле поиска
-            searchContainer.style.display = 'flex';
-            setTimeout(() => {
-                searchContainer.style.opacity = '1';
-            }, 10);
-            
-            // Фокус на поле ввода
-            setTimeout(() => {
-                searchInput.focus();
-            }, 200);
-        });
-
-        // Обработчик кнопки "Ссылка"
-        copyButton.addEventListener('click', function() {
-            // Вибрация в Telegram
-            if (webApp && webApp.HapticFeedback) {
-                webApp.HapticFeedback.impactOccurred('light');
-            } else if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-            
-            // Копируем ссылку в буфер обмена
-            navigator.clipboard.writeText('https://t.me/utya_gbot');
-            
-            // Визуальный фидбэк
-            copyButton.textContent = 'Скопировано!';
-            setTimeout(() => {
-                copyButton.textContent = 'Ссылка';
-            }, 2000);
-        });
-
-        // Очистка поля поиска и возврат к исходному состоянию
-        searchClear.addEventListener('click', function() {
-            searchInput.value = '';
-            searchContainer.style.opacity = '0';
-            hideSearchResult();
-            
-            setTimeout(() => {
-                searchContainer.style.display = 'none';
-                topPanel.style.opacity = '1';
-            }, 200);
-        });
-
-        // Поиск пользователя при вводе текста
-        searchInput.addEventListener('input', function() {
-            const searchTerm = searchInput.value.trim().toLowerCase();
-            
-            if (searchTerm.length === 0) {
-                hideSearchResult();
-                return;
-            }
-            
-            // Ищем пользователей
-            const foundUsers = activePlayers.filter(user => {
-                const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim().toLowerCase();
-                const username = user.username ? user.username.toLowerCase() : '';
-                
-                return fullName.includes(searchTerm) || 
-                       username.includes(searchTerm) ||
-                       (searchTerm.startsWith('@') && username.includes(searchTerm.substring(1)));
-            });
-            
-            if (foundUsers.length > 0) {
-                showSearchResults(foundUsers);
-            } else {
-                showNotFound();
-            }
-        });
-
-        // Показ результатов поиска
-        function showSearchResults(users) {
-            // Очищаем предыдущие результаты
-            searchResult.innerHTML = '';
-            
-            // Добавляем найденных пользователей
-            users.forEach(user => {
-                const userElement = document.createElement('div');
-                userElement.className = 'search-user';
-                userElement.innerHTML = `
-                    <div class="search-user-avatar">
-                        ${user.photo_url ? 
-                            `<img src="${user.photo_url}" alt="${user.first_name}">` : 
-                            `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">
-                                ${(user.first_name || '?').charAt(0).toUpperCase()}
-                            </div>`
-                        }
-                    </div>
-                    <div class="search-user-info">
-                        <div class="search-user-name">${user.first_name || user.username}</div>
-                        <div class="search-user-username">@${user.username || 'нет_username'}</div>
-                    </div>
-                `;
-                
-                userElement.addEventListener('click', () => {
-                    // Вибрация при выборе пользователя
-                    if (webApp && webApp.HapticFeedback) {
-                        webApp.HapticFeedback.impactOccurred('light');
-                    } else if (navigator.vibrate) {
-                        navigator.vibrate(50);
-                    }
-                    
-                    showLoadingBar();
-                    hideContent();
-                    
-                    setTimeout(() => {
-                        showUserProfile(user);
-                    }, 300);
-                });
-                
-                searchResult.appendChild(userElement);
-            });
-            
-            searchResult.style.display = 'block';
-            setTimeout(() => {
-                searchResult.style.opacity = '1';
-            }, 10);
-        }
-
-        // Отправка запроса в друзья
-        sendRequestBtn.addEventListener('click', function() {
+        function showPatternHelp() {
             // Вибрация
-            if (webApp && webApp.HapticFeedback) {
-                webApp.HapticFeedback.impactOccurred('medium');
-            } else if (navigator.vibrate) {
-                navigator.vibrate(100);
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
             }
             
-            sendRequestBtn.textContent = 'Запрос отправлен';
-            sendRequestBtn.classList.add('sent');
-            sendRequestBtn.disabled = true;
-            
-            // Обновляем статус в хранилище
-            const user = activePlayers.find(u => u.id === currentUser.id);
-            if (user) {
-                user.added = true;
-                saveActivePlayers();
+            // Показываем кастомный алерт
+            document.getElementById('custom-alert').classList.add('active');
+        }
+
+        function closeAlert() {
+            document.getElementById('custom-alert').classList.remove('active');
+        }
+
+        function getRandomPattern() {
+            if (Math.random() < 0.7) {
+                return 17 + Math.floor(Math.random() * 3);
             }
+            else if (Math.random() < 0.95) {
+                return 20 + Math.floor(Math.random() * 31);
+            }
+            else {
+                return 51 + Math.floor(Math.random() * 49);
+            }
+        }
+
+        function getRarityName(rarity) {
+            const names = {
+                'common': 'Обычная',
+                'rare': 'Редкая',
+                'epic': 'Эпик',
+                'mythic': 'Мифик'
+            };
+            return names[rarity];
+        }
+
+        function getFontSize(name) {
+            if (name.length <= 8) return '';
+            if (name.length <= 12) return 'small';
+            return 'xsmall';
+        }
+
+        function showRandomCard() {
+            const randomIndex = Math.floor(Math.random() * characterCards.length);
+            const selectedCard = characterCards[randomIndex];
             
-            // В реальном приложении здесь будет отправка запроса на сервер
+            const pattern = getRandomPattern();
+
+            const imgElement = document.getElementById('character-image');
+            imgElement.src = selectedCard.imageUrl;
+            imgElement.alt = selectedCard.name;
+            
+            const nameElement = document.getElementById('character-name');
+            nameElement.textContent = selectedCard.name;
+            nameElement.className = 'character-name ' + getFontSize(selectedCard.name);
+            
+            const rarityElement = document.getElementById('stat-rarity');
+            rarityElement.textContent = getRarityName(selectedCard.rarity);
+            rarityElement.className = 'rarity-badge ' + selectedCard.rarity;
+            
+            document.getElementById('stat-pattern').textContent = pattern + '%';
+            document.getElementById('stat-class').textContent = selectedCard.class;
+        }
+
+        function flipCard() {
+            document.getElementById('card').classList.toggle('flipped');
+        }
+
+        window.onload = function() {
+            const imgElement = document.getElementById('character-image');
+            imgElement.onerror = function() {
+                handleImageError(this);
+            };
+            showRandomCard();
+        };
+
+        document.getElementById('new-card-btn').addEventListener('click', showRandomCard);
+        document.getElementById('card').addEventListener('click', flipCard);
+
+        document.getElementById('new-card-btn').addEventListener('click', function() {
+            document.getElementById('card').classList.remove('flipped');
         });
 
-        // Закрытие профиля пользователя
-        profileCloseButton.addEventListener('click', function() {
-            hideUserProfile();
-            showContent();
-        });
-
-        // Обработчик кнопки "Назад" в Telegram
-        function handleBackButton() {
-            if (userProfile.style.display === 'flex') {
-                hideUserProfile();
-                showContent();
-            } else if (searchContainer.style.display === 'flex') {
-                searchInput.value = '';
-                searchContainer.style.opacity = '0';
-                hideSearchResult();
-                
-                setTimeout(() => {
-                    searchContainer.style.display = 'none';
-                    topPanel.style.opacity = '1';
-                }, 200);
-            } else if (splitButtons.style.display === 'flex') {
-                // Возврат к основной кнопке
-                requestButton.style.transform = 'scale(0)';
-                copyButton.style.transform = 'scale(0)';
-                
-                setTimeout(() => {
-                    splitButtons.style.display = 'none';
-                    inviteButton.style.transform = 'translateX(-50%) scale(1)';
-                }, 200);
-            } else {
-                webApp.close();
-            }
-        }
-
-        // Закрытие страницы
-        closeButton.addEventListener('click', function() {
-            if (webApp) {
-                webApp.close();
-            } else {
-                window.history.back();
-            }
-        });
-
-        // Функции для управления UI
-        function showLoadingBar() {
-            loadingBar.style.display = 'block';
-            setTimeout(() => {
-                loadingBar.style.display = 'none';
-            }, 300);
-        }
-
-        function hideContent() {
-            content.style.opacity = '0';
-            setTimeout(() => {
-                content.style.display = 'none';
-            }, 200);
-        }
-
-        function showContent() {
-            content.style.display = 'flex';
-            setTimeout(() => {
-                content.style.opacity = '1';
-            }, 10);
-        }
-
-        function showUserProfile(user) {
-            // Сохраняем текущего пользователя
-            currentUser = user;
-            
-            // Заполняем данные пользователя
-            userName.textContent = user.first_name || user.username || 'Ноунейм';
-            
-            // Очищаем аватар
-            const avatarContainer = document.getElementById('userAvatar');
-            while (avatarContainer.firstChild) {
-                avatarContainer.removeChild(avatarContainer.firstChild);
-            }
-            
-            if (user.photo_url) {
-                const img = document.createElement('img');
-                img.src = user.photo_url;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
-                avatarContainer.appendChild(img);
-            } else {
-                avatarContainer.style.backgroundColor = '#5ac8fa';
-                const initials = document.createElement('div');
-                initials.textContent = (user.first_name || user.username || 'Н').charAt(0).toUpperCase();
-                initials.style.color = 'white';
-                initials.style.fontSize = '48px';
-                initials.style.fontWeight = 'bold';
-                initials.style.display = 'flex';
-                initials.style.alignItems = 'center';
-                initials.style.justifyContent = 'center';
-                initials.style.height = '100%';
-                avatarContainer.appendChild(initials);
-            }
-            
-            // Устанавливаем состояние кнопки
-            if (user.added) {
-                sendRequestBtn.textContent = 'Запрос отправлен';
-                sendRequestBtn.classList.add('sent');
-                sendRequestBtn.disabled = true;
-            } else {
-                sendRequestBtn.textContent = 'Отправить запрос';
-                sendRequestBtn.classList.remove('sent');
-                sendRequestBtn.disabled = false;
-            }
-            
-            // Показываем профиль
-            userProfile.style.display = 'flex';
-        }
-
-        function hideUserProfile() {
-            userProfile.style.display = 'none';
-            currentUser = null;
-        }
-
-        function showNotFound() {
-            searchResult.innerHTML = 'Ничего не найдено';
-            searchResult.style.display = 'block';
-            setTimeout(() => {
-                searchResult.style.opacity = '1';
-            }, 10);
-        }
-
-        function hideSearchResult() {
-            searchResult.style.opacity = '0';
-            setTimeout(() => {
-                searchResult.style.display = 'none';
-            }, 300);
-        }
-
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!initTelegramWebApp()) {
-                // Тестовые данные, если не в Telegram
-                const testUser = {
-                    id: 999,
-                    first_name: 'Тест',
-                    username: 'test_user',
-                    photo_url: ''
-                };
-                
-                setUserAvatar(testUser);
-                addCurrentUserToStorage(testUser);
-                loadActivePlayers();
+        // Закрытие алерта по клику вне его
+        document.getElementById('custom-alert').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAlert();
             }
         });
     </script>
