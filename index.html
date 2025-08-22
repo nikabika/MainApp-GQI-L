@@ -2,15 +2,22 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LEGO STAR WARS Collector</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         body {
@@ -23,6 +30,15 @@
             overflow: hidden;
             position: relative;
             color: rgba(255, 255, 255, 0.7);
+            touch-action: manipulation;
+        }
+
+        img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
         }
 
         .container {
@@ -51,6 +67,33 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        /* Иконка подарка в правом верхнем углу */
+        .gift-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 17px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .gift-icon:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.95);
+        }
+
+        .gift-icon i {
+            color: #F3C142;
+            font-size: 24px;
         }
 
         /* Текст "Новая карточка!" над карточкой */
@@ -205,7 +248,7 @@
         }
 
         .common { background-color: #555555; }
-        .rare { background-color: #0077be; }
+        .rare { background-color: #50AFDF; } /* Изменен цвет редкой редкости */
         .epic { background-color: #8a2be2; }
         .mythic { background-color: #ff8c00; }
 
@@ -239,21 +282,29 @@
             margin-right: 4px;
         }
 
-        /* Текст "Получить" под карточкой */
+        /* Кнопка "Получить" в стиле Telegram */
         .get-button {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 24px; /* Увеличил размер */
-            font-weight: 600; /* Сделал полужирным */
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #50AFDF;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
             text-align: center;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-            padding: 12px 30px;
+            padding: 16px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 12px rgba(80, 175, 223, 0.3);
         }
 
         .get-button:active {
-            opacity: 0.8;
+            background: #3F9FD0;
+            transform: scale(0.98);
         }
 
         /* Адаптивность для мобильных устройств */
@@ -277,9 +328,13 @@
                 height: 60px;
             }
             
-            .user-avatar {
+            .user-avatar, .gift-icon {
                 width: 45px;
                 height: 45px;
+            }
+            
+            .gift-icon i {
+                font-size: 22px;
             }
             
             .card-title {
@@ -288,8 +343,11 @@
             }
             
             .get-button {
-                font-size: 20px;
-                padding: 10px 25px;
+                font-size: 16px;
+                padding: 14px;
+                bottom: 15px;
+                left: 15px;
+                right: 15px;
             }
             
             .card-back {
@@ -317,11 +375,22 @@
                 height: 55px;
             }
             
-            .user-avatar {
+            .user-avatar, .gift-icon {
                 width: 40px;
                 height: 40px;
                 top: 15px;
+            }
+            
+            .user-avatar {
                 left: 15px;
+            }
+            
+            .gift-icon {
+                right: 15px;
+            }
+            
+            .gift-icon i {
+                font-size: 20px;
             }
             
             .card-title {
@@ -330,8 +399,11 @@
             }
             
             .get-button {
-                font-size: 18px;
-                padding: 8px 20px;
+                font-size: 15px;
+                padding: 12px;
+                bottom: 12px;
+                left: 12px;
+                right: 12px;
             }
             
             .card-back {
@@ -344,6 +416,11 @@
     <!-- Аватарка пользователя -->
     <div class="user-avatar" id="user-avatar">
         <img id="avatar-img" src="" alt="User Avatar">
+    </div>
+
+    <!-- Иконка подарка -->
+    <div class="gift-icon" id="gift-icon">
+        <i data-feather="gift"></i>
     </div>
 
     <div class="container">
@@ -390,10 +467,10 @@
                 </div>
             </div>
         </div>
-
-        <!-- Текст "Получить" под карточкой -->
-        <div class="get-button" id="get-button">Получить</div>
     </div>
+
+    <!-- Кнопка "Получить" внизу экрана -->
+    <button class="get-button" id="get-button">Получить</button>
 
     <script>
         // Инициализация Telegram WebApp
@@ -413,20 +490,23 @@
             }
         }
 
-        // Массив иконок классов (исправленные URL)
+        // Инициализация Feather Icons
+        feather.replace();
+
+        // Массив иконок классов
         const classIcons = {
-            'Наемники': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/e158e2bb-c35d-4ec8-b9aa-837be7e698ba_%D0%9D%D0%90%D0%95%D0%9C%D0%9D%D0%98%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJlMTU4ZTJiYi1jMzVkLTRlYzgtYjlhYS04MzdiZTdlNjk4YmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OHhADc6mLfopVGpgCLR7hgHUMxOqM7YnsqcDbs0QdPE&x-oss-process=image/resize,m_mfit,w_320,h_320',
+            'Наемники': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/e158e2bb-c35d-4ec8-b9aa-837be7e698ba_%D0%9D%D0%90%D0%95%D0%9C%D0%9D%D0%98%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJlMTU4ZTJiYi1jMzVkLTRlYzgtYjlhAS04MzdiZTdlNjk4YmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OHhADc6mLfopVGpgCLR7hgHUMxOqM7YnsqcDbs0QdPE&x-oss-process=image/resize,m_mfit,w_320,h_320',
             'Сепаратисты': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/cb824ce4-2b50-4fbb-9e65-d8c9da68285b_%D0%A1%D0%95%D0%9F%D0%90%D0%A0%D0%90%D0%A2%D0%98%D0%A1%D0%A2%D0%AB.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjYjgyNGNlNC0yYjUwLTRmYmItOWU2NS1kOGM5ZGE2ODI4NWIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.0U5E1ndnQeZ6lVGYdkeUoIRPJhDGKO1DI2mt4FGuI5o&x-oss-process=image/resize,m_mfit,w_320,h_320',
             'Империя': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/9e05e37a-85eb-4c6b-a8a2-bd539b8a35ea_%D0%98%D0%9C%D0%9F%D0%95%D0%A0%D0%98%D0%AF.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5ZTA1ZTM3YS04NWViLTRjNmItYThhMi1iZDUzOWI4YTM1ZWEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Ic7ctvPIfkb72ur5834jYbHWgFjpNag3LBNuXH6fSuI&x-oss-process=image/resize,m_mfit,w_320,h_320',
             'Повстанцы': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/1f4e0a90-a608-4570-9aa5-6229dea8adc0_%D0%9F%D0%9E%D0%92%D0%A1%D0%A2%D0%90%D0%9D%D0%A6%D0%AB_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIxZjRlMGE5MC1hNjA4LTQ1NzAtOWFhNS02MjI5ZGVhOGFkYzAiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.0_xBlq_s5TuGn78vmTdGPoUQ-RHl-8aLTImBieGPX9o&x-oss-process=image/resize,m_mfit,w_320,h_320',
             'Республика': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/a3840aa4-e089-40d1-8500-f1ab2fb68686_%D0%A0%D0%95%D0%A1%D0%9F%D0%A3%D0%91%D0%9B%D0%98%D0%9A%D0%90_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJhMzg0MGFhNC1lMDg5LTQwZDEtODUwMC1mMWFiMmZiNjg2ODYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.6xJc5p7xS6B87IgvPzgFuv22wzd_C-ongl6rVxpYYSQ&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Старая Республика': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/c69fdcd9-4177-4070-9525-727d226553a6_%D0%A1%D0%A2%D0%90%D0%A0%D0%90%D0%AF_%D0%A0%D0%95%D0%A1%D0%9F%D0%A3%D0%91%D0%9B%D0%98%D0%9A%D0%90_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjNjlmZGNkOS00MTc3LTQwNzAtOTUyNS03MjdkMjI2NTUzYTYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OWM4BSs7PF-oX9xIcj9MC-pgIosdFskUjj3VQ7wb-QQ&x-oss-process=image/resize,m_mfit,w_320,h_320'
+            'Старая Республика': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/c69fdcd9-4177-4070-9525-727d226553a6_%D0%A1%D0%A2%D0%90%D0%A0%D0%90%D0%AF_%D0%A0%D0%95%D0%A1%D0%9F%D0%A3%D0%91%D0%9B%D0%98%D0%9A%D0%90_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjNjlmZGNkOS00MTc3LTQ0NzAtOTUyNS03MjdkMjI2NTUzYTYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OWM4BSs7PF-oX9xIcj9MC-pgIosdFskUjj3VQ7wb-QQ&x-oss-process=image/resize,m_mfit,w_320,h_320'
         };
 
-        // Массив персонажей (исправленные URL)
+        // Массив персонажей
         const characterCards = [
             { 
-                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/959eb7b2-940f-48e9-ba2a-fb90c1c2adb5_%D0%94%D0%95%D0%9D%D0%93%D0%90%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5NTllYjdiMi05NDBfLTQ4ZTktYmEyYS1mYjkwYzFjMmFkYjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hKMznfJDj88tmMvkphyeKLDraLFf_WRfeQ5yHg4WRtQ&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/959eb7b2-940f-48e9-ba2a-fb90c1c2adb5_%D0%94%D0%95%D0%9D%D0%93%D0%90%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5NTllYjdiMi05NDBmLTQ4ZTktYmEyYS1mYjkwYzFjMmFkYjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hKMznfJDj88tmMvkphyeKLDraLFf_WRfeQ5yHg4WRtQ&x-oss-process=image/resize,m_mfit,w_320,h_320", 
                 name: "ДЕНГАР",
                 class: "Наемники",
                 rarity: "epic"
@@ -450,7 +530,7 @@
                 rarity: "rare"
             },
             { 
-                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/828d0d9e-789a-4276-be08-af73fd5ba1a2_%D0%9A%D0%9B%D0%9E%D0%9D_%D0%90%D0%A1%D0%9E%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI4MjhkMGQ5ZS03ODlhLTQyNzYtYmUwOC1hZjczZmQ5YmExYTIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Hm4KdFLa4s7DQk9H8bz8PnvTYVtA_dJjhFnr2qLwYb4&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/828d0d9e-789a-4276-be08-af73fd5ba1a2_%D0%9A%D0%9B%D0%9E%D0%9D_%D0%90%D0%A1%D0%9E%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI4MjhkMGQ5ZS03ODlhLTQyNzYtYmUwOC1hZjczZmQ1YmExYTIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Hm4KdFLa4s7DQk9H8bz8PnvTYVtA_dJjhFnr2qLwYb4&x-oss-process=image/resize,m_mfit,w_320,h_320", 
                 name: "КЛОН АСОКИ",
                 class: "Республика",
                 rarity: "rare"
@@ -459,7 +539,12 @@
 
         function handleImageError(img) {
             console.log('Ошибка загрузки изображения');
-            // Просто не показываем битые картинки
+        }
+
+        function vibrate() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50); // Легкая вибрация 50ms
+            }
         }
 
         function getRandomPattern() {
@@ -511,7 +596,6 @@
             document.getElementById('stat-pattern').textContent = pattern + '%';
             document.getElementById('stat-class').textContent = selectedCard.class;
             
-            // Устанавливаем иконку класса
             const classIconElement = document.getElementById('class-icon');
             classIconElement.src = classIcons[selectedCard.class];
             classIconElement.alt = selectedCard.class;
@@ -522,13 +606,17 @@
         }
 
         function handlePatternHelp(e) {
-            e.stopPropagation(); // Предотвращаем переворачивание карточки
+            e.stopPropagation();
             window.open('https://example.com', '_blank');
         }
 
         function handleGetButton() {
-            // Кнопка "Получить" пока ничего не делает
-            console.log("Кнопка 'Получить' нажата, но функциональность не реализована");
+            vibrate();
+            console.log("Кнопка 'Получить' нажата");
+        }
+
+        function handleGiftIcon() {
+            console.log("Иконка подарка нажата");
         }
 
         window.onload = function() {
@@ -538,16 +626,13 @@
             };
             showRandomCard();
             
-            // Добавляем обработчик для кнопки "Получить"
             document.getElementById('get-button').addEventListener('click', handleGetButton);
-            
-            // Добавляем обработчик для "Что за паттерн?"
             document.getElementById('pattern-help').addEventListener('click', handlePatternHelp);
+            document.getElementById('gift-icon').addEventListener('click', handleGiftIcon);
         };
 
         document.getElementById('card').addEventListener('click', flipCard);
 
-        // Для Mac используем системные шрифты Apple
         if (navigator.platform.indexOf('Mac') > -1) {
             document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Avenir Next", Avenir, "Helvetica Neue", Helvetica, sans-serif';
         }
