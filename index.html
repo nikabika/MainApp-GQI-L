@@ -45,7 +45,6 @@
             border-radius: 17px;
             overflow: hidden;
             z-index: 10;
-            border: 2px solid #F3C142;
         }
 
         .user-avatar img {
@@ -54,7 +53,7 @@
             object-fit: cover;
         }
 
-        /* Заголовок над карточкой */
+        /* Текст "Новая карточка!" над карточкой */
         .card-title {
             color: #F3C142;
             font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -63,7 +62,7 @@
             margin-bottom: 25px;
             text-align: center;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
         }
 
         .card-container {
@@ -104,7 +103,7 @@
         }
 
         .card-back {
-            background: #24315E;
+            background: linear-gradient(to bottom, #24315E, #1A2550);
             transform: rotateY(180deg);
             display: flex;
             flex-direction: column;
@@ -240,13 +239,17 @@
             margin-right: 4px;
         }
 
+        /* Текст "Получить" под карточкой */
         .get-button {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 24px; /* Увеличил размер */
+            font-weight: 600; /* Сделал полужирным */
             text-align: center;
             cursor: pointer;
             transition: opacity 0.2s ease;
+            padding: 12px 30px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .get-button:active {
@@ -281,10 +284,12 @@
             
             .card-title {
                 font-size: 24px;
+                margin-bottom: 20px;
             }
             
             .get-button {
-                font-size: 16px;
+                font-size: 20px;
+                padding: 10px 25px;
             }
             
             .card-back {
@@ -321,15 +326,16 @@
             
             .card-title {
                 font-size: 22px;
-                margin-bottom: 20px;
+                margin-bottom: 18px;
             }
             
             .get-button {
-                font-size: 14px;
+                font-size: 18px;
+                padding: 8px 20px;
             }
             
             .card-back {
-                border-width: 15px;
+                border-width: 18px;
             }
         }
     </style>
@@ -341,7 +347,7 @@
     </div>
 
     <div class="container">
-        <!-- Заголовок над карточкой -->
+        <!-- Текст "Новая карточка!" над карточкой -->
         <div class="card-title">Новая карточка!</div>
 
         <div class="card-container">
@@ -375,7 +381,7 @@
                         </div>
 
                         <div class="card-bottom">
-                            <div class="pattern-help">
+                            <div class="pattern-help" id="pattern-help">
                                 <div class="help-icon">?</div>
                                 <span>Что за паттерн?</span>
                             </div>
@@ -385,7 +391,7 @@
             </div>
         </div>
 
-        <!-- Кнопка под карточкой -->
+        <!-- Текст "Получить" под карточкой -->
         <div class="get-button" id="get-button">Получить</div>
     </div>
 
@@ -407,17 +413,17 @@
             }
         }
 
-        // Массив иконок классов
+        // Массив иконок классов (исправленные URL)
         const classIcons = {
             'Наемники': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/e158e2bb-c35d-4ec8-b9aa-837be7e698ba_%D0%9D%D0%90%D0%95%D0%9C%D0%9D%D0%98%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJlMTU4ZTJiYi1jMzVkLTRlYzgtYjlhYS04MzdiZTdlNjk4YmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OHhADc6mLfopVGpgCLR7hgHUMxOqM7YnsqcDbs0QdPE&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Сепаратисты': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/cb824ce4-2b50-4fbb-9e65-d8c9da68285b_%D0%A1%D0%95%D0%9F%D0%90%D0%A0%D0%90%D0%A2%D0%98%D0%A1%D0%A2%D0%AB.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjYjgyNGNlNC0yYjUwLTRmYmItOWU2NS1kOGM5ZGE2ODI4NWIiLCJyZXNvdXJjZV9jaGF0X2lkIjpundWxsfQ.0U5E1ndnQeZ6lVGYdkeUoIRPJhDGKO1DI2mt4FGuI5o&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Империя': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/9e05e37a-85eb-4c6b-a8a2-bd539b8a35ea_%D0%98%D0%9C%D0%9F%D0%95%D0%A0%D0%98%D0%AF.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJc9OS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5ZTA1ZTM3YS04NWViLTRjNmItYThhMi1iZDUzOWI4YTM1ZWEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Ic7ctvPIfkb72ur5834jYbHWgFjpNag3LBNuXH6fSuI&x-oss-process=image/resize,m_mfit,w_320,h_320',
+            'Сепаратисты': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/cb824ce4-2b50-4fbb-9e65-d8c9da68285b_%D0%A1%D0%95%D0%9F%D0%90%D0%A0%D0%90%D0%A2%D0%98%D0%A1%D0%A2%D0%AB.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjYjgyNGNlNC0yYjUwLTRmYmItOWU2NS1kOGM5ZGE2ODI4NWIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.0U5E1ndnQeZ6lVGYdkeUoIRPJhDGKO1DI2mt4FGuI5o&x-oss-process=image/resize,m_mfit,w_320,h_320',
+            'Империя': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/9e05e37a-85eb-4c6b-a8a2-bd539b8a35ea_%D0%98%D0%9C%D0%9F%D0%95%D0%A0%D0%98%D0%AF.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5ZTA1ZTM3YS04NWViLTRjNmItYThhMi1iZDUzOWI4YTM1ZWEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Ic7ctvPIfkb72ur5834jYbHWgFjpNag3LBNuXH6fSuI&x-oss-process=image/resize,m_mfit,w_320,h_320',
             'Повстанцы': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/1f4e0a90-a608-4570-9aa5-6229dea8adc0_%D0%9F%D0%9E%D0%92%D0%A1%D0%A2%D0%90%D0%9D%D0%A6%D0%AB_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIxZjRlMGE5MC1hNjA4LTQ1NzAtOWFhNS02MjI5ZGVhOGFkYzAiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.0_xBlq_s5TuGn78vmTdGPoUQ-RHl-8aLTImBieGPX9o&x-oss-process=image/resize,m_mfit,w_320,h_320',
             'Республика': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/a3840aa4-e089-40d1-8500-f1ab2fb68686_%D0%A0%D0%95%D0%A1%D0%9F%D0%A3%D0%91%D0%9B%D0%98%D0%9A%D0%90_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJhMzg0MGFhNC1lMDg5LTQwZDEtODUwMC1mMWFiMmZiNjg2ODYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.6xJc5p7xS6B87IgvPzgFuv22wzd_C-ongl6rVxpYYSQ&x-oss-process=image/resize,m_mfit,w_320,h_320',
             'Старая Республика': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/c69fdcd9-4177-4070-9525-727d226553a6_%D0%A1%D0%A2%D0%90%D0%A0%D0%90%D0%AF_%D0%A0%D0%95%D0%A1%D0%9F%D0%A3%D0%91%D0%9B%D0%98%D0%9A%D0%90_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjNjlmZGNkOS00MTc3LTQwNzAtOTUyNS03MjdkMjI2NTUzYTYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OWM4BSs7PF-oX9xIcj9MC-pgIosdFskUjj3VQ7wb-QQ&x-oss-process=image/resize,m_mfit,w_320,h_320'
         };
 
-        // Массив персонажей
+        // Массив персонажей (исправленные URL)
         const characterCards = [
             { 
                 url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/959eb7b2-940f-48e9-ba2a-fb90c1c2adb5_%D0%94%D0%95%D0%9D%D0%93%D0%90%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5NTllYjdiMi05NDBfLTQ4ZTktYmEyYS1mYjkwYzFjMmFkYjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hKMznfJDj88tmMvkphyeKLDraLFf_WRfeQ5yHg4WRtQ&x-oss-process=image/resize,m_mfit,w_320,h_320", 
@@ -432,19 +438,19 @@
                 rarity: "epic"
             },
             { 
-                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/2e7c07e8-2adf-45af-9228-84d5c942dd29_%D0%A8%D0%A2%D0%A3%D0%A0%D0%9C%D0%9E%D0%92%D0%98%D0%9A_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIyZTdjMDdlOC0yYWRmLTQ1YWYtOTIyOC04NGQ1Yzk0MmRkMjkiLCJyZXNvdXJjZV9jaGF0X2lkIjpundWxsfQ.n2ib1vj1Pke2VoDdWfMQfZWDG5XRih8WwowNRV6oyoA&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/2e7c07e8-2adf-45af-9228-84d5c942dd29_%D0%A8%D0%A2%D0%A3%D0%A0%D0%9C%D0%9E%D0%92%D0%98%D0%9A_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIyZTdjMDdlOC0yYWRmLTQ1YWYtOTIyOC04NGQ1Yzk0MmRkMjkiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.n2ib1vj1Pke2VoDdWfMQfZWDG5XRih8WwowNRV6oyoA&x-oss-process=image/resize,m_mfit,w_320,h_320", 
                 name: "ШТУРМОВИК",
                 class: "Империя",
                 rarity: "common"
             },
             { 
-                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/48b442e2-6380-497a-916e-0b54db72bbd9_%D0%9B%D0%AE%D0%9A_%D0%A1%D0%9A%D0%90%D0%98%CC%86%D0%A3%D0%9E%D0%9A%D0%95%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI0OGI0NDJlMi02MzgwLTQ5N2EtOTE2ZS0wYjU0ZGI3MmJiZDkiLCJyZXNvdXJjZV9jaGF0X2lkIjpundWxsfQ.JdRSAdbOowUj-AhsMBKeyW8Z_ZQ7FInld_lGFlspVAs&x-oss-process=image/resize,m_mfit,w_320,h_320", 
+                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/48b442e2-6380-497a-916e-0b54db72bbd9_%D0%9B%D0%AE%D0%9A_%D0%A1%D0%9A%D0%90%D0%98%CC%86%D0%A3%D0%9E%D0%9A%D0%95%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI0OGI0NDJlMi02MzgwLTQ5N2EtOTE2ZS0wYjU0ZGI3MmJiZDkiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.JdRSAdbOowUj-AhsMBKeyW8Z_ZQ7FInld_lGFlspVAs&x-oss-process=image/resize,m_mfit,w_320,h_320", 
                 name: "ЛЮК СКАЙУОКЕР",
                 class: "Повстанцы",
                 rarity: "rare"
             },
             { 
-                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/828d0d9e-789a-4276-be08-af73fd5ba1a2_%D0%9A%D0%9B%D0%9E%D0%9D_%D0%90%D0%A1%D0%9E%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI4MjhkMGQ5ZS03ODlhLTQyNzYtYmUwOC1hZjczZmQ1YmExYTIiLCJyZXNvdXJjZV9jaGF0X2lkIjpundWxsfQ.Hm4KdFLa4s7DQk9H8bz8PnvTYVtA_dJjhFnr2qLwYb4&x-oss-process=image/resize,m_mfit,w_320,h_320', 
+                url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/828d0d9e-789a-4276-be08-af73fd5ba1a2_%D0%9A%D0%9B%D0%9E%D0%9D_%D0%90%D0%A1%D0%9E%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI4MjhkMGQ5ZS03ODlhLTQyNzYtYmUwOC1hZjczZmQ5YmExYTIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Hm4KdFLa4s7DQk9H8bz8PnvTYVtA_dJjhFnr2qLwYb4&x-oss-process=image/resize,m_mfit,w_320,h_320", 
                 name: "КЛОН АСОКИ",
                 class: "Республика",
                 rarity: "rare"
@@ -515,15 +521,14 @@
             document.getElementById('card').classList.toggle('flipped');
         }
 
+        function handlePatternHelp(e) {
+            e.stopPropagation(); // Предотвращаем переворачивание карточки
+            window.open('https://example.com', '_blank');
+        }
+
         function handleGetButton() {
-            // Здесь можно добавить логику для обработки нажатия кнопки "Получить"
-            console.log("Карточка получена!");
-            
-            // Показываем новую случайную карточку
-            showRandomCard();
-            
-            // Переворачиваем карточку на лицевую сторону
-            document.getElementById('card').classList.remove('flipped');
+            // Кнопка "Получить" пока ничего не делает
+            console.log("Кнопка 'Получить' нажата, но функциональность не реализована");
         }
 
         window.onload = function() {
@@ -535,14 +540,16 @@
             
             // Добавляем обработчик для кнопки "Получить"
             document.getElementById('get-button').addEventListener('click', handleGetButton);
+            
+            // Добавляем обработчик для "Что за паттерн?"
+            document.getElementById('pattern-help').addEventListener('click', handlePatternHelp);
         };
 
         document.getElementById('card').addEventListener('click', flipCard);
 
-        // Для Mac используем системные шрифты Apple с Avenir Next
+        // Для Mac используем системные шрифты Apple
         if (navigator.platform.indexOf('Mac') > -1) {
-            document.body.style.fontFamily = 'Avenir Next, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-            document.querySelector('.card-title').style.fontFamily = 'Avenir Next, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Avenir Next", Avenir, "Helvetica Neue", Helvetica, sans-serif';
         }
     </script>
 </body>
