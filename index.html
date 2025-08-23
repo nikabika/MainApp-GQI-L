@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Button</title>
+    <title>LEGO STAR WARS Collector</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -36,7 +36,6 @@
             align-items: center;
         }
 
-        /* Стили для fallback кнопки */
         .fallback-button {
             position: fixed;
             bottom: 16px;
@@ -64,7 +63,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Контент можно добавить здесь -->
+        <!-- Контент мини-приложения -->
     </div>
 
     <button class="fallback-button" id="fallback-button" style="display: none;">ПОЛУЧИТЬ</button>
@@ -75,44 +74,43 @@
         
         // Функция для вибрации
         function triggerVibration() {
-            // Пытаемся использовать нативную вибрацию
             if (navigator.vibrate) {
-                navigator.vibrate(50); // Вибрация 50ms
+                navigator.vibrate(50);
                 return true;
             }
             
-            // Fallback для iOS/Safari
             if (window.Telegram && tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
                 return true;
             }
             
-            // Fallback для других браузеров
-            console.log("Вибрация не поддерживается");
             return false;
         }
         
+        // Функция для отправки данных и закрытия
+        function sendDataAndClose() {
+            if (tg) {
+                // Отправляем данные в бота
+                tg.sendData('card_received');
+                // Закрываем мини-приложение
+                tg.close();
+            }
+        }
+        
         if (tg) {
-            tg.expand(); // Раскрываем на весь экран
-            tg.enableClosingConfirmation(); // Подтверждение закрытия
+            tg.expand();
+            tg.enableClosingConfirmation();
             
-            // Создаем Telegram кнопку с текстом
+            // Создаем Telegram кнопку
             tg.MainButton.setText("ПОЛУЧИТЬ");
             tg.MainButton.show();
             tg.MainButton.enable();
-            
-            // Убедимся, что прогресс скрыт
             tg.MainButton.hideProgress();
             
             // Обработчик нажатия на кнопку
             tg.MainButton.onClick(function() {
-                // Запускаем вибрацию
                 triggerVibration();
-                
-                console.log("Telegram кнопка нажата, вибрация сработала");
-                
-                // Здесь можно добавить другую логику при нажатии
-                // Например, отправку данных или навигацию
+                sendDataAndClose();
             });
             
         } else {
@@ -122,18 +120,12 @@
             fallbackButton.style.display = 'flex';
             
             fallbackButton.addEventListener('click', function() {
-                // Вибрация в браузере
                 if (navigator.vibrate) {
                     navigator.vibrate(50);
-                    console.log("Вибрация сработала в браузере");
-                } else {
-                    console.log("Вибрация не поддерживается в этом браузере");
                 }
+                alert("Карточка получена! (В Telegram отправилось бы сообщение в чат)");
             });
         }
-
-        // Дополнительные настройки фона
-        document.body.style.background = 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)';
     </script>
 </body>
 </html>
