@@ -36,16 +36,38 @@
             align-items: center;
         }
 
-        /* Скрываем стандартную кнопку */
-        .tg-button {
-            display: none;
+        /* Стили для fallback кнопки */
+        .fallback-button {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            height: 50px;
+            background: #2481cc;
+            color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 17px;
+            cursor: pointer;
+            z-index: 1000;
+            border: none;
+        }
+
+        .fallback-button:active {
+            background: #1c6ca8;
+            transform: translateY(1px);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Кнопка будет создана через Telegram WebApp -->
+        <!-- Контент можно добавить здесь -->
     </div>
+
+    <button class="fallback-button" id="fallback-button" style="display: none;">ПОЛУЧИТЬ</button>
 
     <script>
         // Инициализация Telegram WebApp
@@ -55,11 +77,13 @@
             tg.expand(); // Раскрываем на весь экран
             tg.enableClosingConfirmation(); // Подтверждение закрытия
             
-            // Создаем Telegram кнопку
+            // Создаем Telegram кнопку с текстом
             tg.MainButton.setText("ПОЛУЧИТЬ");
             tg.MainButton.show();
             tg.MainButton.enable();
-            tg.MainButton.showProgress();
+            
+            // Убедимся, что прогресс скрыт
+            tg.MainButton.hideProgress();
             
             // Обработчик нажатия на кнопку
             tg.MainButton.onClick(function() {
@@ -68,57 +92,41 @@
                     navigator.vibrate(50);
                 }
                 
-                // Здесь будет логика обработки нажатия
                 console.log("Telegram кнопка нажата");
                 
-                // Можно показать loading состояние
+                // Показываем прогресс на 2 секунды
                 tg.MainButton.showProgress();
+                tg.MainButton.disable();
                 
-                // Через 2 секунды убрать loading
                 setTimeout(function() {
                     tg.MainButton.hideProgress();
+                    tg.MainButton.enable();
                 }, 2000);
             });
             
-            // Также обрабатываем событие закрытия
-            tg.onEvent('viewportChanged', function() {
-                // Обновляем позиционирование если нужно
-            });
         } else {
-            // Fallback для браузера (если не в Telegram)
+            // Fallback для браузера
             console.log("Не в Telegram окружении");
+            document.getElementById('fallback-button').style.display = 'flex';
             
-            // Создаем обычную кнопку для тестирования
-            const button = document.createElement('div');
-            button.textContent = "ПОЛУЧИТЬ";
-            button.style.cssText = `
-                position: fixed;
-                bottom: 16px;
-                left: 16px;
-                right: 16px;
-                height: 50px;
-                background: #2481cc;
-                color: white;
-                border-radius: 15px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 500;
-                font-size: 17px;
-                cursor: pointer;
-                z-index: 1000;
-            `;
-            document.body.appendChild(button);
-            
-            button.addEventListener('click', function() {
+            document.getElementById('fallback-button').addEventListener('click', function() {
                 console.log("Тестовая кнопка нажата");
                 if (navigator.vibrate) {
                     navigator.vibrate(50);
                 }
+                
+                // Эмуляция прогресса
+                this.textContent = "Загрузка...";
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.textContent = "ПОЛУЧИТЬ";
+                    this.disabled = false;
+                }, 2000);
             });
         }
 
-        // Дополнительные стили для улучшения внешнего вида
+        // Дополнительные настройки фона
         document.body.style.background = 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)';
     </script>
 </body>
