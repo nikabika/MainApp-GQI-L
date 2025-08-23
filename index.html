@@ -73,6 +73,25 @@
         // Инициализация Telegram WebApp
         let tg = window.Telegram.WebApp;
         
+        // Функция для вибрации
+        function triggerVibration() {
+            // Пытаемся использовать нативную вибрацию
+            if (navigator.vibrate) {
+                navigator.vibrate(50); // Вибрация 50ms
+                return true;
+            }
+            
+            // Fallback для iOS/Safari
+            if (window.Telegram && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+                return true;
+            }
+            
+            // Fallback для других браузеров
+            console.log("Вибрация не поддерживается");
+            return false;
+        }
+        
         if (tg) {
             tg.expand(); // Раскрываем на весь экран
             tg.enableClosingConfirmation(); // Подтверждение закрытия
@@ -87,42 +106,29 @@
             
             // Обработчик нажатия на кнопку
             tg.MainButton.onClick(function() {
-                // Вибрация при нажатии
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
+                // Запускаем вибрацию
+                triggerVibration();
                 
-                console.log("Telegram кнопка нажата");
+                console.log("Telegram кнопка нажата, вибрация сработала");
                 
-                // Показываем прогресс на 2 секунды
-                tg.MainButton.showProgress();
-                tg.MainButton.disable();
-                
-                setTimeout(function() {
-                    tg.MainButton.hideProgress();
-                    tg.MainButton.enable();
-                }, 2000);
+                // Здесь можно добавить другую логику при нажатии
+                // Например, отправку данных или навигацию
             });
             
         } else {
             // Fallback для браузера
             console.log("Не в Telegram окружении");
-            document.getElementById('fallback-button').style.display = 'flex';
+            const fallbackButton = document.getElementById('fallback-button');
+            fallbackButton.style.display = 'flex';
             
-            document.getElementById('fallback-button').addEventListener('click', function() {
-                console.log("Тестовая кнопка нажата");
+            fallbackButton.addEventListener('click', function() {
+                // Вибрация в браузере
                 if (navigator.vibrate) {
                     navigator.vibrate(50);
+                    console.log("Вибрация сработала в браузере");
+                } else {
+                    console.log("Вибрация не поддерживается в этом браузере");
                 }
-                
-                // Эмуляция прогресса
-                this.textContent = "Загрузка...";
-                this.disabled = true;
-                
-                setTimeout(() => {
-                    this.textContent = "ПОЛУЧИТЬ";
-                    this.disabled = false;
-                }, 2000);
             });
         }
 
