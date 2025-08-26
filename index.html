@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Уточка с лобби</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <style>
         @font-face {
             font-family: 'Avenir Next';
@@ -35,8 +36,7 @@
             left: 80px;
             width: calc(100% - 88px);
             height: 50px;
-            background: var(--tg-theme-bg-color, #1C1C1E);
-            background-color: rgba(255, 255, 255, 0.1); /* Светлее фона */
+            background-color: rgba(255, 255, 255, 0.1);
             z-index: 2;
             border-radius: 12px;
             padding: 0 15px;
@@ -54,8 +54,7 @@
             left: 15px;
             width: 50px;
             height: 50px;
-            background: var(--tg-theme-bg-color, #1C1C1E);
-            background-color: rgba(255, 255, 255, 0.1); /* Светлее фона */
+            background-color: rgba(255, 255, 255, 0.1);
             z-index: 3;
             border-radius: 12px;
             overflow: hidden;
@@ -82,11 +81,24 @@
             text-overflow: ellipsis;
         }
 
-        .level {
+        .user-id {
             font-size: 14px;
             font-weight: 500;
             color: var(--tg-theme-hint-color, rgba(255, 255, 255, 0.7));
             margin: 2px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .user-id:hover {
+            opacity: 0.8;
+        }
+
+        .user-id i {
+            font-size: 12px;
         }
 
         /* Основное содержимое */
@@ -128,7 +140,7 @@
             text-align: center;
             padding: 0 20px;
             line-height: 1.3;
-            margin-top: 7px; /* На 7px ниже гифки */
+            margin-top: 7px;
         }
 
         @media (min-width: 500px) {
@@ -146,7 +158,10 @@
     
     <div class="top-panel">
         <div class="username" id="username">Гость</div>
-        <div class="level">Уровень 1</div>
+        <div class="user-id" id="userId">
+            <i class="ti ti-copy"></i>
+            <span id="userIdText">ID: </span>
+        </div>
     </div>
     
     <div class="main-content">
@@ -165,6 +180,8 @@
         const avatarBox = document.getElementById('avatarBox');
         const avatarImg = document.getElementById('avatarImg');
         const usernameElement = document.getElementById('username');
+        const userIdElement = document.getElementById('userId');
+        const userIdTextElement = document.getElementById('userIdText');
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -174,7 +191,7 @@
 
         // Создаем кнопку в стиле Telegram (не капсом)
         const mainButton = tg.MainButton;
-        mainButton.setText("Создать лобби"); // Без CAPS
+        mainButton.setText("Создать лобби");
         mainButton.show();
         mainButton.onClick(createLobby);
 
@@ -184,6 +201,11 @@
         if (user) {
             // Устанавливаем имя пользователя
             usernameElement.textContent = user.first_name || 'Гость';
+            
+            // Устанавливаем ID пользователя
+            if (user.id) {
+                userIdTextElement.textContent = `ID: ${user.id}`;
+            }
             
             // Устанавливаем аватар
             if (user.photo_url) {
@@ -199,7 +221,33 @@
                 initials.style.fontWeight = 'bold';
                 avatarBox.appendChild(initials);
             }
+        } else {
+            // Заглушка для тестирования
+            userIdTextElement.textContent = 'ID: 123456789';
         }
+
+        // Обработчик копирования ID
+        userIdElement.addEventListener('click', function() {
+            // Вибрация силы 3 (light)
+            tg.HapticFeedback.impactOccurred('light');
+            
+            // Копируем ID в буфер обмена
+            const userId = user?.id || '123456789';
+            navigator.clipboard.writeText(userId.toString()).then(() => {
+                // Сохраняем оригинальный текст
+                const originalText = userIdTextElement.textContent;
+                
+                // Меняем на "Скопировано!"
+                userIdTextElement.textContent = 'Скопировано!';
+                userIdElement.querySelector('i').style.opacity = '0';
+                
+                // Возвращаем обратно через 1.5 секунды
+                setTimeout(() => {
+                    userIdTextElement.textContent = originalText;
+                    userIdElement.querySelector('i').style.opacity = '1';
+                }, 1500);
+            });
+        });
 
         // Функция создания лобби
         function createLobby() {
@@ -208,9 +256,6 @@
             
             // Действие при создании лобби
             console.log("Создание лобби...");
-            
-            // Здесь будет логика создания лобби
-            // Например, отправка данных на сервер или вызов метода Telegram
         }
 
         // Обработчик нажатия на гифку (опционально)
