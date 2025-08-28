@@ -191,7 +191,6 @@
             flex-direction: column;
             gap: 20px;
             z-index: 15;
-            transition: all 0.4s ease;
         }
 
         .room-header {
@@ -200,7 +199,6 @@
             gap: 8px;
             cursor: pointer;
             transition: opacity 0.2s ease;
-            position: relative;
         }
 
         .room-header:hover {
@@ -228,7 +226,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: opacity 0.3s ease;
         }
 
         .players-label {
@@ -241,7 +238,6 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            transition: opacity 0.3s ease;
         }
 
         .chevron-btn {
@@ -276,7 +272,7 @@
             cursor: pointer;
             text-align: center;
             margin-top: 10px;
-            transition: all 0.3s ease;
+            transition: background-color 0.2s ease;
         }
 
         .create-btn:active {
@@ -284,16 +280,90 @@
             opacity: 0.8;
         }
 
-        /* Статус игроков после создания */
-        .players-status {
+        /* Панель созданного лобби */
+        .lobby-panel {
             position: absolute;
-            top: 20px;
+            top: 90px;
+            left: 20px;
             right: 20px;
-            font-size: 14px;
-            font-weight: 500;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 20px;
+            backdrop-filter: blur(10px);
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 15;
+        }
+
+        .lobby-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .lobby-name {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, white);
+            margin: 0;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .players-count-text {
+            font-size: 16px;
+            font-weight: normal;
             color: rgba(255, 255, 255, 0.7);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        }
+
+        .lobby-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .player-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--tg-theme-button-color, #40A7E3);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .join-btn {
+            width: 36px;
+            height: 36px;
+            background-color: var(--tg-theme-button-color, #40A7E3);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .join-btn:active {
+            background-color: var(--tg-theme-button-color, #2C8DCC);
+            opacity: 0.8;
+        }
+
+        .join-icon {
+            font-size: 20px;
         }
 
         @media (min-width: 500px) {
@@ -311,7 +381,9 @@
     
     <div class="top-panel">
         <div class="username" id="username">Гость</div>
-        <div class="user-id" id="userIdText"></div>
+        <div class="user-id" id="userId">
+            <span id="userIdText"></span>
+        </div>
     </div>
     
     <div class="main-content" id="mainContent">
@@ -330,12 +402,11 @@
         <div class="room-header" id="roomHeader">
             <div class="room-name" id="roomName"></div>
             <i class="ti ti-pencil edit-icon"></i>
-            <div class="players-status" id="playersStatus"></div>
         </div>
         
-        <div class="players-section" id="playersSection">
+        <div class="players-section">
             <div class="players-label">Игроки</div>
-            <div class="players-selector" id="playersSelector">
+            <div class="players-selector">
                 <button class="chevron-btn" id="decreaseBtn">
                     <i class="ti ti-chevron-left"></i>
                 </button>
@@ -348,6 +419,22 @@
         
         <button class="create-btn" id="createBtn">Создать</button>
     </div>
+
+    <div class="lobby-panel" id="lobbyPanel">
+        <div class="lobby-header">
+            <div class="lobby-name" id="lobbyName"></div>
+            <div class="players-count-text" id="lobbyPlayersCount">1/4</div>
+        </div>
+        
+        <div class="lobby-footer">
+            <div class="player-avatar" id="playerAvatar">
+                <img class="player-avatar-img" id="playerAvatarImg" src="" alt="Игрок">
+            </div>
+            <button class="join-btn" id="joinBtn">
+                <i class="ti ti-door-enter join-icon"></i>
+            </button>
+        </div>
+    </div>
     
     <script>
         // Инициализация Telegram WebApp
@@ -357,6 +444,7 @@
         const avatarBox = document.getElementById('avatarBox');
         const avatarImg = document.getElementById('avatarImg');
         const usernameElement = document.getElementById('username');
+        const userIdElement = document.getElementById('userId');
         const userIdTextElement = document.getElementById('userIdText');
         const mainContent = document.getElementById('mainContent');
         const loaderContainer = document.getElementById('loaderContainer');
@@ -364,19 +452,21 @@
         const roomPanel = document.getElementById('roomPanel');
         const roomHeader = document.getElementById('roomHeader');
         const roomName = document.getElementById('roomName');
-        const playersSection = document.getElementById('playersSection');
-        const playersSelector = document.getElementById('playersSelector');
         const playersCount = document.getElementById('playersCount');
         const decreaseBtn = document.getElementById('decreaseBtn');
         const increaseBtn = document.getElementById('increaseBtn');
         const createBtn = document.getElementById('createBtn');
-        const playersStatus = document.getElementById('playersStatus');
+        const lobbyPanel = document.getElementById('lobbyPanel');
+        const lobbyName = document.getElementById('lobbyName');
+        const lobbyPlayersCount = document.getElementById('lobbyPlayersCount');
+        const playerAvatar = document.getElementById('playerAvatar');
+        const playerAvatarImg = document.getElementById('playerAvatarImg');
+        const joinBtn = document.getElementById('joinBtn');
 
         // Переменные
         let currentPlayers = 4;
         let userFirstName = 'Гость';
         let roomNameText = '';
-        let isRoomCreated = false;
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -402,14 +492,15 @@
             
             // Устанавливаем ID пользователя
             if (user.id) {
-                userIdTextElement.textContent = 'ID: ' + user.id;
+                userIdTextElement.textContent = user.id;
             }
             
             // Устанавливаем аватар
             if (user.photo_url) {
                 avatarImg.src = user.photo_url;
+                playerAvatarImg.src = user.photo_url;
             } else {
-                // Fallback аватар
+                // Fallback аватар для верхней панели
                 avatarBox.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                 avatarImg.style.display = 'none';
                 const initials = document.createElement('div');
@@ -418,12 +509,30 @@
                 initials.style.fontSize = '24px';
                 initials.style.fontWeight = 'bold';
                 avatarBox.appendChild(initials);
+                
+                // Fallback аватар для лобби
+                playerAvatarImg.style.display = 'none';
+                const lobbyInitials = document.createElement('div');
+                lobbyInitials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
+                lobbyInitials.style.color = 'white';
+                lobbyInitials.style.fontSize = '16px';
+                lobbyInitials.style.fontWeight = 'bold';
+                playerAvatar.appendChild(lobbyInitials);
             }
         } else {
             // Заглушка для тестирования
-            userIdTextElement.textContent = 'ID: 123456789';
+            userIdTextElement.textContent = '123456789';
             roomNameText = 'Гость';
             roomName.textContent = formatRoomName('Гость');
+            
+            // Fallback для тестирования
+            playerAvatarImg.style.display = 'none';
+            const lobbyInitials = document.createElement('div');
+            lobbyInitials.textContent = 'Г';
+            lobbyInitials.style.color = 'white';
+            lobbyInitials.style.fontSize = '16px';
+            lobbyInitials.style.fontWeight = 'bold';
+            playerAvatar.appendChild(lobbyInitials);
         }
 
         // Форматирование названия комнаты (макс 11 символов)
@@ -436,8 +545,6 @@
 
         // Обработчик переименования комнаты
         roomHeader.addEventListener('click', function() {
-            if (isRoomCreated) return; // Нельзя менять после создания
-            
             tg.HapticFeedback.impactOccurred('light');
             
             const newName = prompt('Введи новое название комнаты', roomNameText);
@@ -488,20 +595,18 @@
 
         // Обработчики изменения количества игроков
         decreaseBtn.addEventListener('click', function() {
-            if (isRoomCreated) return;
             if (currentPlayers > 2) {
                 currentPlayers--;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('soft');
+                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
             }
         });
 
         increaseBtn.addEventListener('click', function() {
-            if (isRoomCreated) return;
             if (currentPlayers < 6) {
                 currentPlayers++;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('soft');
+                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
             }
         });
 
@@ -509,35 +614,24 @@
         createBtn.addEventListener('click', function() {
             tg.HapticFeedback.impactOccurred('medium');
             
-            // Помечаем комнату как созданную
-            isRoomCreated = true;
+            // Скрываем панель создания
+            roomPanel.style.display = 'none';
             
-            // Скрываем элементы управления
-            playersSection.style.opacity = '0';
-            playersSelector.style.opacity = '0';
-            createBtn.style.opacity = '0';
-            createBtn.style.pointerEvents = 'none';
+            // Устанавливаем данные в панель лобби
+            lobbyName.textContent = formatRoomName(roomNameText);
+            lobbyPlayersCount.textContent = `1/${currentPlayers}`;
             
-            // Показываем статус игроков
-            playersStatus.textContent = `1/${currentPlayers}`;
-            playersStatus.style.opacity = '0.7';
+            // Показываем панель лобби
+            lobbyPanel.style.display = 'flex';
             
-            // Убираем возможность редактирования названия
-            roomHeader.style.cursor = 'default';
-            roomHeader.querySelector('.edit-icon').style.opacity = '0.3';
-            
-            // Анимируем уменьшение высоты панели
-            setTimeout(() => {
-                roomPanel.style.gap = '0';
-                roomPanel.style.padding = '15px 20px';
-                playersSection.style.display = 'none';
-                createBtn.style.display = 'none';
-                
-                // Здесь будет логика публикации лобби для других пользователей
-                console.log("Лобби создано:", roomNameText, "на", currentPlayers, "игроков");
-                console.log("Теперь другие пользователи видят это лобби");
-                
-            }, 300);
+            console.log("Создано лобби:", roomNameText, "на", currentPlayers, "игроков");
+        });
+
+        // Обработчик кнопки входа
+        joinBtn.addEventListener('click', function() {
+            tg.HapticFeedback.impactOccurred('medium');
+            console.log("Вход в лобби:", roomNameText);
+            // Здесь логика входа в лобби
         });
 
         // Запрещаем контекстное меню
