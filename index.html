@@ -63,6 +63,7 @@
             flex-direction: column;
             justify-content: center;
             backdrop-filter: blur(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         /* Квадрат с аватаркой - тоже светлее */
@@ -80,6 +81,7 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .avatar-img {
@@ -132,6 +134,7 @@
             justify-content: center;
             z-index: 5;
             padding-bottom: 80px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .duck-container {
@@ -140,6 +143,7 @@
             align-items: center;
             width: 100%;
             margin-bottom: 30px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .duck-gif {
@@ -151,6 +155,7 @@
             border-radius: 12px;
             image-rendering: high-quality;
             pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .message-text {
@@ -162,6 +167,83 @@
             line-height: 1.3;
             margin-top: 7px;
             pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Лоадер */
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #40A7E3;
+            animation: spin 1s ease-in-out infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Лобби контейнер */
+        .lobby-container {
+            display: none;
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .lobby-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .lobby-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .lobby-count {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .lobby-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         @media (min-width: 500px) {
@@ -192,6 +274,21 @@
         
         <div class="message-text">Никаких лобби нет</div>
     </div>
+
+    <div class="loader" id="loader"></div>
+
+    <div class="lobby-container" id="lobbyContainer">
+        <div class="lobby-header">
+            <div class="lobby-title" id="lobbyTitle"></div>
+            <div class="lobby-count">1/8</div>
+        </div>
+        <div class="lobby-player">
+            <div class="player-avatar">
+                <img id="lobbyAvatar" src="" alt="Аватар">
+            </div>
+            <div class="lobby-title" id="playerName"></div>
+        </div>
+    </div>
     
     <script>
         // Инициализация Telegram WebApp
@@ -203,6 +300,12 @@
         const usernameElement = document.getElementById('username');
         const userIdElement = document.getElementById('userId');
         const userIdTextElement = document.getElementById('userIdText');
+        const mainContent = document.querySelector('.main-content');
+        const loader = document.getElementById('loader');
+        const lobbyContainer = document.getElementById('lobbyContainer');
+        const lobbyTitle = document.getElementById('lobbyTitle');
+        const playerName = document.getElementById('playerName');
+        const lobbyAvatar = document.getElementById('lobbyAvatar');
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -218,34 +321,61 @@
 
         // Получаем данные пользователя
         const user = tg.initDataUnsafe.user;
+        let userFirstName = 'Гость';
+        let userPhotoUrl = '';
         
         if (user) {
             // Устанавливаем имя пользователя
-            usernameElement.textContent = user.first_name || 'Гость';
+            userFirstName = user.first_name || 'Гость';
+            usernameElement.textContent = userFirstName;
             
             // Устанавливаем ID пользователя
             if (user.id) {
                 userIdTextElement.textContent = user.id;
             }
             
+            // Сохраняем URL аватарки
+            userPhotoUrl = user.photo_url || '';
+            
             // Устанавливаем аватар
-            if (user.photo_url) {
-                avatarImg.src = user.photo_url;
+            if (userPhotoUrl) {
+                avatarImg.src = userPhotoUrl;
+                lobbyAvatar.src = userPhotoUrl;
             } else {
                 // Fallback аватар
                 avatarBox.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                 avatarImg.style.display = 'none';
                 const initials = document.createElement('div');
-                initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
+                initials.textContent = userFirstName.charAt(0).toUpperCase();
                 initials.style.color = 'white';
                 initials.style.fontSize = '24px';
                 initials.style.fontWeight = 'bold';
                 avatarBox.appendChild(initials);
+                
+                // Для лобби
+                lobbyAvatar.style.display = 'none';
+                const lobbyInitials = document.createElement('div');
+                lobbyInitials.textContent = userFirstName.charAt(0).toUpperCase();
+                lobbyInitials.style.color = 'white';
+                lobbyInitials.style.fontSize = '18px';
+                lobbyInitials.style.fontWeight = 'bold';
+                document.querySelector('.player-avatar').appendChild(lobbyInitials);
             }
         } else {
             // Заглушка для тестирования
             userIdTextElement.textContent = '123456789';
+            lobbyAvatar.style.display = 'none';
+            const lobbyInitials = document.createElement('div');
+            lobbyInitials.textContent = 'Г';
+            lobbyInitials.style.color = 'white';
+            lobbyInitials.style.fontSize = '18px';
+            lobbyInitials.style.fontWeight = 'bold';
+            document.querySelector('.player-avatar').appendChild(lobbyInitials);
         }
+
+        // Устанавливаем имена для лобби
+        lobbyTitle.textContent = userFirstName;
+        playerName.textContent = userFirstName;
 
         // Обработчик копирования ID
         userIdElement.addEventListener('click', function() {
@@ -275,8 +405,34 @@
             // Вибрация через Telegram WebApp (сила 5 - medium)
             tg.HapticFeedback.impactOccurred('medium');
             
-            // Действие при создании лобби
-            console.log("Создание лобби...");
+            // Скрываем все элементы
+            mainContent.style.opacity = '0';
+            mainContent.style.transform = 'translateY(20px)';
+            
+            // Показываем лоадер
+            setTimeout(() => {
+                loader.style.display = 'block';
+                
+                // Случайное время загрузки 0.3-0.6 секунд
+                const loadTime = 300 + Math.random() * 300;
+                
+                setTimeout(() => {
+                    // Скрываем лоадер
+                    loader.style.display = 'none';
+                    
+                    // Показываем лобби
+                    lobbyContainer.style.display = 'block';
+                    lobbyContainer.style.opacity = '0';
+                    lobbyContainer.style.transform = 'translateY(20px)';
+                    
+                    // Анимация появления лобби
+                    setTimeout(() => {
+                        lobbyContainer.style.opacity = '1';
+                        lobbyContainer.style.transform = 'translateY(0)';
+                    }, 50);
+                    
+                }, loadTime);
+            }, 300);
         }
 
         // Запрещаем контекстное меню
