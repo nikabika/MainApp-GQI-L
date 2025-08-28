@@ -202,32 +202,63 @@
             backdrop-filter: blur(10px);
             display: none;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
             z-index: 15;
         }
 
         .room-header {
-            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .room-header:hover {
+            opacity: 0.8;
+        }
+
+        .room-name {
+            font-size: 22px;
             font-weight: 600;
             color: var(--tg-theme-text-color, white);
             margin: 0;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .edit-icon {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .players-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .players-label {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .players-selector {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 20px;
-            margin: 10px 0;
+            gap: 15px;
         }
 
         .chevron-btn {
             background: none;
             border: none;
             color: rgba(255, 255, 255, 0.7);
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            padding: 10px;
+            padding: 8px;
             transition: opacity 0.2s ease;
         }
 
@@ -236,15 +267,15 @@
         }
 
         .players-count {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
-            min-width: 30px;
+            min-width: 25px;
             text-align: center;
         }
 
         .create-btn {
-            background-color: #40A7E3;
-            color: white;
+            background-color: var(--tg-theme-button-color, #40A7E3);
+            color: var(--tg-theme-button-text-color, white);
             border: none;
             border-radius: 10px;
             padding: 14px 20px;
@@ -257,7 +288,8 @@
         }
 
         .create-btn:active {
-            background-color: #2C8DCC;
+            background-color: var(--tg-theme-button-color, #2C8DCC);
+            opacity: 0.8;
         }
 
         @media (min-width: 500px) {
@@ -294,16 +326,22 @@
     </div>
 
     <div class="room-panel" id="roomPanel">
-        <div class="room-header" id="roomHeader"></div>
+        <div class="room-header" id="roomHeader">
+            <div class="room-name" id="roomName"></div>
+            <i class="ti ti-pencil edit-icon"></i>
+        </div>
         
-        <div class="players-selector">
-            <button class="chevron-btn" id="decreaseBtn">
-                <i class="ti ti-chevron-left"></i>
-            </button>
-            <div class="players-count" id="playersCount">4</div>
-            <button class="chevron-btn" id="increaseBtn">
-                <i class="ti ti-chevron-right"></i>
-            </button>
+        <div class="players-section">
+            <div class="players-label">Игроки</div>
+            <div class="players-selector">
+                <button class="chevron-btn" id="decreaseBtn">
+                    <i class="ti ti-chevron-left"></i>
+                </button>
+                <div class="players-count" id="playersCount">4</div>
+                <button class="chevron-btn" id="increaseBtn">
+                    <i class="ti ti-chevron-right"></i>
+                </button>
+            </div>
         </div>
         
         <button class="create-btn" id="createBtn">Создать</button>
@@ -324,6 +362,7 @@
         const loader = document.getElementById('loader');
         const roomPanel = document.getElementById('roomPanel');
         const roomHeader = document.getElementById('roomHeader');
+        const roomName = document.getElementById('roomName');
         const playersCount = document.getElementById('playersCount');
         const decreaseBtn = document.getElementById('decreaseBtn');
         const increaseBtn = document.getElementById('increaseBtn');
@@ -332,6 +371,7 @@
         // Переменные
         let currentPlayers = 4;
         let userFirstName = 'Гость';
+        let roomNameText = '';
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -352,6 +392,8 @@
             // Устанавливаем имя пользователя
             userFirstName = user.first_name || 'Гость';
             usernameElement.textContent = userFirstName;
+            roomNameText = userFirstName;
+            roomName.textContent = formatRoomName(userFirstName);
             
             // Устанавливаем ID пользователя
             if (user.id) {
@@ -375,6 +417,16 @@
         } else {
             // Заглушка для тестирования
             userIdTextElement.textContent = '123456789';
+            roomNameText = 'Гость';
+            roomName.textContent = formatRoomName('Гость');
+        }
+
+        // Форматирование названия комнаты (макс 8 символов)
+        function formatRoomName(name) {
+            if (name.length > 8) {
+                return name.substring(0, 8) + '…';
+            }
+            return name;
         }
 
         // Обработчик копирования ID
@@ -400,6 +452,27 @@
             });
         });
 
+        // Обработчик переименования комнаты
+        roomHeader.addEventListener('click', function() {
+            tg.HapticFeedback.impactOccurred('light');
+            
+            const newName = prompt('Введите название комнаты (макс 8 символов, без пробелов):', roomNameText);
+            
+            if (newName !== null) {
+                // Проверяем на пробелы
+                if (newName.includes(' ')) {
+                    alert('Название не должно содержать пробелов!');
+                    roomNameText = userFirstName;
+                } else if (newName.length > 0) {
+                    roomNameText = newName;
+                } else {
+                    roomNameText = userFirstName;
+                }
+                
+                roomName.textContent = formatRoomName(roomNameText);
+            }
+        });
+
         // Обработчик создания комнаты
         function createRoomHandler() {
             // Вибрация
@@ -407,6 +480,9 @@
             
             // Скрываем основной контент
             mainContent.style.opacity = '0';
+            
+            // Скрываем кнопку "Новая комната"
+            mainButton.hide();
             
             // Показываем лоадер
             loaderContainer.style.display = 'block';
@@ -424,11 +500,7 @@
                 loaderContainer.style.display = 'none';
                 
                 // Показываем панель комнаты
-                roomHeader.textContent = userFirstName;
                 roomPanel.style.display = 'flex';
-                
-                // Обновляем текст кнопки
-                mainButton.setText("Новая комната");
             }, randomTime);
         }
 
@@ -437,7 +509,7 @@
             if (currentPlayers > 2) {
                 currentPlayers--;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('light');
+                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
             }
         });
 
@@ -445,14 +517,14 @@
             if (currentPlayers < 6) {
                 currentPlayers++;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('light');
+                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
             }
         });
 
         // Обработчик создания лобби
         createBtn.addEventListener('click', function() {
             tg.HapticFeedback.impactOccurred('medium');
-            console.log("Создано лобби на", currentPlayers, "игроков");
+            console.log("Создано лобби:", roomNameText, "на", currentPlayers, "игроков");
             // Здесь логика создания лобби
         });
 
