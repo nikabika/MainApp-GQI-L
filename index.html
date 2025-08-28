@@ -230,8 +230,9 @@
         }
 
         .edit-icon {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            color: rgba(255, 255, 255, 1);
+            opacity: 1;
         }
 
         .players-section {
@@ -241,7 +242,7 @@
         }
 
         .players-label {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.7);
         }
@@ -267,7 +268,7 @@
         }
 
         .players-count {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 600;
             min-width: 25px;
             text-align: center;
@@ -421,10 +422,10 @@
             roomName.textContent = formatRoomName('Гость');
         }
 
-        // Форматирование названия комнаты (макс 8 символов)
+        // Форматирование названия комнаты (макс 11 символов)
         function formatRoomName(name) {
-            if (name.length > 8) {
-                return name.substring(0, 8) + '…';
+            if (name.length > 11) {
+                return name.substring(0, 11) + '…';
             }
             return name;
         }
@@ -456,17 +457,15 @@
         roomHeader.addEventListener('click', function() {
             tg.HapticFeedback.impactOccurred('light');
             
-            const newName = prompt('Введите название комнаты (макс 8 символов, без пробелов):', roomNameText);
+            const newName = prompt('Введи новое название комнаты', roomNameText);
             
             if (newName !== null) {
-                // Проверяем на пробелы
-                if (newName.includes(' ')) {
-                    alert('Название не должно содержать пробелов!');
+                // Проверяем на пустое имя или только пробелы
+                const trimmedName = newName.trim();
+                if (trimmedName.length === 0) {
                     roomNameText = userFirstName;
-                } else if (newName.length > 0) {
-                    roomNameText = newName;
                 } else {
-                    roomNameText = userFirstName;
+                    roomNameText = trimmedName;
                 }
                 
                 roomName.textContent = formatRoomName(roomNameText);
