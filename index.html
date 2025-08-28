@@ -326,6 +326,12 @@
             margin-top: 5px;
         }
 
+        .players-avatars {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .player-avatar {
             width: 36px;
             height: 36px;
@@ -335,12 +341,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .player-avatar-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .player-initials {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
         }
 
         .join-btn {
@@ -364,6 +377,109 @@
 
         .join-icon {
             font-size: 20px;
+        }
+
+        /* Список лобби */
+        .lobbies-list {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            right: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .lobby-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .lobby-item:hover {
+            opacity: 0.8;
+        }
+
+        .lobby-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .lobby-item-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, white);
+            margin: 0;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .lobby-item-players {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .lobby-item-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .lobby-item-avatars {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lobby-item-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--tg-theme-button-color, #40A7E3);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lobby-item-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .lobby-item-initials {
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .lobby-item-join {
+            width: 28px;
+            height: 28px;
+            background-color: var(--tg-theme-button-color, #40A7E3);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lobby-item-join-icon {
+            font-size: 16px;
         }
 
         @media (min-width: 500px) {
@@ -427,13 +543,19 @@
         </div>
         
         <div class="lobby-footer">
-            <div class="player-avatar" id="playerAvatar">
-                <img class="player-avatar-img" id="playerAvatarImg" src="" alt="Игрок">
+            <div class="players-avatars" id="playersAvatars">
+                <div class="player-avatar" id="playerAvatar">
+                    <img class="player-avatar-img" id="playerAvatarImg" src="" alt="Игрок">
+                </div>
             </div>
             <button class="join-btn" id="joinBtn">
-                <i class="ti ti-door-enter join-icon"></i>
+                <i class="ti ti-login-2 join-icon"></i>
             </button>
         </div>
+    </div>
+
+    <div class="lobbies-list" id="lobbiesList">
+        <!-- Список лобби будет генерироваться динамически -->
     </div>
     
     <script>
@@ -459,14 +581,19 @@
         const lobbyPanel = document.getElementById('lobbyPanel');
         const lobbyName = document.getElementById('lobbyName');
         const lobbyPlayersCount = document.getElementById('lobbyPlayersCount');
-        const playerAvatar = document.getElementById('playerAvatar');
+        const playersAvatars = document.getElementById('playersAvatars');
         const playerAvatarImg = document.getElementById('playerAvatarImg');
         const joinBtn = document.getElementById('joinBtn');
+        const lobbiesList = document.getElementById('lobbiesList');
 
         // Переменные
         let currentPlayers = 4;
         let userFirstName = 'Гость';
         let roomNameText = '';
+        let currentUser = null;
+        let currentLobbyId = null;
+        let lobbyCheckInterval = null;
+        let lobbiesUpdateInterval = null;
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -478,61 +605,71 @@
         const mainButton = tg.MainButton;
         mainButton.setText("Новая комната");
         mainButton.show();
-        mainButton.onClick(createRoomHandler);
+        mainButton.onClick(showCreateRoom);
 
         // Получаем данные пользователя
         const user = tg.initDataUnsafe.user;
         
         if (user) {
+            currentUser = {
+                id: user.id,
+                first_name: user.first_name || 'Гость',
+                photo_url: user.photo_url,
+                username: user.username
+            };
+            
             // Устанавливаем имя пользователя
-            userFirstName = user.first_name || 'Гость';
+            userFirstName = currentUser.first_name;
             usernameElement.textContent = userFirstName;
             roomNameText = userFirstName;
             roomName.textContent = formatRoomName(userFirstName);
             
             // Устанавливаем ID пользователя
-            if (user.id) {
-                userIdTextElement.textContent = user.id;
-            }
+            userIdTextElement.textContent = currentUser.id;
             
             // Устанавливаем аватар
-            if (user.photo_url) {
-                avatarImg.src = user.photo_url;
-                playerAvatarImg.src = user.photo_url;
+            if (currentUser.photo_url) {
+                avatarImg.src = currentUser.photo_url;
+                playerAvatarImg.src = currentUser.photo_url;
             } else {
-                // Fallback аватар для верхней панели
-                avatarBox.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                avatarImg.style.display = 'none';
-                const initials = document.createElement('div');
-                initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
-                initials.style.color = 'white';
-                initials.style.fontSize = '24px';
-                initials.style.fontWeight = 'bold';
-                avatarBox.appendChild(initials);
-                
-                // Fallback аватар для лобби
-                playerAvatarImg.style.display = 'none';
-                const lobbyInitials = document.createElement('div');
-                lobbyInitials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
-                lobbyInitials.style.color = 'white';
-                lobbyInitials.style.fontSize = '16px';
-                lobbyInitials.style.fontWeight = 'bold';
-                playerAvatar.appendChild(lobbyInitials);
+                setupFallbackAvatar(avatarBox, currentUser.first_name);
+                setupFallbackAvatar(playersAvatars.querySelector('.player-avatar'), currentUser.first_name);
             }
         } else {
             // Заглушка для тестирования
-            userIdTextElement.textContent = '123456789';
+            currentUser = {
+                id: Math.floor(Math.random() * 1000000000),
+                first_name: 'Гость',
+                photo_url: null,
+                username: null
+            };
+            
+            userIdTextElement.textContent = currentUser.id;
             roomNameText = 'Гость';
             roomName.textContent = formatRoomName('Гость');
             
-            // Fallback для тестирования
-            playerAvatarImg.style.display = 'none';
-            const lobbyInitials = document.createElement('div');
-            lobbyInitials.textContent = 'Г';
-            lobbyInitials.style.color = 'white';
-            lobbyInitials.style.fontSize = '16px';
-            lobbyInitials.style.fontWeight = 'bold';
-            playerAvatar.appendChild(lobbyInitials);
+            setupFallbackAvatar(avatarBox, 'Г');
+            setupFallbackAvatar(playersAvatars.querySelector('.player-avatar'), 'Г');
+        }
+
+        // Загрузка лобби при запуске
+        loadLobbies();
+        
+        // Запускаем обновление списка лобби каждые 5 секунд
+        lobbiesUpdateInterval = setInterval(loadLobbies, 5000);
+        
+        // Запускаем проверку времени жизни лобби каждую минуту
+        lobbyCheckInterval = setInterval(checkLobbiesExpiration, 60000);
+
+        // Функция настройки fallback аватара
+        function setupFallbackAvatar(container, name) {
+            const img = container.querySelector('img');
+            if (img) img.style.display = 'none';
+            
+            const initials = document.createElement('div');
+            initials.className = 'player-initials';
+            initials.textContent = name.charAt(0).toUpperCase();
+            container.appendChild(initials);
         }
 
         // Форматирование названия комнаты (макс 11 символов)
@@ -543,28 +680,8 @@
             return name;
         }
 
-        // Обработчик переименования комнаты
-        roomHeader.addEventListener('click', function() {
-            tg.HapticFeedback.impactOccurred('light');
-            
-            const newName = prompt('Введи новое название комнаты', roomNameText);
-            
-            if (newName !== null) {
-                // Проверяем на пустое имя или только пробелы
-                const trimmedName = newName.trim();
-                if (trimmedName.length === 0) {
-                    roomNameText = userFirstName;
-                } else {
-                    roomNameText = trimmedName;
-                }
-                
-                roomName.textContent = formatRoomName(roomNameText);
-            }
-        });
-
-        // Обработчик создания комнаты
-        function createRoomHandler() {
-            // Вибрация
+        // Показать панель создания комнаты
+        function showCreateRoom() {
             tg.HapticFeedback.impactOccurred('medium');
             
             // Скрываем основной контент
@@ -590,15 +707,219 @@
                 
                 // Показываем панель комнаты
                 roomPanel.style.display = 'flex';
+                lobbiesList.style.display = 'none';
             }, randomTime);
         }
+
+        // Загрузка списка лобби
+        function loadLobbies() {
+            const lobbies = getLobbies();
+            renderLobbiesList(lobbies);
+        }
+
+        // Получение лобби из localStorage
+        function getLobbies() {
+            try {
+                const lobbiesJson = localStorage.getItem('duck_lobbies');
+                return lobbiesJson ? JSON.parse(lobbiesJson) : [];
+            } catch (e) {
+                console.error('Error loading lobbies:', e);
+                return [];
+            }
+        }
+
+        // Сохранение лобби в localStorage
+        function saveLobbies(lobbies) {
+            try {
+                localStorage.setItem('duck_lobbies', JSON.stringify(lobbies));
+            } catch (e) {
+                console.error('Error saving lobbies:', e);
+            }
+        }
+
+        // Отрисовка списка лобби
+        function renderLobbiesList(lobbies) {
+            lobbiesList.innerHTML = '';
+            
+            if (lobbies.length === 0) {
+                lobbiesList.style.display = 'none';
+                return;
+            }
+            
+            lobbiesList.style.display = 'flex';
+            
+            lobbies.forEach(lobby => {
+                const lobbyElement = createLobbyElement(lobby);
+                lobbiesList.appendChild(lobbyElement);
+            });
+        }
+
+        // Создание элемента лобби
+        function createLobbyElement(lobby) {
+            const lobbyElement = document.createElement('div');
+            lobbyElement.className = 'lobby-item';
+            lobbyElement.innerHTML = `
+                <div class="lobby-item-header">
+                    <div class="lobby-item-name">${formatRoomName(lobby.name)}</div>
+                    <div class="lobby-item-players">${lobby.players.length}/${lobby.maxPlayers}</div>
+                </div>
+                <div class="lobby-item-footer">
+                    <div class="lobby-item-avatars">
+                        ${lobby.players.map(player => `
+                            <div class="lobby-item-avatar">
+                                ${player.photo_url ? 
+                                    `<img src="${player.photo_url}" class="lobby-item-avatar-img" alt="${player.first_name}">` :
+                                    `<div class="lobby-item-initials">${player.first_name.charAt(0).toUpperCase()}</div>`
+                                }
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="lobby-item-join">
+                        <i class="ti ti-login-2 lobby-item-join-icon"></i>
+                    </button>
+                </div>
+            `;
+            
+            lobbyElement.addEventListener('click', () => joinLobby(lobby.id));
+            
+            return lobbyElement;
+        }
+
+        // Проверка времени жизни лобби
+        function checkLobbiesExpiration() {
+            const lobbies = getLobbies();
+            const now = Date.now();
+            const twoMinutes = 2 * 60 * 1000;
+            
+            const activeLobbies = lobbies.filter(lobby => now - lobby.createdAt < twoMinutes);
+            
+            if (activeLobbies.length !== lobbies.length) {
+                saveLobbies(activeLobbies);
+                loadLobbies();
+                
+                // Если текущее лобби удалено, скрываем панель
+                if (currentLobbyId && !activeLobbies.find(l => l.id === currentLobbyId)) {
+                    currentLobbyId = null;
+                    lobbyPanel.style.display = 'none';
+                    mainContent.style.opacity = '1';
+                    mainButton.setText("Новая комната");
+                    mainButton.show();
+                }
+            }
+        }
+
+        // Создание лобби
+        function createLobby() {
+            const lobby = {
+                id: Date.now().toString(),
+                name: roomNameText,
+                maxPlayers: currentPlayers,
+                players: [currentUser],
+                createdAt: Date.now(),
+                creatorId: currentUser.id
+            };
+            
+            const lobbies = getLobbies();
+            lobbies.push(lobby);
+            saveLobbies(lobbies);
+            
+            currentLobbyId = lobby.id;
+            showLobbyPanel(lobby);
+            
+            console.log("Создано лобби:", lobby.name, "на", lobby.maxPlayers, "игроков");
+        }
+
+        // Показать панель лобби
+        function showLobbyPanel(lobby) {
+            lobbyName.textContent = formatRoomName(lobby.name);
+            lobbyPlayersCount.textContent = `${lobby.players.length}/${lobby.maxPlayers}`;
+            
+            // Очищаем аватары игроков
+            playersAvatars.innerHTML = '';
+            
+            // Добавляем аватары всех игроков
+            lobby.players.forEach(player => {
+                const avatar = document.createElement('div');
+                avatar.className = 'player-avatar';
+                
+                if (player.photo_url) {
+                    const img = document.createElement('img');
+                    img.className = 'player-avatar-img';
+                    img.src = player.photo_url;
+                    img.alt = player.first_name;
+                    avatar.appendChild(img);
+                } else {
+                    const initials = document.createElement('div');
+                    initials.className = 'player-initials';
+                    initials.textContent = player.first_name.charAt(0).toUpperCase();
+                    avatar.appendChild(initials);
+                }
+                
+                playersAvatars.appendChild(avatar);
+            });
+            
+            roomPanel.style.display = 'none';
+            lobbyPanel.style.display = 'flex';
+            lobbiesList.style.display = 'none';
+        }
+
+        // Присоединение к лобби
+        function joinLobby(lobbyId) {
+            const lobbies = getLobbies();
+            const lobby = lobbies.find(l => l.id === lobbyId);
+            
+            if (!lobby) {
+                tg.showAlert('Лобби не найдено!');
+                return;
+            }
+            
+            if (lobby.players.length >= lobby.maxPlayers) {
+                tg.showAlert('Лобби заполнено!');
+                return;
+            }
+            
+            // Проверяем, не присоединен ли уже пользователь
+            if (lobby.players.find(p => p.id === currentUser.id)) {
+                tg.showAlert('Вы уже в этом лобби!');
+                return;
+            }
+            
+            // Добавляем пользователя в лобби
+            lobby.players.push(currentUser);
+            saveLobbies(lobbies);
+            
+            currentLobbyId = lobby.id;
+            showLobbyPanel(lobby);
+            
+            tg.HapticFeedback.impactOccurred('medium');
+            console.log("Присоединились к лобби:", lobby.name);
+        }
+
+        // Обработчик переименования комнаты
+        roomHeader.addEventListener('click', function() {
+            tg.HapticFeedback.impactOccurred('light');
+            
+            const newName = prompt('Введи новое название комнаты', roomNameText);
+            
+            if (newName !== null) {
+                // Проверяем на пустое имя или только пробелы
+                const trimmedName = newName.trim();
+                if (trimmedName.length === 0) {
+                    roomNameText = userFirstName;
+                } else {
+                    roomNameText = trimmedName;
+                }
+                
+                roomName.textContent = formatRoomName(roomNameText);
+            }
+        });
 
         // Обработчики изменения количества игроков
         decreaseBtn.addEventListener('click', function() {
             if (currentPlayers > 2) {
                 currentPlayers--;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
+                tg.HapticFeedback.impactOccurred('soft');
             }
         });
 
@@ -606,32 +927,21 @@
             if (currentPlayers < 6) {
                 currentPlayers++;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
+                tg.HapticFeedback.impactOccurred('soft');
             }
         });
 
         // Обработчик создания лобби
         createBtn.addEventListener('click', function() {
             tg.HapticFeedback.impactOccurred('medium');
-            
-            // Скрываем панель создания
-            roomPanel.style.display = 'none';
-            
-            // Устанавливаем данные в панель лобби
-            lobbyName.textContent = formatRoomName(roomNameText);
-            lobbyPlayersCount.textContent = `1/${currentPlayers}`;
-            
-            // Показываем панель лобби
-            lobbyPanel.style.display = 'flex';
-            
-            console.log("Создано лобби:", roomNameText, "на", currentPlayers, "игроков");
+            createLobby();
         });
 
-        // Обработчик кнопки входа
+        // Обработчик кнопки входа (для создателя лобби)
         joinBtn.addEventListener('click', function() {
             tg.HapticFeedback.impactOccurred('medium');
             console.log("Вход в лобби:", roomNameText);
-            // Здесь логика входа в лобби
+            // Здесь логика начала игры
         });
 
         // Запрещаем контекстное меню
@@ -642,6 +952,12 @@
         // Запрещаем выделение текста
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
+        });
+
+        // Очистка интервалов при закрытии
+        window.addEventListener('beforeunload', function() {
+            if (lobbyCheckInterval) clearInterval(lobbyCheckInterval);
+            if (lobbiesUpdateInterval) clearInterval(lobbiesUpdateInterval);
         });
     </script>
 </body>
