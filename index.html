@@ -107,19 +107,6 @@
             font-weight: 500;
             color: var(--tg-theme-hint-color, rgba(255, 255, 255, 0.7));
             margin: 2px 0 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-
-        .user-id:hover {
-            opacity: 0.8;
-        }
-
-        .user-id i {
-            font-size: 12px;
         }
 
         /* Основное содержимое */
@@ -204,6 +191,7 @@
             flex-direction: column;
             gap: 20px;
             z-index: 15;
+            transition: all 0.4s ease;
         }
 
         .room-header {
@@ -212,6 +200,7 @@
             gap: 8px;
             cursor: pointer;
             transition: opacity 0.2s ease;
+            position: relative;
         }
 
         .room-header:hover {
@@ -239,6 +228,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: opacity 0.3s ease;
         }
 
         .players-label {
@@ -251,6 +241,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            transition: opacity 0.3s ease;
         }
 
         .chevron-btn {
@@ -285,12 +276,24 @@
             cursor: pointer;
             text-align: center;
             margin-top: 10px;
-            transition: background-color 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .create-btn:active {
             background-color: var(--tg-theme-button-color, #2C8DCC);
             opacity: 0.8;
+        }
+
+        /* Статус игроков после создания */
+        .players-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         @media (min-width: 500px) {
@@ -308,10 +311,7 @@
     
     <div class="top-panel">
         <div class="username" id="username">Гость</div>
-        <div class="user-id" id="userId">
-            <i class="ti ti-copy"></i>
-            <span id="userIdText"></span>
-        </div>
+        <div class="user-id" id="userIdText"></div>
     </div>
     
     <div class="main-content" id="mainContent">
@@ -330,11 +330,12 @@
         <div class="room-header" id="roomHeader">
             <div class="room-name" id="roomName"></div>
             <i class="ti ti-pencil edit-icon"></i>
+            <div class="players-status" id="playersStatus"></div>
         </div>
         
-        <div class="players-section">
+        <div class="players-section" id="playersSection">
             <div class="players-label">Игроки</div>
-            <div class="players-selector">
+            <div class="players-selector" id="playersSelector">
                 <button class="chevron-btn" id="decreaseBtn">
                     <i class="ti ti-chevron-left"></i>
                 </button>
@@ -356,7 +357,6 @@
         const avatarBox = document.getElementById('avatarBox');
         const avatarImg = document.getElementById('avatarImg');
         const usernameElement = document.getElementById('username');
-        const userIdElement = document.getElementById('userId');
         const userIdTextElement = document.getElementById('userIdText');
         const mainContent = document.getElementById('mainContent');
         const loaderContainer = document.getElementById('loaderContainer');
@@ -364,15 +364,19 @@
         const roomPanel = document.getElementById('roomPanel');
         const roomHeader = document.getElementById('roomHeader');
         const roomName = document.getElementById('roomName');
+        const playersSection = document.getElementById('playersSection');
+        const playersSelector = document.getElementById('playersSelector');
         const playersCount = document.getElementById('playersCount');
         const decreaseBtn = document.getElementById('decreaseBtn');
         const increaseBtn = document.getElementById('increaseBtn');
         const createBtn = document.getElementById('createBtn');
+        const playersStatus = document.getElementById('playersStatus');
 
         // Переменные
         let currentPlayers = 4;
         let userFirstName = 'Гость';
         let roomNameText = '';
+        let isRoomCreated = false;
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -398,7 +402,7 @@
             
             // Устанавливаем ID пользователя
             if (user.id) {
-                userIdTextElement.textContent = user.id;
+                userIdTextElement.textContent = 'ID: ' + user.id;
             }
             
             // Устанавливаем аватар
@@ -417,7 +421,7 @@
             }
         } else {
             // Заглушка для тестирования
-            userIdTextElement.textContent = '123456789';
+            userIdTextElement.textContent = 'ID: 123456789';
             roomNameText = 'Гость';
             roomName.textContent = formatRoomName('Гость');
         }
@@ -430,31 +434,10 @@
             return name;
         }
 
-        // Обработчик копирования ID
-        userIdElement.addEventListener('click', function() {
-            // Вибрация силы 3 (light)
-            tg.HapticFeedback.impactOccurred('light');
-            
-            // Копируем ID в буфер обмена
-            const userId = user?.id || '123456789';
-            navigator.clipboard.writeText(userId.toString()).then(() => {
-                // Сохраняем оригинальный текст
-                const originalText = userIdTextElement.textContent;
-                
-                // Меняем на "Скопировано!"
-                userIdTextElement.textContent = 'Скопировано!';
-                userIdElement.querySelector('i').style.opacity = '0';
-                
-                // Возвращаем обратно через 1.5 секунды
-                setTimeout(() => {
-                    userIdTextElement.textContent = originalText;
-                    userIdElement.querySelector('i').style.opacity = '1';
-                }, 1500);
-            });
-        });
-
         // Обработчик переименования комнаты
         roomHeader.addEventListener('click', function() {
+            if (isRoomCreated) return; // Нельзя менять после создания
+            
             tg.HapticFeedback.impactOccurred('light');
             
             const newName = prompt('Введи новое название комнаты', roomNameText);
@@ -505,26 +488,56 @@
 
         // Обработчики изменения количества игроков
         decreaseBtn.addEventListener('click', function() {
+            if (isRoomCreated) return;
             if (currentPlayers > 2) {
                 currentPlayers--;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
+                tg.HapticFeedback.impactOccurred('soft');
             }
         });
 
         increaseBtn.addEventListener('click', function() {
+            if (isRoomCreated) return;
             if (currentPlayers < 6) {
                 currentPlayers++;
                 playersCount.textContent = currentPlayers;
-                tg.HapticFeedback.impactOccurred('soft'); // Вибрация 1
+                tg.HapticFeedback.impactOccurred('soft');
             }
         });
 
         // Обработчик создания лобби
         createBtn.addEventListener('click', function() {
             tg.HapticFeedback.impactOccurred('medium');
-            console.log("Создано лобби:", roomNameText, "на", currentPlayers, "игроков");
-            // Здесь логика создания лобби
+            
+            // Помечаем комнату как созданную
+            isRoomCreated = true;
+            
+            // Скрываем элементы управления
+            playersSection.style.opacity = '0';
+            playersSelector.style.opacity = '0';
+            createBtn.style.opacity = '0';
+            createBtn.style.pointerEvents = 'none';
+            
+            // Показываем статус игроков
+            playersStatus.textContent = `1/${currentPlayers}`;
+            playersStatus.style.opacity = '0.7';
+            
+            // Убираем возможность редактирования названия
+            roomHeader.style.cursor = 'default';
+            roomHeader.querySelector('.edit-icon').style.opacity = '0.3';
+            
+            // Анимируем уменьшение высоты панели
+            setTimeout(() => {
+                roomPanel.style.gap = '0';
+                roomPanel.style.padding = '15px 20px';
+                playersSection.style.display = 'none';
+                createBtn.style.display = 'none';
+                
+                // Здесь будет логика публикации лобби для других пользователей
+                console.log("Лобби создано:", roomNameText, "на", currentPlayers, "игроков");
+                console.log("Теперь другие пользователи видят это лобби");
+                
+            }, 300);
         });
 
         // Запрещаем контекстное меню
