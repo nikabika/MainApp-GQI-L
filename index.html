@@ -6,7 +6,10 @@
     <title>Уточка с лобби</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <!-- Добавляем Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
+        /* Твои стили остаются без изменений */
         @font-face {
             font-family: 'Avenir Next';
             src: local('Avenir Next'), local('Avenir-Next');
@@ -458,6 +461,12 @@
         // Инициализация Telegram WebApp
         let tg = window.Telegram.WebApp;
         
+        // Инициализация Supabase
+        const SUPABASE_URL = 'https://cagqdpirdlofuxjgzlcp.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhZ3FkcGlyZGxvZnV4amd6bGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NDk5NjMsImV4cCI6MjA3MjAyNTk2M30.U9aKKTT4Ra2JHlkNIQjUIM06g6ptqn_VZZc9FZXjpdE';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
         // Инициализация элементов
         const avatarBox = document.getElementById('avatarBox');
         const avatarImg = document.getElementById('avatarImg');
@@ -482,7 +491,6 @@
         let roomNameText = '';
         let currentUserId = null;
         let lobbies = [];
-        let lobbyCheckInterval = null;
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -531,28 +539,40 @@
             userIdTextElement.textContent = '123456789';
             roomNameText = 'Гость';
             roomName.textContent = formatRoomName('Гость');
-            currentUserId = 'test_user_123';
+            currentUserId = 'test_user_' + Math.random().toString(36).substr(2, 9);
         }
 
-        // Загружаем лобби из localStorage
-        function loadLobbies() {
-            const savedLobbies = localStorage.getItem('duck_lobbies');
-            if (savedLobbies) {
-                lobbies = JSON.parse(savedLobbies);
+        // Загружаем лобби из Supabase
+        async function loadLobbies() {
+            try {
+                const { data, error } = await supabase
+                    .from('lobbies')
+                    .select('*')
+                    .order('created_at', { ascending: false });
                 
-                // Удаляем просроченные лобби
-                const now = Date.now();
-                lobbies = lobbies.filter(lobby => now - lobby.createdAt < 5 * 60 * 1000);
+                if (error) throw error;
                 
-                // Сохраняем обратно
-                localStorage.setItem('duck_lobbies', JSON.stringify(lobbies));
+                lobbies = data || [];
+                renderLobbies();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки лобби:', error);
+                // Fallback на локальные данные
+                renderLobbies();
             }
-            renderLobbies();
         }
 
-        // Сохраняем лобби в localStorage
-        function saveLobbies() {
-            localStorage.setItem('duck_lobbies', JSON.stringify(lobbies));
+        // Реальное время обновление лобби
+        function setupRealtime() {
+            supabase
+                .channel('lobbies-changes')
+                .on('postgres_changes', 
+                    { event: '*', schema: 'public', table: 'lobbies' }, 
+                    () => {
+                        loadLobbies(); // Перезагружаем при любых изменениях
+                    }
+                )
+                .subscribe();
         }
 
         // Отрисовываем список лобби
@@ -561,36 +581,39 @@
             
             if (lobbies.length === 0) {
                 mainContent.style.display = 'flex';
+                lobbiesContainer.style.display = 'none';
                 return;
             }
             
             mainContent.style.display = 'none';
+            lobbiesContainer.style.display = 'flex';
             
             lobbies.forEach(lobby => {
-                const isOwnLobby = lobby.creatorId === currentUserId;
+                const isOwnLobby = lobby.creator_id === currentUserId;
+                const players = lobby.players || [];
                 
                 const lobbyElement = document.createElement('div');
                 lobbyElement.className = 'lobby-panel';
                 lobbyElement.innerHTML = `
                     <div class="lobby-header">
                         <div class="lobby-name">${formatRoomName(lobby.name)}</div>
-                        <div class="players-count-text">${lobby.players.length}/${lobby.maxPlayers}</div>
+                        <div class="players-count-text">${players.length}/${lobby.max_players}</div>
                     </div>
                     
                     <div class="lobby-footer">
                         <div class="players-avatars">
-                            ${lobby.players.map(player => `
+                            ${players.map(player => `
                                 <div class="player-avatar">
-                                    ${player.avatarUrl ? 
-                                        `<img class="player-avatar-img" src="${player.avatarUrl}" alt="Игрок">` : 
-                                        `<div style="color: white; font-size: 16px; font-weight: bold;">${player.name.charAt(0).toUpperCase()}</div>`
+                                    ${player.avatar_url ? 
+                                        `<img class="player-avatar-img" src="${player.avatar_url}" alt="Игрок">` : 
+                                        `<div style="color: white; font-size: 16px; font-weight: bold;">${player.name?.charAt(0)?.toUpperCase() || '?'}</div>`
                                     }
                                 </div>
                             `).join('')}
                         </div>
                         
                         <div class="lobby-buttons">
-                            ${lobby.players.length > 1 ? `
+                            ${players.length > 1 ? `
                                 <button class="lobby-btn play-btn" data-lobby-id="${lobby.id}">
                                     <i class="ti ti-player-play btn-icon"></i>
                                 </button>
@@ -613,7 +636,7 @@
                     joinBtn.addEventListener('click', () => joinLobby(lobby.id));
                 }
                 
-                if (lobby.players.length > 1) {
+                if (players.length > 1) {
                     const playBtn = lobbyElement.querySelector('.play-btn');
                     playBtn.style.display = 'flex';
                     playBtn.addEventListener('click', () => playLobby(lobby.id));
@@ -623,10 +646,10 @@
 
         // Форматирование названия комнаты (макс 11 символов)
         function formatRoomName(name) {
-            if (name.length > 11) {
+            if (name && name.length > 11) {
                 return name.substring(0, 11) + '…';
             }
-            return name;
+            return name || 'Без названия';
         }
 
         // Обработчик переименования комнаты
@@ -697,54 +720,85 @@
         });
 
         // Обработчик создания лобби
-        createBtn.addEventListener('click', function() {
+        createBtn.addEventListener('click', async function() {
             tg.HapticFeedback.impactOccurred('medium');
             
-            // Создаем новое лобби
-            const newLobby = {
-                id: 'lobby_' + Date.now(),
-                name: roomNameText,
-                maxPlayers: currentPlayers,
-                creatorId: currentUserId,
-                players: [{
-                    id: currentUserId,
-                    name: userFirstName,
-                    avatarUrl: user?.photo_url || null
-                }],
-                createdAt: Date.now()
-            };
-            
-            // Добавляем в начало списка
-            lobbies.unshift(newLobby);
-            saveLobbies();
-            renderLobbies();
+            try {
+                const newLobby = {
+                    name: roomNameText,
+                    max_players: currentPlayers,
+                    creator_id: currentUserId,
+                    players: [{
+                        id: currentUserId,
+                        name: userFirstName,
+                        avatar_url: user?.photo_url || null
+                    }],
+                    created_at: new Date().toISOString(),
+                    expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+                };
+                
+                const { data, error } = await supabase
+                    .from('lobbies')
+                    .insert([newLobby])
+                    .select();
+                
+                if (error) throw error;
+                
+                console.log("Лобби создано:", data[0]);
+                
+            } catch (error) {
+                console.error("Ошибка создания лобби:", error);
+                // Fallback: добавляем локально
+                lobbies.unshift({
+                    id: 'local_' + Date.now(),
+                    name: roomNameText,
+                    max_players: currentPlayers,
+                    creator_id: currentUserId,
+                    players: [{
+                        id: currentUserId,
+                        name: userFirstName,
+                        avatar_url: user?.photo_url || null
+                    }],
+                    created_at: new Date().toISOString()
+                });
+                renderLobbies();
+            }
             
             // Скрываем панель создания
             roomPanel.style.display = 'none';
             
             // Показываем кнопку создания снова
             mainButton.show();
-            
-            console.log("Создано лобби:", newLobby);
         });
 
         // Обработчик входа в лобби
-        function joinLobby(lobbyId) {
+        async function joinLobby(lobbyId) {
             tg.HapticFeedback.impactOccurred('medium');
             
-            const lobby = lobbies.find(l => l.id === lobbyId);
-            if (lobby && lobby.players.length < lobby.maxPlayers) {
-                // Добавляем текущего пользователя в лобби
-                lobby.players.push({
+            try {
+                const lobby = lobbies.find(l => l.id === lobbyId);
+                if (!lobby) return;
+                
+                const newPlayer = {
                     id: currentUserId,
                     name: userFirstName,
-                    avatarUrl: user?.photo_url || null
-                });
+                    avatar_url: user?.photo_url || null
+                };
                 
-                saveLobbies();
-                renderLobbies();
+                // Обновляем лобби в Supabase
+                const { error } = await supabase
+                    .from('lobbies')
+                    .update({
+                        players: [...lobby.players, newPlayer]
+                    })
+                    .eq('id', lobbyId);
                 
-                console.log("Пользователь присоединился к лобби:", lobbyId);
+                if (error) throw error;
+                
+                console.log("Присоединились к лобби:", lobbyId);
+                
+            } catch (error) {
+                console.error("Ошибка входа в лобби:", error);
             }
         }
 
@@ -752,29 +806,11 @@
         function playLobby(lobbyId) {
             tg.HapticFeedback.impactOccurred('light');
             console.log("Запуск игры в лобби:", lobbyId);
-            // Здесь логика запуска игры
-        }
-
-        // Запускаем проверку просроченных лобби
-        function startLobbyCleanup() {
-            if (lobbyCheckInterval) clearInterval(lobbyCheckInterval);
-            
-            lobbyCheckInterval = setInterval(() => {
-                const now = Date.now();
-                const initialLength = lobbies.length;
-                
-                lobbies = lobbies.filter(lobby => now - lobby.createdAt < 5 * 60 * 1000);
-                
-                if (lobbies.length !== initialLength) {
-                    saveLobbies();
-                    renderLobbies();
-                }
-            }, 30000); // Проверяем каждые 30 секунд
         }
 
         // Инициализация
         loadLobbies();
-        startLobbyCleanup();
+        setupRealtime();
 
         // Запрещаем контекстное меню
         document.addEventListener('contextmenu', function(e) {
