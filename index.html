@@ -185,7 +185,7 @@
             display: none;
             flex-direction: column;
             gap: 20px;
-            z-index: 15;
+            z-index: 25;
         }
 
         .room-header {
@@ -256,22 +256,47 @@
             text-align: center;
         }
 
+        .buttons-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
         .create-btn {
             background-color: var(--tg-theme-button-color, #40A7E3);
             color: var(--tg-theme-button-text-color, white);
             border: none;
             border-radius: 10px;
-            padding: 14px 20px;
+            padding: 14px 16px;
             font-size: 17px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
-            margin-top: 10px;
+            flex: 1;
             transition: background-color 0.2s ease;
         }
 
         .create-btn:active {
             background-color: var(--tg-theme-button-color, #2C8DCC);
+            opacity: 0.8;
+        }
+
+        .cancel-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--tg-theme-text-color, white);
+            border: none;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            flex: 1;
+            transition: background-color 0.2s ease;
+        }
+
+        .cancel-btn:active {
+            background-color: rgba(255, 255, 255, 0.25);
             opacity: 0.8;
         }
 
@@ -297,7 +322,6 @@
             flex-direction: column;
             gap: 15px;
             transition: transform 0.2s ease;
-            position: relative;
         }
 
         .lobby-panel:active {
@@ -405,74 +429,6 @@
             font-weight: 600;
         }
 
-        .delete-checkbox {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 22px;
-            height: 22px;
-            border: 2px solid var(--tg-theme-button-color, #40A7E3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 5;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .delete-checkbox.checked {
-            background-color: var(--tg-theme-button-color, #40A7E3);
-        }
-
-        .checkbox-icon {
-            font-size: 14px;
-            color: white;
-            display: none;
-        }
-
-        .delete-checkbox.checked .checkbox-icon {
-            display: block;
-        }
-
-        .action-buttons {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            display: none;
-            gap: 10px;
-            z-index: 100;
-        }
-
-        .action-btn {
-            flex: 1;
-            height: 50px;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.2s ease;
-        }
-
-        .action-btn:active {
-            opacity: 0.8;
-        }
-
-        .delete-btn {
-            background-color: var(--tg-theme-button-color, #40A7E3);
-            color: var(--tg-theme-button-text-color, white);
-        }
-
-        .cancel-btn {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: var(--tg-theme-text-color, white);
-        }
-
         @media (min-width: 500px) {
             .message-text {
                 font-size: 28px;
@@ -524,21 +480,13 @@
             </div>
         </div>
         
-        <button class="create-btn" id="createBtn">Создать</button>
+        <div class="buttons-row">
+            <button class="cancel-btn" id="cancelBtn">Отмена</button>
+            <button class="create-btn" id="createBtn">Создать</button>
+        </div>
     </div>
 
     <div class="lobbies-container" id="lobbiesContainer"></div>
-
-    <div class="action-buttons" id="actionButtons">
-        <button class="action-btn delete-btn" id="deleteBtn">
-            <i class="ti ti-trash"></i>
-            <span style="margin-left: 8px;">Удалить</span>
-        </button>
-        <button class="action-btn cancel-btn" id="cancelBtn">
-            <i class="ti ti-x"></i>
-            <span style="margin-left: 8px;">Отмена</span>
-        </button>
-    </div>
     
     <script>
         // Инициализация Telegram WebApp
@@ -566,10 +514,8 @@
         const decreaseBtn = document.getElementById('decreaseBtn');
         const increaseBtn = document.getElementById('increaseBtn');
         const createBtn = document.getElementById('createBtn');
-        const lobbiesContainer = document.getElementById('lobbiesContainer');
-        const actionButtons = document.getElementById('actionButtons');
-        const deleteBtn = document.getElementById('deleteBtn');
         const cancelBtn = document.getElementById('cancelBtn');
+        const lobbiesContainer = document.getElementById('lobbiesContainer');
 
         // Переменные
         let currentPlayers = 4;
@@ -578,9 +524,8 @@
         let currentUserId = null;
         let lobbies = [];
         let userData = null;
-        let userLobby = null;
-        let selectedLobbyId = null;
         let refreshInterval = null;
+        let hasActiveLobby = false;
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -599,23 +544,19 @@
         
         if (user) {
             userData = user;
-            // Устанавливаем имя пользователя
             userFirstName = user.first_name || 'Гость';
             usernameElement.textContent = userFirstName;
             roomNameText = userFirstName;
             roomName.textContent = formatRoomName(userFirstName);
             currentUserId = user.id.toString();
             
-            // Устанавливаем ID пользователя
             if (user.id) {
                 userIdTextElement.textContent = user.id;
             }
             
-            // Устанавливаем аватар
             if (user.photo_url) {
                 avatarImg.src = user.photo_url;
             } else {
-                // Fallback аватар для верхней панели
                 avatarBox.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                 avatarImg.style.display = 'none';
                 const initials = document.createElement('div');
@@ -626,7 +567,6 @@
                 avatarBox.appendChild(initials);
             }
         } else {
-            // Заглушка для тестирования
             userData = {
                 id: 'test_user_' + Math.random().toString(36).substr(2, 9),
                 first_name: 'Тестовый',
@@ -659,10 +599,13 @@
                 
                 lobbies = data || [];
                 
-                // Находим лобби пользователя
-                userLobby = lobbies.find(lobby => lobby.creator_id === currentUserId);
+                // Проверяем, есть ли у пользователя активное лобби
+                hasActiveLobby = lobbies.some(lobby => 
+                    lobby.creator_id === currentUserId && 
+                    (new Date() - new Date(lobby.created_at)) < 60 * 60 * 1000
+                );
                 
-                // Обновляем кнопку в зависимости от наличия лобби
+                // Обновляем кнопку
                 updateMainButton();
                 
                 renderLobbies();
@@ -673,51 +616,14 @@
             }
         }
 
-        // Обновляем главную кнопку
+        // Обновление кнопки главного меню
         function updateMainButton() {
-            if (userLobby) {
-                mainButton.setText("Выбрать");
-                mainButton.offClick(createRoomHandler);
-                mainButton.onClick(showActionButtons);
+            if (hasActiveLobby) {
+                mainButton.hide();
             } else {
                 mainButton.setText("Новая комната");
-                mainButton.offClick(showActionButtons);
-                mainButton.onClick(createRoomHandler);
+                mainButton.show();
             }
-        }
-
-        // Показать кнопки действий
-        function showActionButtons() {
-            // Скрываем основную кнопку
-            mainButton.hide();
-            
-            // Показываем кнопки действий
-            actionButtons.style.display = 'flex';
-            
-            // Показываем чекбоксы для нашего лобби
-            const ourLobbyElement = document.querySelector(`.lobby-panel[data-lobby-id="${userLobby.id}"]`);
-            if (ourLobbyElement) {
-                const checkbox = ourLobbyElement.querySelector('.delete-checkbox');
-                if (checkbox) {
-                    checkbox.style.display = 'flex';
-                }
-            }
-        }
-
-        // Скрыть кнопки действий
-        function hideActionButtons() {
-            // Показываем основную кнопку
-            mainButton.show();
-            
-            // Скрываем кнопки действий
-            actionButtons.style.display = 'none';
-            
-            // Скрываем и сбрасываем все чекбоксы
-            document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
-                checkbox.style.display = 'none';
-                checkbox.classList.remove('checked');
-                selectedLobbyId = null;
-            });
         }
 
         // Реальное время обновление лобби
@@ -738,11 +644,17 @@
         function renderLobbies() {
             lobbiesContainer.innerHTML = '';
             
+            // Скрываем лобби если открыта панель создания
+            if (roomPanel.style.display === 'flex') {
+                lobbiesContainer.style.display = 'none';
+                return;
+            }
+            
             // Фильтруем только активные лобби
             const activeLobbies = lobbies.filter(lobby => {
                 const created = new Date(lobby.created_at);
                 const now = new Date();
-                return (now - created) < 60 * 60 * 1000; // Лобби активно 1 час
+                return (now - created) < 60 * 60 * 1000;
             });
             
             if (activeLobbies.length === 0) {
@@ -762,15 +674,8 @@
                 
                 const lobbyElement = document.createElement('div');
                 lobbyElement.className = `lobby-panel ${isFull ? 'full-lobby' : ''}`;
-                lobbyElement.setAttribute('data-lobby-id', lobby.id);
                 
                 lobbyElement.innerHTML = `
-                    ${isOwnLobby ? `
-                        <div class="delete-checkbox" style="display: none;">
-                            <i class="ti ti-check checkbox-icon"></i>
-                        </div>
-                    ` : ''}
-                    
                     <div class="lobby-header">
                         <div class="lobby-name">${formatRoomName(lobby.name)}</div>
                         <div class="players-count-text">
@@ -815,7 +720,6 @@
                 
                 lobbiesContainer.appendChild(lobbyElement);
                 
-                // Обработчики кнопок
                 if (!isOwnLobby && !isFull && !alreadyJoined) {
                     const joinBtn = lobbyElement.querySelector('.join-btn');
                     joinBtn.addEventListener('click', () => joinLobby(lobby.id));
@@ -831,36 +735,7 @@
                     const leaveBtn = lobbyElement.querySelector('.leave-btn');
                     leaveBtn.addEventListener('click', () => leaveLobby(lobby.id));
                 }
-                
-                // Обработчик чекбокса для нашего лобби
-                if (isOwnLobby) {
-                    const checkbox = lobbyElement.querySelector('.delete-checkbox');
-                    checkbox.addEventListener('click', () => toggleLobbySelection(lobby.id));
-                }
             });
-        }
-
-        // Переключение выбора лобби для удаления
-        function toggleLobbySelection(lobbyId) {
-            const checkbox = document.querySelector(`.delete-checkbox[data-lobby-id="${lobbyId}"]`);
-            
-            if (selectedLobbyId === lobbyId) {
-                // Снимаем выбор
-                checkbox.classList.remove('checked');
-                selectedLobbyId = null;
-            } else {
-                // Снимаем выбор с предыдущего
-                if (selectedLobbyId) {
-                    const prevCheckbox = document.querySelector(`.delete-checkbox[data-lobby-id="${selectedLobbyId}"]`);
-                    if (prevCheckbox) {
-                        prevCheckbox.classList.remove('checked');
-                    }
-                }
-                
-                // Выбираем текущее
-                checkbox.classList.add('checked');
-                selectedLobbyId = lobbyId;
-            }
         }
 
         // Форматирование названия комнаты
@@ -896,6 +771,7 @@
             mainContent.style.opacity = '0';
             mainButton.hide();
             loaderContainer.style.display = 'block';
+            lobbiesContainer.style.display = 'none';
             
             const randomTime = 300 + Math.random() * 300;
             const colors = ['#40A7E3', '#FF6B6B', '#51CF66', '#FCC419', '#9C36B5', '#FF922B'];
@@ -907,6 +783,14 @@
                 roomPanel.style.display = 'flex';
             }, randomTime);
         }
+
+        // Обработчик отмены создания
+        cancelBtn.addEventListener('click', function() {
+            tg.HapticFeedback.impactOccurred('soft');
+            roomPanel.style.display = 'none';
+            updateMainButton();
+            loadLobbies();
+        });
 
         // Обработчики изменения количества игроков
         decreaseBtn.addEventListener('click', function() {
@@ -950,6 +834,7 @@
                 if (error) throw error;
                 
                 console.log("Лобби создано:", data[0]);
+                hasActiveLobby = true;
                 
             } catch (error) {
                 console.error("Ошибка создания лобби:", error);
@@ -957,7 +842,8 @@
             }
             
             roomPanel.style.display = 'none';
-            mainButton.show();
+            updateMainButton();
+            loadLobbies();
         });
 
         // Обработчик входа в лобби
@@ -968,7 +854,6 @@
                 const lobby = lobbies.find(l => l.id === lobbyId);
                 if (!lobby) return;
                 
-                // Проверяем, не полное ли лобби
                 if (lobby.players.length >= lobby.max_players) {
                     tg.showPopup({
                         title: "Лобби заполнено",
@@ -984,7 +869,6 @@
                     avatar_url: userData?.photo_url || null
                 };
                 
-                // Обновляем лобби в Supabase
                 const { error } = await supabase
                     .from('lobbies')
                     .update({
@@ -998,7 +882,6 @@
                 
             } catch (error) {
                 console.error("Ошибка входа в лобби:", error);
-                alert("Ошибка входа в лобби: " + error.message);
             }
         }
 
@@ -1010,10 +893,8 @@
                 const lobby = lobbies.find(l => l.id === lobbyId);
                 if (!lobby) return;
                 
-                // Удаляем текущего пользователя из игроков
                 const updatedPlayers = lobby.players.filter(player => player.id !== currentUserId);
                 
-                // Если лобби пустое - удаляем его, иначе обновляем
                 if (updatedPlayers.length === 0) {
                     const { error } = await supabase
                         .from('lobbies')
@@ -1036,27 +917,6 @@
                 
             } catch (error) {
                 console.error("Ошибка выхода из лобби:", error);
-                alert("Ошибка выхода из лобби: " + error.message);
-            }
-        }
-
-        // Обработчик удаления лобби
-        async function deleteLobby(lobbyId) {
-            try {
-                const { error } = await supabase
-                    .from('lobbies')
-                    .delete()
-                    .eq('id', lobbyId);
-                
-                if (error) throw error;
-                
-                console.log("Лобби удалено:", lobbyId);
-                selectedLobbyId = null;
-                hideActionButtons();
-                
-            } catch (error) {
-                console.error("Ошибка удаления лобби:", error);
-                alert("Ошибка удаления лобби: " + error.message);
             }
         }
 
@@ -1066,23 +926,12 @@
             console.log("Запуск игры в лобби:", lobbyId);
         }
 
-        // Обработчики кнопок действий
-        deleteBtn.addEventListener('click', function() {
-            if (selectedLobbyId) {
-                deleteLobby(selectedLobbyId);
-            }
-        });
-
-        cancelBtn.addEventListener('click', function() {
-            hideActionButtons();
-        });
-
         // Инициализация
         loadLobbies();
         setupRealtime();
 
-        // Автоматическое обновление каждые 2 секунды
-        refreshInterval = setInterval(loadLobbies, 2000);
+        // Обновление каждые 0.5 секунд
+        refreshInterval = setInterval(loadLobbies, 500);
 
         // Запрещаем контекстное меню
         document.addEventListener('contextmenu', function(e) {
@@ -1092,13 +941,6 @@
         // Запрещаем выделение текста
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
-        });
-
-        // Очистка интервала при закрытии
-        window.addEventListener('beforeunload', function() {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
         });
     </script>
 </body>
