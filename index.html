@@ -6,10 +6,8 @@
     <title>Уточка с лобби</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-    <!-- Добавляем Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        /* Твои стили остаются без изменений */
         @font-face {
             font-family: 'Avenir Next';
             src: local('Avenir Next'), local('Avenir-Next');
@@ -50,7 +48,6 @@
             pointer-events: none;
         }
 
-        /* Верхняя панель - светлее фона */
         .top-panel {
             position: absolute;
             top: 15px;
@@ -69,7 +66,6 @@
             transition: opacity 0.3s ease;
         }
 
-        /* Квадрат с аватаркой - тоже светлее */
         .avatar-box {
             position: absolute;
             top: 15px;
@@ -94,7 +90,6 @@
             pointer-events: none;
         }
 
-        /* Текст в панели */
         .username {
             font-size: 18px;
             font-weight: 600;
@@ -112,7 +107,6 @@
             margin: 2px 0 0;
         }
 
-        /* Основное содержимое */
         .main-content {
             position: relative;
             width: 100%;
@@ -157,7 +151,6 @@
             pointer-events: none;
         }
 
-        /* Лоадер */
         .loader-container {
             position: absolute;
             top: 50%;
@@ -180,7 +173,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Панель создания комнаты */
         .room-panel {
             position: absolute;
             top: 90px;
@@ -193,7 +185,7 @@
             display: none;
             flex-direction: column;
             gap: 20px;
-            z-index: 15;
+            z-index: 25;
         }
 
         .room-header {
@@ -264,17 +256,23 @@
             text-align: center;
         }
 
+        .buttons-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
         .create-btn {
             background-color: var(--tg-theme-button-color, #40A7E3);
             color: var(--tg-theme-button-text-color, white);
             border: none;
             border-radius: 10px;
-            padding: 14px 20px;
+            padding: 14px 16px;
             font-size: 17px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
-            margin-top: 10px;
+            flex: 1;
             transition: background-color 0.2s ease;
         }
 
@@ -283,7 +281,25 @@
             opacity: 0.8;
         }
 
-        /* Контейнер для списка лобби */
+        .cancel-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--tg-theme-text-color, white);
+            border: none;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            flex: 1;
+            transition: background-color 0.2s ease;
+        }
+
+        .cancel-btn:active {
+            background-color: rgba(255, 255, 255, 0.25);
+            opacity: 0.8;
+        }
+
         .lobbies-container {
             position: absolute;
             top: 90px;
@@ -297,7 +313,6 @@
             overflow-y: auto;
         }
 
-        /* Панель лобби */
         .lobby-panel {
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
@@ -401,6 +416,19 @@
             display: none;
         }
 
+        .full-lobby {
+            opacity: 0.7;
+        }
+
+        .full-badge {
+            background-color: #FF6B6B;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
         @media (min-width: 500px) {
             .message-text {
                 font-size: 28px;
@@ -452,7 +480,10 @@
             </div>
         </div>
         
-        <button class="create-btn" id="createBtn">Создать</button>
+        <div class="buttons-row">
+            <button class="cancel-btn" id="cancelBtn">Отмена</button>
+            <button class="create-btn" id="createBtn">Создать</button>
+        </div>
     </div>
 
     <div class="lobbies-container" id="lobbiesContainer"></div>
@@ -483,6 +514,7 @@
         const decreaseBtn = document.getElementById('decreaseBtn');
         const increaseBtn = document.getElementById('increaseBtn');
         const createBtn = document.getElementById('createBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
         const lobbiesContainer = document.getElementById('lobbiesContainer');
 
         // Переменные
@@ -491,6 +523,9 @@
         let roomNameText = '';
         let currentUserId = null;
         let lobbies = [];
+        let userData = null;
+        let refreshInterval = null;
+        let hasActiveLobby = false;
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -508,23 +543,20 @@
         const user = tg.initDataUnsafe.user;
         
         if (user) {
-            // Устанавливаем имя пользователя
+            userData = user;
             userFirstName = user.first_name || 'Гость';
             usernameElement.textContent = userFirstName;
             roomNameText = userFirstName;
             roomName.textContent = formatRoomName(userFirstName);
-            currentUserId = user.id;
+            currentUserId = user.id.toString();
             
-            // Устанавливаем ID пользователя
             if (user.id) {
                 userIdTextElement.textContent = user.id;
             }
             
-            // Устанавливаем аватар
             if (user.photo_url) {
                 avatarImg.src = user.photo_url;
             } else {
-                // Fallback аватар для верхней панели
                 avatarBox.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                 avatarImg.style.display = 'none';
                 const initials = document.createElement('div');
@@ -535,16 +567,29 @@
                 avatarBox.appendChild(initials);
             }
         } else {
-            // Заглушка для тестирования
-            userIdTextElement.textContent = '123456789';
+            userData = {
+                id: 'test_user_' + Math.random().toString(36).substr(2, 9),
+                first_name: 'Тестовый',
+                photo_url: null
+            };
+            userIdTextElement.textContent = userData.id;
             roomNameText = 'Гость';
             roomName.textContent = formatRoomName('Гость');
-            currentUserId = 'test_user_' + Math.random().toString(36).substr(2, 9);
+            currentUserId = userData.id;
+            usernameElement.textContent = 'Тестовый пользователь';
         }
 
         // Загружаем лобби из Supabase
         async function loadLobbies() {
             try {
+                // Удаляем старые лобби (старше 1 часа)
+                const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+                await supabase
+                    .from('lobbies')
+                    .delete()
+                    .lt('created_at', oneHourAgo);
+
+                // Загружаем активные лобби
                 const { data, error } = await supabase
                     .from('lobbies')
                     .select('*')
@@ -553,12 +598,31 @@
                 if (error) throw error;
                 
                 lobbies = data || [];
+                
+                // Проверяем, есть ли у пользователя активное лобби
+                hasActiveLobby = lobbies.some(lobby => 
+                    lobby.creator_id === currentUserId && 
+                    (new Date() - new Date(lobby.created_at)) < 60 * 60 * 1000
+                );
+                
+                // Обновляем кнопку
+                updateMainButton();
+                
                 renderLobbies();
                 
             } catch (error) {
                 console.error('Ошибка загрузки лобби:', error);
-                // Fallback на локальные данные
                 renderLobbies();
+            }
+        }
+
+        // Обновление кнопки главного меню
+        function updateMainButton() {
+            if (hasActiveLobby) {
+                mainButton.hide();
+            } else {
+                mainButton.setText("Новая комната");
+                mainButton.show();
             }
         }
 
@@ -568,8 +632,9 @@
                 .channel('lobbies-changes')
                 .on('postgres_changes', 
                     { event: '*', schema: 'public', table: 'lobbies' }, 
-                    () => {
-                        loadLobbies(); // Перезагружаем при любых изменениях
+                    (payload) => {
+                        console.log('Изменение в лобби:', payload);
+                        loadLobbies();
                     }
                 )
                 .subscribe();
@@ -579,7 +644,20 @@
         function renderLobbies() {
             lobbiesContainer.innerHTML = '';
             
-            if (lobbies.length === 0) {
+            // Скрываем лобби если открыта панель создания
+            if (roomPanel.style.display === 'flex') {
+                lobbiesContainer.style.display = 'none';
+                return;
+            }
+            
+            // Фильтруем только активные лобби
+            const activeLobbies = lobbies.filter(lobby => {
+                const created = new Date(lobby.created_at);
+                const now = new Date();
+                return (now - created) < 60 * 60 * 1000;
+            });
+            
+            if (activeLobbies.length === 0) {
                 mainContent.style.display = 'flex';
                 lobbiesContainer.style.display = 'none';
                 return;
@@ -588,16 +666,22 @@
             mainContent.style.display = 'none';
             lobbiesContainer.style.display = 'flex';
             
-            lobbies.forEach(lobby => {
+            activeLobbies.forEach(lobby => {
                 const isOwnLobby = lobby.creator_id === currentUserId;
                 const players = lobby.players || [];
+                const isFull = players.length >= lobby.max_players;
+                const alreadyJoined = players.some(player => player.id === currentUserId);
                 
                 const lobbyElement = document.createElement('div');
-                lobbyElement.className = 'lobby-panel';
+                lobbyElement.className = `lobby-panel ${isFull ? 'full-lobby' : ''}`;
+                
                 lobbyElement.innerHTML = `
                     <div class="lobby-header">
                         <div class="lobby-name">${formatRoomName(lobby.name)}</div>
-                        <div class="players-count-text">${players.length}/${lobby.max_players}</div>
+                        <div class="players-count-text">
+                            ${players.length}/${lobby.max_players}
+                            ${isFull ? '<span class="full-badge">ПОЛНО</span>' : ''}
+                        </div>
                     </div>
                     
                     <div class="lobby-footer">
@@ -613,15 +697,21 @@
                         </div>
                         
                         <div class="lobby-buttons">
-                            ${players.length > 1 ? `
+                            ${isOwnLobby && players.length > 1 ? `
                                 <button class="lobby-btn play-btn" data-lobby-id="${lobby.id}">
                                     <i class="ti ti-player-play btn-icon"></i>
                                 </button>
                             ` : ''}
                             
-                            ${!isOwnLobby ? `
+                            ${!isOwnLobby && !isFull && !alreadyJoined ? `
                                 <button class="lobby-btn join-btn" data-lobby-id="${lobby.id}">
                                     <i class="ti ti-login-2 btn-icon"></i>
+                                </button>
+                            ` : ''}
+                            
+                            ${alreadyJoined && !isOwnLobby ? `
+                                <button class="lobby-btn leave-btn" data-lobby-id="${lobby.id}">
+                                    <i class="ti ti-logout btn-icon"></i>
                                 </button>
                             ` : ''}
                         </div>
@@ -630,21 +720,25 @@
                 
                 lobbiesContainer.appendChild(lobbyElement);
                 
-                // Обработчики кнопок
-                if (!isOwnLobby) {
+                if (!isOwnLobby && !isFull && !alreadyJoined) {
                     const joinBtn = lobbyElement.querySelector('.join-btn');
                     joinBtn.addEventListener('click', () => joinLobby(lobby.id));
                 }
                 
-                if (players.length > 1) {
+                if (isOwnLobby && players.length > 1) {
                     const playBtn = lobbyElement.querySelector('.play-btn');
                     playBtn.style.display = 'flex';
                     playBtn.addEventListener('click', () => playLobby(lobby.id));
                 }
+                
+                if (alreadyJoined && !isOwnLobby) {
+                    const leaveBtn = lobbyElement.querySelector('.leave-btn');
+                    leaveBtn.addEventListener('click', () => leaveLobby(lobby.id));
+                }
             });
         }
 
-        // Форматирование названия комнаты (макс 11 символов)
+        // Форматирование названия комнаты
         function formatRoomName(name) {
             if (name && name.length > 11) {
                 return name.substring(0, 11) + '…';
@@ -659,7 +753,6 @@
             const newName = prompt('Введи новое название комнаты', roomNameText);
             
             if (newName !== null) {
-                // Проверяем на пустое имя или только пробелы
                 const trimmedName = newName.trim();
                 if (trimmedName.length === 0) {
                     roomNameText = userFirstName;
@@ -673,34 +766,31 @@
 
         // Обработчик создания комнаты
         function createRoomHandler() {
-            // Вибрация
             tg.HapticFeedback.impactOccurred('medium');
             
-            // Скрываем основной контент
             mainContent.style.opacity = '0';
-            
-            // Скрываем кнопку "Новая комната"
             mainButton.hide();
-            
-            // Показываем лоадер
             loaderContainer.style.display = 'block';
+            lobbiesContainer.style.display = 'none';
             
-            // Случайное время загрузки от 0.3 до 0.6 секунд
             const randomTime = 300 + Math.random() * 300;
-            
-            // Случайный цвет для лоадера
             const colors = ['#40A7E3', '#FF6B6B', '#51CF66', '#FCC419', '#9C36B5', '#FF922B'];
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
             loader.style.borderTopColor = randomColor;
             
             setTimeout(() => {
-                // Скрываем лоадер
                 loaderContainer.style.display = 'none';
-                
-                // Показываем панель комнаты
                 roomPanel.style.display = 'flex';
             }, randomTime);
         }
+
+        // Обработчик отмены создания
+        cancelBtn.addEventListener('click', function() {
+            tg.HapticFeedback.impactOccurred('soft');
+            roomPanel.style.display = 'none';
+            updateMainButton();
+            loadLobbies();
+        });
 
         // Обработчики изменения количества игроков
         decreaseBtn.addEventListener('click', function() {
@@ -731,10 +821,9 @@
                     players: [{
                         id: currentUserId,
                         name: userFirstName,
-                        avatar_url: user?.photo_url || null
+                        avatar_url: userData?.photo_url || null
                     }],
-                    created_at: new Date().toISOString(),
-                    expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+                    created_at: new Date().toISOString()
                 };
                 
                 const { data, error } = await supabase
@@ -745,30 +834,16 @@
                 if (error) throw error;
                 
                 console.log("Лобби создано:", data[0]);
+                hasActiveLobby = true;
                 
             } catch (error) {
                 console.error("Ошибка создания лобби:", error);
-                // Fallback: добавляем локально
-                lobbies.unshift({
-                    id: 'local_' + Date.now(),
-                    name: roomNameText,
-                    max_players: currentPlayers,
-                    creator_id: currentUserId,
-                    players: [{
-                        id: currentUserId,
-                        name: userFirstName,
-                        avatar_url: user?.photo_url || null
-                    }],
-                    created_at: new Date().toISOString()
-                });
-                renderLobbies();
+                alert("Ошибка создания лобби: " + error.message);
             }
             
-            // Скрываем панель создания
             roomPanel.style.display = 'none';
-            
-            // Показываем кнопку создания снова
-            mainButton.show();
+            updateMainButton();
+            loadLobbies();
         });
 
         // Обработчик входа в лобби
@@ -779,13 +854,21 @@
                 const lobby = lobbies.find(l => l.id === lobbyId);
                 if (!lobby) return;
                 
+                if (lobby.players.length >= lobby.max_players) {
+                    tg.showPopup({
+                        title: "Лобби заполнено",
+                        message: "В этом лобби уже максимальное количество игроков",
+                        buttons: [{ type: "ok" }]
+                    });
+                    return;
+                }
+                
                 const newPlayer = {
                     id: currentUserId,
                     name: userFirstName,
-                    avatar_url: user?.photo_url || null
+                    avatar_url: userData?.photo_url || null
                 };
                 
-                // Обновляем лобби в Supabase
                 const { error } = await supabase
                     .from('lobbies')
                     .update({
@@ -802,6 +885,41 @@
             }
         }
 
+        // Обработчик выхода из лобби
+        async function leaveLobby(lobbyId) {
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            try {
+                const lobby = lobbies.find(l => l.id === lobbyId);
+                if (!lobby) return;
+                
+                const updatedPlayers = lobby.players.filter(player => player.id !== currentUserId);
+                
+                if (updatedPlayers.length === 0) {
+                    const { error } = await supabase
+                        .from('lobbies')
+                        .delete()
+                        .eq('id', lobbyId);
+                    
+                    if (error) throw error;
+                } else {
+                    const { error } = await supabase
+                        .from('lobbies')
+                        .update({
+                            players: updatedPlayers
+                        })
+                        .eq('id', lobbyId);
+                    
+                    if (error) throw error;
+                }
+                
+                console.log("Покинули лобби:", lobbyId);
+                
+            } catch (error) {
+                console.error("Ошибка выхода из лобби:", error);
+            }
+        }
+
         // Обработчик кнопки play
         function playLobby(lobbyId) {
             tg.HapticFeedback.impactOccurred('light');
@@ -811,6 +929,9 @@
         // Инициализация
         loadLobbies();
         setupRealtime();
+
+        // Обновление каждые 0.5 секунд
+        refreshInterval = setInterval(loadLobbies, 500);
 
         // Запрещаем контекстное меню
         document.addEventListener('contextmenu', function(e) {
