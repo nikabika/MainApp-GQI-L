@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        /* Ваши стили остаются без изменений */
         @font-face {
             font-family: 'Avenir Next';
             src: local('Avenir Next'), local('Avenir-Next');
@@ -298,6 +297,7 @@
             flex-direction: column;
             gap: 15px;
             transition: transform 0.2s ease;
+            position: relative;
         }
 
         .lobby-panel:active {
@@ -405,6 +405,74 @@
             font-weight: 600;
         }
 
+        .delete-checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--tg-theme-button-color, #40A7E3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .delete-checkbox.checked {
+            background-color: var(--tg-theme-button-color, #40A7E3);
+        }
+
+        .checkbox-icon {
+            font-size: 14px;
+            color: white;
+            display: none;
+        }
+
+        .delete-checkbox.checked .checkbox-icon {
+            display: block;
+        }
+
+        .action-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: none;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .action-btn {
+            flex: 1;
+            height: 50px;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s ease;
+        }
+
+        .action-btn:active {
+            opacity: 0.8;
+        }
+
+        .delete-btn {
+            background-color: var(--tg-theme-button-color, #40A7E3);
+            color: var(--tg-theme-button-text-color, white);
+        }
+
+        .cancel-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--tg-theme-text-color, white);
+        }
+
         @media (min-width: 500px) {
             .message-text {
                 font-size: 28px;
@@ -460,6 +528,17 @@
     </div>
 
     <div class="lobbies-container" id="lobbiesContainer"></div>
+
+    <div class="action-buttons" id="actionButtons">
+        <button class="action-btn delete-btn" id="deleteBtn">
+            <i class="ti ti-trash"></i>
+            <span style="margin-left: 8px;">Удалить</span>
+        </button>
+        <button class="action-btn cancel-btn" id="cancelBtn">
+            <i class="ti ti-x"></i>
+            <span style="margin-left: 8px;">Отмена</span>
+        </button>
+    </div>
     
     <script>
         // Инициализация Telegram WebApp
@@ -488,6 +567,9 @@
         const increaseBtn = document.getElementById('increaseBtn');
         const createBtn = document.getElementById('createBtn');
         const lobbiesContainer = document.getElementById('lobbiesContainer');
+        const actionButtons = document.getElementById('actionButtons');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
 
         // Переменные
         let currentPlayers = 4;
@@ -496,6 +578,9 @@
         let currentUserId = null;
         let lobbies = [];
         let userData = null;
+        let userLobby = null;
+        let selectedLobbyId = null;
+        let refreshInterval = null;
 
         // Расширяем на весь экран и настраиваем цвета
         tg.expand();
@@ -573,12 +658,66 @@
                 if (error) throw error;
                 
                 lobbies = data || [];
+                
+                // Находим лобби пользователя
+                userLobby = lobbies.find(lobby => lobby.creator_id === currentUserId);
+                
+                // Обновляем кнопку в зависимости от наличия лобби
+                updateMainButton();
+                
                 renderLobbies();
                 
             } catch (error) {
                 console.error('Ошибка загрузки лобби:', error);
                 renderLobbies();
             }
+        }
+
+        // Обновляем главную кнопку
+        function updateMainButton() {
+            if (userLobby) {
+                mainButton.setText("Выбрать");
+                mainButton.offClick(createRoomHandler);
+                mainButton.onClick(showActionButtons);
+            } else {
+                mainButton.setText("Новая комната");
+                mainButton.offClick(showActionButtons);
+                mainButton.onClick(createRoomHandler);
+            }
+        }
+
+        // Показать кнопки действий
+        function showActionButtons() {
+            // Скрываем основную кнопку
+            mainButton.hide();
+            
+            // Показываем кнопки действий
+            actionButtons.style.display = 'flex';
+            
+            // Показываем чекбоксы для нашего лобби
+            const ourLobbyElement = document.querySelector(`.lobby-panel[data-lobby-id="${userLobby.id}"]`);
+            if (ourLobbyElement) {
+                const checkbox = ourLobbyElement.querySelector('.delete-checkbox');
+                if (checkbox) {
+                    checkbox.style.display = 'flex';
+                }
+            }
+        }
+
+        // Скрыть кнопки действий
+        function hideActionButtons() {
+            // Показываем основную кнопку
+            mainButton.show();
+            
+            // Скрываем кнопки действий
+            actionButtons.style.display = 'none';
+            
+            // Скрываем и сбрасываем все чекбоксы
+            document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
+                checkbox.style.display = 'none';
+                checkbox.classList.remove('checked');
+                selectedLobbyId = null;
+            });
         }
 
         // Реальное время обновление лобби
@@ -623,8 +762,15 @@
                 
                 const lobbyElement = document.createElement('div');
                 lobbyElement.className = `lobby-panel ${isFull ? 'full-lobby' : ''}`;
+                lobbyElement.setAttribute('data-lobby-id', lobby.id);
                 
                 lobbyElement.innerHTML = `
+                    ${isOwnLobby ? `
+                        <div class="delete-checkbox" style="display: none;">
+                            <i class="ti ti-check checkbox-icon"></i>
+                        </div>
+                    ` : ''}
+                    
                     <div class="lobby-header">
                         <div class="lobby-name">${formatRoomName(lobby.name)}</div>
                         <div class="players-count-text">
@@ -685,7 +831,36 @@
                     const leaveBtn = lobbyElement.querySelector('.leave-btn');
                     leaveBtn.addEventListener('click', () => leaveLobby(lobby.id));
                 }
+                
+                // Обработчик чекбокса для нашего лобби
+                if (isOwnLobby) {
+                    const checkbox = lobbyElement.querySelector('.delete-checkbox');
+                    checkbox.addEventListener('click', () => toggleLobbySelection(lobby.id));
+                }
             });
+        }
+
+        // Переключение выбора лобби для удаления
+        function toggleLobbySelection(lobbyId) {
+            const checkbox = document.querySelector(`.delete-checkbox[data-lobby-id="${lobbyId}"]`);
+            
+            if (selectedLobbyId === lobbyId) {
+                // Снимаем выбор
+                checkbox.classList.remove('checked');
+                selectedLobbyId = null;
+            } else {
+                // Снимаем выбор с предыдущего
+                if (selectedLobbyId) {
+                    const prevCheckbox = document.querySelector(`.delete-checkbox[data-lobby-id="${selectedLobbyId}"]`);
+                    if (prevCheckbox) {
+                        prevCheckbox.classList.remove('checked');
+                    }
+                }
+                
+                // Выбираем текущее
+                checkbox.classList.add('checked');
+                selectedLobbyId = lobbyId;
+            }
         }
 
         // Форматирование названия комнаты
@@ -865,19 +1040,49 @@
             }
         }
 
+        // Обработчик удаления лобби
+        async function deleteLobby(lobbyId) {
+            try {
+                const { error } = await supabase
+                    .from('lobbies')
+                    .delete()
+                    .eq('id', lobbyId);
+                
+                if (error) throw error;
+                
+                console.log("Лобби удалено:", lobbyId);
+                selectedLobbyId = null;
+                hideActionButtons();
+                
+            } catch (error) {
+                console.error("Ошибка удаления лобби:", error);
+                alert("Ошибка удаления лобби: " + error.message);
+            }
+        }
+
         // Обработчик кнопки play
         function playLobby(lobbyId) {
             tg.HapticFeedback.impactOccurred('light');
             console.log("Запуск игры в лобби:", lobbyId);
-            // Здесь будет логика начала игры
         }
+
+        // Обработчики кнопок действий
+        deleteBtn.addEventListener('click', function() {
+            if (selectedLobbyId) {
+                deleteLobby(selectedLobbyId);
+            }
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            hideActionButtons();
+        });
 
         // Инициализация
         loadLobbies();
         setupRealtime();
 
-        // Периодическая проверка лобби каждые 30 секунд
-        setInterval(loadLobbies, 30000);
+        // Автоматическое обновление каждые 2 секунды
+        refreshInterval = setInterval(loadLobbies, 2000);
 
         // Запрещаем контекстное меню
         document.addEventListener('contextmenu', function(e) {
@@ -887,6 +1092,13 @@
         // Запрещаем выделение текста
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
+        });
+
+        // Очистка интервала при закрытии
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
         });
     </script>
 </body>
