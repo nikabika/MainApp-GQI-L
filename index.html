@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Галерея со свайпами</title>
-    <link href="https://fonts.googleapis.com/css2?family=Avenir+Next:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Галерея с Telegram WebApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -14,8 +13,8 @@
         }
         
         body {
-            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #1C1C1E;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #2C2C2E;
             color: #FFFFFF;
             min-height: 100vh;
             overflow: hidden;
@@ -33,8 +32,11 @@
             border-radius: 16px;
             overflow: hidden;
             z-index: 100;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: #48484A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
         .user-avatar img {
@@ -43,13 +45,13 @@
             object-fit: cover;
         }
         
-        .user-avatar-placeholder {
+        .avatar-placeholder {
             width: 100%;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0A84FF;
             color: white;
             font-weight: 600;
             font-size: 20px;
@@ -58,13 +60,12 @@
         .gallery-container {
             width: 100%;
             max-width: 100%;
-            height: 40vh;
+            height: 50vh;
             position: fixed;
             top: 75px;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 10;
         }
         
         .cards-wrapper {
@@ -83,6 +84,10 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
             overflow: hidden;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         .card img {
@@ -93,162 +98,81 @@
         }
         
         .center {
-            width: 200px;
-            height: 280px;
+            width: 180px;
+            height: 250px;
             z-index: 30;
             opacity: 1;
             transform: translateX(0) scale(1);
         }
         
         .right {
-            width: 140px;
-            height: 200px;
+            width: 130px;
+            height: 180px;
             z-index: 20;
             opacity: 0.7;
-            transform: translateX(180px) scale(0.8);
+            transform: translateX(160px) scale(0.8);
         }
         
         .left {
-            width: 140px;
-            height: 200px;
+            width: 130px;
+            height: 180px;
             z-index: 20;
             opacity: 0.7;
-            transform: translateX(-180px) scale(0.8);
+            transform: translateX(-160px) scale(0.8);
         }
 
         .hidden {
             opacity: 0;
+            transform: translateX(0) scale(0.5);
             pointer-events: none;
             z-index: 5;
-            transition: none;
+            transition: opacity 0.3s ease; /* Только opacity анимируется */
         }
 
-        /* Информационная панель */
-        .info-panel {
+        /* Панель в нижней части экрана */
+        .bottom-panel {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 50vh;
+            height: calc(45vh + 45px); /* Увеличена на 45px */
             background-color: #1C1C1E;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 20px;
+            border-top-left-radius: 29px;
+            border-top-right-radius: 29px;
+            z-index: 10;
+        }
+
+        /* Прямоугольник с картинкой справа */
+        .image-rectangle {
+            position: fixed;
+            top: 75px; /* 75px от верха экрана */
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 0 14px 14px 0; /* Левые углы закруглены на 14px */
+            overflow: hidden;
+            z-index: 90;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
-        .info-box {
-            width: 320px;
-            height: 240px;
-            background-color: #171717;
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        .image-rectangle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        
-        .info-title {
-            font-family: 'Avenir Next', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #FFFFFF;
-            margin-bottom: 24px;
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-        
-        .info-content {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
-        .characteristic-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-        }
-        
-        .characteristic-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .characteristic-value {
-            font-size: 16px;
-            font-weight: 600;
-            text-align: right;
-        }
-        
-        /* Цвета редкостей */
-        .common { color: #4CAF50; } /* Зеленый */
-        .uncommon { color: #2196F3; } /* Синий */
-        .epic { color: #9C27B0; } /* Фиолетовый */
-        .mythic { color: #FFD700; } /* Золотой */
 
         /* Адаптивность для мобильных */
         @media (max-width: 480px) {
+            .gallery-container {
+                height: 45vh;
+                top: 60px;
+            }
+            
             .user-avatar {
                 top: 15px;
                 left: 15px;
                 width: 45px;
                 height: 45px;
-            }
-            
-            .gallery-container {
-                height: 35vh;
-                top: 60px;
-            }
-            
-            .center {
-                width: 180px;
-                height: 250px;
-            }
-            
-            .right, .left {
-                width: 120px;
-                height: 170px;
-                transform: translateX(150px) scale(0.8);
-            }
-            
-            .right {
-                transform: translateX(150px) scale(0.8);
-            }
-            
-            .left {
-                transform: translateX(-150px) scale(0.8);
-            }
-            
-            .info-box {
-                width: 280px;
-                height: 220px;
-                padding: 20px;
-            }
-            
-            .info-title {
-                font-size: 20px;
-            }
-            
-            .characteristic-value {
-                font-size: 15px;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .user-avatar {
-                top: 12px;
-                left: 12px;
-                width: 40px;
-                height: 40px;
-            }
-            
-            .gallery-container {
-                top: 50px;
             }
             
             .center {
@@ -269,77 +193,98 @@
             .left {
                 transform: translateX(-130px) scale(0.8);
             }
+
+            .bottom-panel {
+                height: calc(40vh + 45px);
+            }
             
-            .info-box {
-                width: 250px;
+            .image-rectangle {
+                top: 60px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .gallery-container {
+                top: 50px;
+            }
+            
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .center {
+                width: 140px;
                 height: 200px;
-                padding: 16px;
             }
             
-            .info-title {
-                font-size: 18px;
-                margin-bottom: 20px;
+            .right, .left {
+                width: 100px;
+                height: 140px;
+                transform: translateX(120px) scale(0.8);
             }
             
-            .characteristic-label {
-                font-size: 13px;
+            .right {
+                transform: translateX(120px) scale(0.8);
             }
             
-            .characteristic-value {
-                font-size: 14px;
+            .left {
+                transform: translateX(-120px) scale(0.8);
+            }
+
+            .bottom-panel {
+                height: calc(38vh + 45px);
             }
             
-            .info-content {
-                gap: 14px;
+            .image-rectangle {
+                top: 50px;
+                right: 12px;
+                width: 45px;
+                height: 45px;
             }
         }
 
         @media (max-width: 320px) {
-            .user-avatar {
-                top: 10px;
-                left: 10px;
-                width: 35px;
-                height: 35px;
-                border-radius: 12px;
-            }
-            
             .gallery-container {
                 top: 40px;
             }
             
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .center {
+                width: 130px;
+                height: 180px;
+            }
+            
             .right, .left {
-                transform: translateX(110px) scale(0.8);
+                width: 90px;
+                height: 120px;
+                transform: translateX(100px) scale(0.8);
             }
             
             .right {
-                transform: translateX(110px) scale(0.8);
+                transform: translateX(100px) scale(0.8);
             }
             
             .left {
-                transform: translateX(-110px) scale(0.8);
+                transform: translateX(-100px) scale(0.8);
+            }
+
+            .bottom-panel {
+                height: calc(35vh + 45px);
             }
             
-            .info-box {
-                width: 220px;
-                height: 190px;
-                padding: 14px;
-            }
-            
-            .info-title {
-                font-size: 17px;
-                margin-bottom: 18px;
-            }
-            
-            .characteristic-label {
-                font-size: 12px;
-            }
-            
-            .characteristic-value {
-                font-size: 13px;
-            }
-            
-            .info-content {
-                gap: 12px;
+            .image-rectangle {
+                top: 40px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
             }
         }
 
@@ -349,15 +294,24 @@
             align-items: center;
             color: rgba(255, 255, 255, 0.7);
             font-size: 16px;
-            font-family: 'Avenir Next', sans-serif;
+            z-index: 40;
+            position: relative;
         }
     </style>
 </head>
 <body>
     <!-- Аватарка пользователя -->
     <div class="user-avatar" id="user-avatar">
-        <div class="user-avatar-placeholder">👤</div>
+        <div class="avatar-placeholder">?</div>
     </div>
+
+    <!-- Прямоугольник с картинкой справа -->
+    <div class="image-rectangle">
+        <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/4aaeddd3-3ff5-49a0-93a9-a1239ea96326_IMG_5415.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI0YWFlZGRkMy0zZmY1LTQ5YTAtOTNhOS1hMTIzOWVhOTYzMjYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.vgL5ZUujeaeRwEnLMeF1_tI6ousxDkQ_jFzLvxphvfk&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Дополнительное изображение">
+    </div>
+
+    <!-- Панель в нижней части -->
+    <div class="bottom-panel"></div>
 
     <div class="gallery-container" id="gallery-container">
         <div class="cards-wrapper" id="cards-wrapper">
@@ -365,96 +319,38 @@
         </div>
     </div>
 
-    <div class="info-panel">
-        <div class="info-box">
-            <div class="info-title" id="card-title">Загрузка...</div>
-            <div class="info-content">
-                <div class="characteristic-row">
-                    <span class="characteristic-label">Редкость</span>
-                    <span class="characteristic-value" id="rarity">—</span>
-                </div>
-                <div class="characteristic-row">
-                    <span class="characteristic-label">Паттерн</span>
-                    <span class="characteristic-value" id="pattern">—</span>
-                </div>
-                <div class="characteristic-row">
-                    <span class="characteristic-label">Класс</span>
-                    <span class="characteristic-value" id="class">—</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const gallery = document.getElementById('gallery-container');
             const cardsWrapper = document.getElementById('cards-wrapper');
-            const cardTitle = document.getElementById('card-title');
-            const raritySpan = document.getElementById('rarity');
-            const patternSpan = document.getElementById('pattern');
-            const classSpan = document.getElementById('class');
             const userAvatar = document.getElementById('user-avatar');
             
             // Инициализация Telegram WebApp
-            function initTelegramWebApp() {
-                try {
-                    if (window.Telegram && Telegram.WebApp) {
-                        const webApp = Telegram.WebApp;
-                        
-                        // Получаем данные пользователя
-                        const user = webApp.initDataUnsafe.user;
-                        
-                        if (user && user.photo_url) {
-                            // Создаем изображение для аватарки
-                            const img = document.createElement('img');
-                            img.src = user.photo_url;
-                            img.alt = 'Аватар пользователя';
-                            img.onload = function() {
-                                userAvatar.innerHTML = '';
-                                userAvatar.appendChild(img);
-                            };
-                            img.onerror = function() {
-                                // Если изображение не загрузилось, оставляем placeholder
-                                userAvatar.innerHTML = '<div class="user-avatar-placeholder">👤</div>';
-                            };
-                        }
-                        
-                        // Разворачиваем приложение на весь экран
-                        webApp.expand();
-                        webApp.enableClosingConfirmation();
-                        
-                        console.log('Telegram WebApp инициализирован');
-                    } else {
-                        console.log('Telegram WebApp не доступен, используем placeholder');
-                    }
-                } catch (error) {
-                    console.error('Ошибка инициализации Telegram WebApp:', error);
+            let tg = window.Telegram.WebApp;
+            tg.expand(); // Раскрываем на весь экран
+            tg.enableClosingConfirmation(); // Включаем подтверждение закрытия
+            
+            // Загрузка данных пользователя
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                
+                // Показываем аватарку если есть
+                if (user.photo_url) {
+                    userAvatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
+                } else {
+                    // Или первые буквы имени
+                    const firstName = user.first_name || '';
+                    const lastName = user.last_name || '';
+                    const initials = (firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase();
+                    userAvatar.querySelector('.avatar-placeholder').textContent = initials;
                 }
             }
             
-            // Данные карточек
-            const cardData = [
-                {
-                    url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/2e7c07e8-2adf-45af-9228-84d5c942dd29_%D0%A8%D0%A2%D0%A3%D0%A0%D0%9C%D0%9E%D0%92%D0%98%D0%9A_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIwiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.n2ib1vj1Pke2VoDdWfMQfZWDG5XRih8WwowNRV6oyoA&x-oss-process=image/resize,m_mfit,w_320,h_320",
-                    name: "Штурмовик",
-                    rarity: "Обычная",
-                    rarityClass: "common",
-                    faction: "Империя"
-                },
-                {
-                    url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/7c399af7-1a69-4c00-996f-ca8438a8747c_%D0%91%D0%9E%D0%91%D0%90_%D0%A4%D0%95%D0%A2%D0%A2.png?key=eyJhbGciOiJIUzI1NiIs极5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI3YzM5OWFmNy0xYTY5LTRjMDAtOTk2Zi1jYTg0MzhhODc0N2MiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.8q-1PBMMKdPT9bpmh0k2IAOtyelpvjMnoL1aXgioGyo&x-oss-process=image/resize,m_mfit,w_320,h_320",
-                    name: "Боба Фетт",
-                    rarity: "Эпик",
-                    rarityClass: "epic",
-                    faction: "Наемники"
-                },
-                {
-                    url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/ab2095a2-225f-4b0c-b0de-7af788f64043_%D0%AD%D0%98%CC%86%D0%9B%D0%90_%D0%A1%D0%95%D0%9A%D0%A3%D0%A0%D0%90.png?key=eyJhbGciOiJIUzI1NiIs极5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJhYjIwOTVhMi0yMjVmLTRiMGMtYjBkZS03YWY3ODhmNjQwNDMiLCJyZXNvdXJjZV9jaGF0X2lkIjpnuWxsfQ.UgjRr7极VEjLDIisj1OLpONACN7AmNQgtkW5WalADHOg&x-oss-process=image/resize,m极fit,w_320,h_320",
-                    name: "Эйла Секура",
-                    rarity: "Эпик",
-                    rarityClass: "epic",
-                    faction: "Республика"
-                }
+            // Правильные URL картинок
+            const imageUrls = [
+                "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/2e7c07e8-2adf-45af-9228-84d5c942dd29_%D0%A8%D0%A2%D0%A3%D0%A0%D0%9C%D0%9E%D0%92%D0%98%D0%9A_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3Vy%2Bd9jaGF0X2lkIjpudWxsfQ.n2ib1vj1Pke2VoDdWfMQfZWDG5XRih8WwowNRV6oyoA&x-oss-process=image/resize,m_mfit,w_320,h_320",
+                "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/7c399af7-1a69-4c00-996f-ca8438a8747c_%D0%91%D0%9E%D0%91%D0%90_%D0%A4%D0%95%D0%A2%D0%A2.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI3YzM5OWFmNy0xYTY5LTRjMDAtOTk2Zi1jYTg0MzhhODc0N2MiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.8q-1PBMMKdPT9bpmh0k2IAOtyelpvjMnoL1aXgioGyo&x-oss-process=image/resize,m_mfit,w_320,h_320",
+                "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/ab2095a2-225f-4b0c-b0de-7af788f64043_%D0%AD%D0%98%CC%86%D0%9B%D0%90_%D0%A1%D0%95%D0%9A%D0%A3%D0%A0%D0%90.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJhYjIwOTVhMi0yMjVmLTRiMGMtYjBkZS03YWY3ODhmNjQwNDMiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.UgjRr7VVEjLDIisj1OLpONACN7AmNQgtkW5WalADHOg&x-oss-process=image/resize,m_mfit,w_320,h_320"
             ];
 
             let cards = [];
@@ -463,33 +359,13 @@
             let currentX = 0;
             let isDragging = false;
 
-            // Генерация случайного паттерна в зависимости от редкости
-            function generatePattern(rarity) {
-                let min, max;
-                
-                if (rarity === "Эпик") {
-                    min = 15;
-                    max = 45;
-                } else if (rarity === "Необычная") {
-                    min = 30;
-                    max = 70;
-                } else {
-                    min = 50;
-                    max = 100;
+            // Функция для перемешивания массива
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
                 }
-                
-                const pattern = Math.floor(Math.random() * (max - min + 1)) + min;
-                return `${pattern}%`;
-            }
-
-            // Обновление информации о карточке
-            function updateCardInfo() {
-                const currentCard = cardData[currentCenterIndex];
-                cardTitle.textContent = currentCard.name;
-                raritySpan.textContent = currentCard.rarity;
-                raritySpan.className = `characteristic-value ${currentCard.rarityClass}`;
-                patternSpan.textContent = generatePattern(currentCard.rarity);
-                classSpan.textContent = currentCard.faction;
+                return array;
             }
 
             // Создание карточек
@@ -497,22 +373,24 @@
                 cardsWrapper.innerHTML = '';
                 cards = [];
                 
+                // Перемешиваем картинки
+                const shuffledUrls = shuffleArray([...imageUrls]);
+                
                 // Создаем 3 карточки
                 for (let i = 0; i < 3; i++) {
                     const card = document.createElement('div');
-                    card.className = 'card hidden';
+                    card.className = 'card hidden'; // Начинаем со скрытого состояния
                     card.id = `card-${i}`;
                     
                     const img = document.createElement('img');
-                    img.src = cardData[i].url;
-                    img.alt = cardData[i].name;
+                    img.src = shuffledUrls[i];
+                    img.alt = `Изображение ${i + 1}`;
                     img.onerror = function() {
                         this.style.backgroundColor = '#48484A';
                         this.style.display = 'flex';
                         this.style.justifyContent = 'center';
                         this.style.alignItems = 'center';
                         this.style.color = 'white';
-                        this.style.fontFamily = 'Avenir Next, sans-serif';
                         this.innerHTML = 'Ошибка загрузки';
                     };
                     
@@ -522,19 +400,20 @@
                 }
                 
                 updateCardsPosition();
-                updateCardInfo();
             }
 
             function updateCardsPosition() {
                 cards.forEach((card, index) => {
-                    card.className = 'card hidden';
+                    card.classList.remove('center', 'left', 'right', 'hidden');
                     
                     if (index === currentCenterIndex) {
-                        card.className = 'card center';
+                        card.classList.add('center');
                     } else if (index === currentCenterIndex + 1) {
-                        card.className = 'card right';
+                        card.classList.add('right');
                     } else if (index === currentCenterIndex - 1) {
-                        card.className = 'card left';
+                        card.classList.add('left');
+                    } else {
+                        card.classList.add('hidden');
                     }
                 });
             }
@@ -543,7 +422,10 @@
                 if (currentCenterIndex < cards.length - 1) {
                     currentCenterIndex++;
                     updateCardsPosition();
-                    updateCardInfo();
+                    // Вибрация при перелистывании
+                    if (navigator.vibrate) {
+                        navigator.vibrate(1);
+                    }
                 }
             }
             
@@ -551,7 +433,10 @@
                 if (currentCenterIndex > 0) {
                     currentCenterIndex--;
                     updateCardsPosition();
-                    updateCardInfo();
+                    // Вибрация при перелистывании
+                    if (navigator.vibrate) {
+                        navigator.vibrate(1);
+                    }
                 }
             }
             
@@ -612,7 +497,6 @@
             }
 
             // Инициализация
-            initTelegramWebApp();
             createCards();
             setupEventListeners();
         });
