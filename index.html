@@ -25,7 +25,6 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
         .container {
@@ -37,7 +36,6 @@
             padding: 20px;
             text-align: center;
             gap: 20px;
-            transition: opacity 0.3s ease;
         }
 
         .gif-container {
@@ -65,34 +63,37 @@
             max-width: 250px;
         }
 
-        /* Стили для состояния подключения */
-        .connection-state {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* Стили для индикатора подключения */
+        .connection-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            z-index: 1000;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
 
-        .connection-state.visible {
+        .connection-overlay.visible {
             opacity: 1;
             pointer-events: all;
         }
 
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(0, 0, 0, 0.1);
+        .connection-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-top: 3px solid var(--tg-theme-button-color, #2481cc);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-bottom: 15px;
         }
 
         .connection-text {
@@ -109,19 +110,10 @@
         .hidden {
             display: none;
         }
-
-        /* Запрет выделения для конкретных элементов */
-        img, div, p {
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            user-drag: none;
-        }
     </style>
 </head>
 <body>
-    <div class="container" id="mainContainer">
+    <div class="container">
         <div class="gif-container">
             <img src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADRA8AAmkKqEs.webp" alt="Камень-Ножницы-Бумага">
         </div>
@@ -130,8 +122,8 @@
         </div>
     </div>
 
-    <div class="connection-state" id="connectionState">
-        <div class="loading-spinner"></div>
+    <div class="connection-overlay" id="connectionOverlay">
+        <div class="connection-spinner"></div>
         <div class="connection-text">Подключение</div>
     </div>
 
@@ -145,78 +137,70 @@
         // Получаем параметры из URL
         const urlParams = new URLSearchParams(window.location.search);
         const referrerId = urlParams.get('ref');
-        const isJoining = !!referrerId;
+        const isJoining = referrerId && referrerId !== '';
         
         // Создаем уникальную ссылку с ID пользователя
         const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
         const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}`;
         
-        // Создаем кнопку через Telegram Web App API
-        let mainButton = tg.MainButton;
-        mainButton.setText("Поделиться");
-        mainButton.show();
+        // Функция для показа индикатора подключения
+        function showConnectionIndicator() {
+            const overlay = document.getElementById('connectionOverlay');
+            overlay.classList.add('visible');
+            
+            // Через 3 секунды скрываем (имитация подключения)
+            setTimeout(() => {
+                overlay.classList.remove('visible');
+                // Здесь будет переход к игре
+            }, 3000);
+        }
         
-        // Элементы DOM
-        const mainContainer = document.getElementById('mainContainer');
-        const connectionState = document.getElementById('connectionState');
-
+        // Функция для шаринга ссылки
+        function shareLink() {
+            // Используем Telegram Share API
+            if (tg.share) {
+                tg.share(shareLink, "Присоединяйся к игре в Камень-Ножницы-Бумага!", () => {
+                    console.log("Шаринг завершен");
+                });
+            } else {
+                // Fallback - копирование в буфер
+                navigator.clipboard.writeText(shareLink).then(() => {
+                    tg.showAlert("Ссылка скопирована! Теперь можешь отправить её другу.");
+                });
+            }
+        }
+        
         // Функция для вибрации через Telegram API
         function vibrate() {
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Функция для показа состояния подключения
-        function showConnectionState() {
-            mainContainer.style.opacity = '0.3';
-            connectionState.classList.add('visible');
-            mainButton.hide();
-        }
-
-        // Функция для скрытия состояния подключения
-        function hideConnectionState() {
-            mainContainer.style.opacity = '1';
-            connectionState.classList.remove('visible');
-            mainButton.show();
-        }
-
-        // Функция для открытия share dialog
-        function shareLink() {
-            vibrate();
-            
-            // Прячем основной интерфейс и показываем подключение
-            showConnectionState();
-            
-            // Имитируем процесс подключения на 3 секунды
-            setTimeout(() => {
-                // Открываем нативный шеринг Telegram
-                tg.shareUrl(shareLink, "Присоединяйся к игре!", () => {
-                    // После шеринга возвращаем обычное состояние
-                    hideConnectionState();
-                });
-            }, 3000);
-        }
-
-        // Если пользователь присоединяется по ссылке
+        // Создаем кнопку через Telegram Web App API
+        let mainButton = tg.MainButton;
+        
         if (isJoining) {
-            // Сразу показываем состояние подключения
-            showConnectionState();
-            
-            // Имитируем подключение на 3 секунды
-            setTimeout(() => {
-                // Здесь будет логика настоящего подключения к игре
-                console.log('Подключение установлено!');
-                
-                // Можно скрыть состояние подключения или перейти к игре
-                // hideConnectionState();
-                
-            }, 3000);
-            
-            // Меняем текст кнопки для присоединившегося
-            mainButton.setText("Присоединиться");
+            // Если пользователь присоединяется по ссылке
+            mainButton.setText("Подключиться");
+            mainButton.onClick(() => {
+                vibrate();
+                showConnectionIndicator();
+            });
+        } else {
+            // Если пользователь создает игру
+            mainButton.setText("Поделиться");
+            mainButton.onClick(() => {
+                vibrate();
+                shareLink();
+            });
         }
+        
+        mainButton.show();
 
-        // Назначаем обработчик на кнопку Telegram
-        mainButton.onClick(shareLink);
+        // Если пользователь перешел по реферальной ссылке
+        if (isJoining) {
+            console.log('Присоединение к игре от:', referrerId);
+            // Можно отправить запрос на сервер о подключении
+        }
 
         // Дополнительная защита от выделения
         document.addEventListener('selectstart', function(e) {
