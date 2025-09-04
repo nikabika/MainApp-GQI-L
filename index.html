@@ -51,7 +51,7 @@
             height: 100%;
             object-fit: contain;
             border-radius: 12px;
-            pointer-events: none; /* Защита от взаимодействия с изображением */
+            pointer-events: none;
         }
 
         .text {
@@ -63,17 +63,52 @@
             max-width: 250px;
         }
 
-        .hidden {
-            display: none;
+        /* Стили для индикатора подключения */
+        .connection-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
-        /* Запрет выделения для конкретных элементов */
-        img, div, p {
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            user-drag: none;
+        .connection-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .connection-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-top: 3px solid var(--tg-theme-button-color, #2481cc);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .connection-text {
+            font-size: 16px;
+            color: var(--tg-theme-text-color, #000000);
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -87,6 +122,11 @@
         </div>
     </div>
 
+    <div class="connection-overlay" id="connectionOverlay">
+        <div class="connection-spinner"></div>
+        <div class="connection-text">Подключение</div>
+    </div>
+
     <script>
         // Инициализация Telegram Web App
         let tg = window.Telegram.WebApp;
@@ -97,55 +137,72 @@
         // Получаем параметры из URL
         const urlParams = new URLSearchParams(window.location.search);
         const referrerId = urlParams.get('ref');
+        const isJoining = referrerId && referrerId !== '';
         
         // Создаем уникальную ссылку с ID пользователя
         const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
         const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}`;
         
-        // Создаем кнопку через Telegram Web App API
-        let mainButton = tg.MainButton;
-        mainButton.setText("Скопировать ссылку");
-        mainButton.show();
+        // Функция для показа индикатора подключения
+        function showConnectionIndicator() {
+            const overlay = document.getElementById('connectionOverlay');
+            overlay.classList.add('visible');
+            
+            // Через 3 секунды скрываем (имитация подключения)
+            setTimeout(() => {
+                overlay.classList.remove('visible');
+                // Здесь будет переход к игре
+            }, 3000);
+        }
+        
+        // Функция для шаринга ссылки
+        function shareLink() {
+            // Используем Telegram Share API
+            if (tg.share) {
+                tg.share(shareLink, "Присоединяйся к игре в Камень-Ножницы-Бумага!", () => {
+                    console.log("Шаринг завершен");
+                });
+            } else {
+                // Fallback - копирование в буфер
+                navigator.clipboard.writeText(shareLink).then(() => {
+                    tg.showAlert("Ссылка скопирована! Теперь можешь отправить её другу.");
+                });
+            }
+        }
         
         // Функция для вибрации через Telegram API
         function vibrate() {
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Функция для показа алерта
-        function showAlert() {
-            tg.showAlert("Ссылка скопирована!", function() {
-                // Колбек после закрытия алерта
+        // Создаем кнопку через Telegram Web App API
+        let mainButton = tg.MainButton;
+        
+        if (isJoining) {
+            // Если пользователь присоединяется по ссылке
+            mainButton.setText("Подключиться");
+            mainButton.onClick(() => {
+                vibrate();
+                showConnectionIndicator();
+            });
+        } else {
+            // Если пользователь создает игру
+            mainButton.setText("Поделиться");
+            mainButton.onClick(() => {
+                vibrate();
+                shareLink();
             });
         }
-
-        // Функция для копирования ссылки
-        async function copyLink() {
-            vibrate();
-            
-            try {
-                await navigator.clipboard.writeText(shareLink);
-                showAlert(); // Показываем алерт Telegram
-                
-            } catch (err) {
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось скопировать ссылку',
-                    buttons: [{type: 'ok'}]
-                });
-            }
-        }
-
-        // Назначаем обработчик на кнопку Telegram
-        mainButton.onClick(copyLink);
+        
+        mainButton.show();
 
         // Если пользователь перешел по реферальной ссылке
-        if (referrerId) {
-            // Можно сохранить referrerId для статистики
-            console.log('Реферал от:', referrerId);
+        if (isJoining) {
+            console.log('Присоединение к игре от:', referrerId);
+            // Можно отправить запрос на сервер о подключении
         }
 
-        // Дополнительная защита от выделения через JavaScript
+        // Дополнительная защита от выделения
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
             return false;
