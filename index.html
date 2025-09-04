@@ -37,7 +37,6 @@
             padding: 20px;
             text-align: center;
             gap: 20px;
-            transition: opacity 0.3s ease;
         }
 
         .gif-container {
@@ -72,6 +71,11 @@
             align-items: center;
             justify-content: center;
             gap: 15px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
         }
 
         .loading-spinner {
@@ -143,11 +147,14 @@
         const connectionState = document.getElementById('connectionState');
         const mainButton = tg.MainButton;
 
+        // Настройка основной кнопки
+        mainButton.setText("Поделиться");
+        mainButton.show();
+
         // Функция для показа состояния подключения
         function showConnectionState() {
-            mainContainer.style.display = 'none';
             connectionState.style.display = 'flex';
-            mainButton.hide();
+            mainButton.hide(); // Убираем кнопку только когда активно колесико
             
             // Симуляция подключения на 3 секунды
             setTimeout(() => {
@@ -194,15 +201,12 @@
             }
         }
 
-        // Настройка кнопки в зависимости от состояния
+        // Обработчик клика по кнопке
+        mainButton.onClick(shareLink);
+
+        // Если это реферальная ссылка - показываем подключение
         if (isConnecting) {
-            // Если это реферальная ссылка - сразу показываем подключение
             showConnectionState();
-        } else {
-            // Обычный режим - кнопка "Поделиться"
-            mainButton.setText("Поделиться");
-            mainButton.onClick(shareLink);
-            mainButton.show();
         }
 
         // Дополнительная защита от выделения через JavaScript
