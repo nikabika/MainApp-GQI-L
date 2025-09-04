@@ -16,7 +16,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
         }
 
         .container {
@@ -24,14 +24,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 30px;
+            flex: 1;
             padding: 20px;
             text-align: center;
         }
 
         .gif-container {
-            width: 280px;
-            height: 280px;
+            width: 140px;
+            height: 140px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -41,10 +41,17 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 16px;
+            border-radius: 12px;
         }
 
-        .button {
+        .button-container {
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .tg-button {
+            width: 100%;
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
@@ -54,11 +61,32 @@
             font-weight: 500;
             cursor: pointer;
             transition: opacity 0.2s ease;
-            min-width: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .button:active {
+        .tg-button:active {
             opacity: 0.8;
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -67,53 +95,87 @@
         <div class="gif-container">
             <img src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADRA8AAmkKqEs.webp" alt="Камень-Ножницы-Бумага">
         </div>
-        <button class="button" id="copyButton">Скопировать ссылку</button>
+    </div>
+
+    <div class="button-container">
+        <button class="tg-button" id="copyButton">
+            <span id="buttonText">Скопировать ссылку</span>
+            <div class="loading-spinner hidden" id="loadingSpinner"></div>
+        </button>
     </div>
 
     <script>
         // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем на весь экран
-        tg.enableClosingConfirmation(); // Включаем подтверждение закрытия
+        tg.expand();
+        tg.enableClosingConfirmation();
 
-        // Функция для вибрации (3 коротких вибрации)
+        // Функция для вибрации
         function vibrate() {
             if (navigator.vibrate) {
-                navigator.vibrate([100, 50, 100, 50, 100]);
+                navigator.vibrate(50); // Короткая вибрация
             }
         }
 
-        // Функция для копирования ссылки
-        function copyLink() {
-            vibrate(); // Вибрация при нажатии
+        // Функция для показа загрузки
+        function showLoading() {
+            const buttonText = document.getElementById('buttonText');
+            const spinner = document.getElementById('loadingSpinner');
             
-            const link = window.location.href;
-            navigator.clipboard.writeText(link)
-                .then(() => {
+            buttonText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+        }
+
+        // Функция для скрытия загрузки
+        function hideLoading() {
+            const buttonText = document.getElementById('buttonText');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            buttonText.classList.remove('hidden');
+            spinner.classList.add('hidden');
+        }
+
+        // Функция для копирования ссылки
+        async function copyLink() {
+            vibrate(); // Вибрация при нажатии
+            showLoading(); // Показываем спиннер
+            
+            try {
+                const link = window.location.href;
+                await navigator.clipboard.writeText(link);
+                
+                // Ждем 0.5 секунд перед показом уведомления
+                setTimeout(() => {
+                    hideLoading();
                     tg.showPopup({
-                        title: 'Успешно!',
-                        message: 'Ссылка скопирована в буфер обмена',
+                        title: 'Готово!',
+                        message: 'Ссылка скопирована',
                         buttons: [{type: 'ok'}]
                     });
-                })
-                .catch(err => {
-                    tg.showPopup({
-                        title: 'Ошибка',
-                        message: 'Не удалось скопировать ссылку',
-                        buttons: [{type: 'ok'}]
-                    });
+                }, 500);
+                
+            } catch (err) {
+                hideLoading();
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось скопировать ссылку',
+                    buttons: [{type: 'ok'}]
                 });
+            }
         }
 
         // Назначаем обработчик на кнопку
         document.getElementById('copyButton').addEventListener('click', copyLink);
 
-        // Обработчик закрытия Web App
+        // Адаптация под разные устройства
         tg.onEvent('viewportChanged', (event) => {
             if (event.isStateStable) {
                 tg.ready();
             }
         });
+
+        // Инициализация
+        tg.ready();
     </script>
 </body>
 </html>
