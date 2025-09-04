@@ -51,45 +51,6 @@
             text-align: center;
             max-width: 250px;
         }
-
-        .notification {
-            position: fixed;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 15px;
-            color: var(--tg-theme-text-color, #000000);
-            opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .notification.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-10px);
-        }
-
-        .loading-spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .hidden {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -101,8 +62,6 @@
             Скопируй ссылку и вперед играть!
         </div>
     </div>
-
-    <div class="notification" id="notification">Скопировано!</div>
 
     <script>
         // Инициализация Telegram Web App
@@ -121,44 +80,40 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Функция для показа уведомления
-        function showNotification() {
-            const notification = document.getElementById('notification');
-            notification.classList.add('show');
+        // Функция для показа алерта с кнопками
+        function showAlert() {
+            tg.showPopup({
+                title: 'Ссылка скопирована!',
+                message: 'Хочешь поделиться с друзьями?',
+                buttons: [
+                    {type: 'default', text: 'Поделиться', id: 'share'},
+                    {type: 'cancel', text: 'Готово', id: 'done'}
+                ]
+            }, function(buttonId) {
+                if (buttonId === 'share') {
+                    shareWithFriends();
+                }
+            });
+        }
+
+        // Функция для поделиться с друзьями
+        function shareWithFriends() {
+            const shareText = "👋*Давай сыграем в КМН!*\n\nПрисоединяйся ко мне 👇";
+            const shareUrl = window.location.href;
             
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 2000);
-        }
-
-        // Функция для показа загрузки на кнопке
-        function showLoading() {
-            mainButton.setText("");
-            mainButton.showProgress(false);
-        }
-
-        // Функция для скрытия загрузки
-        function hideLoading() {
-            mainButton.setText("Скопировать ссылку");
-            mainButton.hideProgress();
+            tg.shareMessage(shareText, shareUrl);
         }
 
         // Функция для копирования ссылки
         async function copyLink() {
             vibrate();
-            showLoading();
             
             try {
                 const link = window.location.href;
                 await navigator.clipboard.writeText(link);
-                
-                setTimeout(() => {
-                    hideLoading();
-                    showNotification(); // Показываем красивое уведомление
-                }, 500);
+                showAlert(); // Показываем алерт с кнопками
                 
             } catch (err) {
-                hideLoading();
                 tg.showPopup({
                     title: 'Ошибка',
                     message: 'Не удалось скопировать ссылку',
