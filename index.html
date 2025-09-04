@@ -51,6 +51,31 @@
             text-align: center;
             max-width: 250px;
         }
+
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            color: var(--tg-theme-text-color, #000000);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -70,6 +95,14 @@
         // Расширяем на весь экран
         tg.expand();
         
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const referrerId = urlParams.get('ref');
+        
+        // Создаем уникальную ссылку с ID пользователя
+        const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
+        const shareLink = `https://t.me/your_bot_username?start=ref_${userId}`;
+        
         // Создаем кнопку через Telegram Web App API
         let mainButton = tg.MainButton;
         mainButton.setText("Скопировать ссылку");
@@ -80,28 +113,11 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Функция для показа алерта с кнопками
+        // Функция для показа алерта
         function showAlert() {
-            tg.showPopup({
-                title: 'Ссылка скопирована!',
-                message: 'Хочешь поделиться с друзьями?',
-                buttons: [
-                    {type: 'default', text: 'Поделиться', id: 'share'},
-                    {type: 'cancel', text: 'Готово', id: 'done'}
-                ]
-            }, function(buttonId) {
-                if (buttonId === 'share') {
-                    shareWithFriends();
-                }
+            tg.showAlert("Ссылка скопирована!", function() {
+                // Колбек после закрытия алерта
             });
-        }
-
-        // Функция для поделиться с друзьями (открываем выбор контакта)
-        function shareWithFriends() {
-            const shareText = "👋*Давай сыграем в КМН!*\n\nПрисоединяйся ко мне 👇\n\n" + window.location.href;
-            
-            // Используем метод для открытия диалога выбора контакта
-            tg.openLink("https://t.me/share/url?url=" + encodeURIComponent(window.location.href) + "&text=" + encodeURIComponent("👋 Давай сыграем в КМН! Присоединяйся ко мне 👇"));
         }
 
         // Функция для копирования ссылки
@@ -109,9 +125,8 @@
             vibrate();
             
             try {
-                const link = window.location.href;
-                await navigator.clipboard.writeText(link);
-                showAlert(); // Показываем алерт с кнопками
+                await navigator.clipboard.writeText(shareLink);
+                showAlert(); // Показываем алерт Telegram
                 
             } catch (err) {
                 tg.showPopup({
@@ -124,6 +139,12 @@
 
         // Назначаем обработчик на кнопку Telegram
         mainButton.onClick(copyLink);
+
+        // Если пользователь перешел по реферальной ссылке
+        if (referrerId) {
+            // Можно сохранить referrerId для статистики
+            console.log('Реферал от:', referrerId);
+        }
 
         // Инициализация
         tg.ready();
