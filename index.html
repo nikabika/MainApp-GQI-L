@@ -15,8 +15,6 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
         }
 
         .container {
@@ -27,11 +25,12 @@
             flex: 1;
             padding: 20px;
             text-align: center;
+            gap: 20px;
         }
 
         .gif-container {
-            width: 140px;
-            height: 140px;
+            width: 210px;
+            height: 210px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -44,10 +43,23 @@
             border-radius: 12px;
         }
 
-        .button-container {
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
+        .text {
+            font-weight: 600;
+            font-size: 17px;
+            line-height: 1.4;
+            color: var(--tg-theme-text-color, #000000);
+            text-align: center;
+            max-width: 250px;
+        }
+
+        .tg-button-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-top: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
 
         .tg-button {
@@ -55,7 +67,7 @@
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            padding: 16px 24px;
+            padding: 14px 24px;
             border-radius: 10px;
             font-size: 17px;
             font-weight: 500;
@@ -65,15 +77,17 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .tg-button:active {
             opacity: 0.8;
+            transform: scale(0.98);
         }
 
         .loading-spinner {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-top: 2px solid white;
             border-radius: 50%;
@@ -95,9 +109,12 @@
         <div class="gif-container">
             <img src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADRA8AAmkKqEs.webp" alt="Камень-Ножницы-Бумага">
         </div>
+        <div class="text">
+            Скопируй ссылку и вперед играть!
+        </div>
     </div>
 
-    <div class="button-container">
+    <div class="tg-button-bottom">
         <button class="tg-button" id="copyButton">
             <span id="buttonText">Скопировать ссылку</span>
             <div class="loading-spinner hidden" id="loadingSpinner"></div>
@@ -109,11 +126,12 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.enableClosingConfirmation();
+        tg.BackButton.hide();
 
         // Функция для вибрации
         function vibrate() {
             if (navigator.vibrate) {
-                navigator.vibrate(50); // Короткая вибрация
+                navigator.vibrate(50);
             }
         }
 
@@ -137,19 +155,18 @@
 
         // Функция для копирования ссылки
         async function copyLink() {
-            vibrate(); // Вибрация при нажатии
-            showLoading(); // Показываем спиннер
+            vibrate();
+            showLoading();
             
             try {
                 const link = window.location.href;
                 await navigator.clipboard.writeText(link);
                 
-                // Ждем 0.5 секунд перед показом уведомления
                 setTimeout(() => {
                     hideLoading();
                     tg.showPopup({
-                        title: 'Готово!',
-                        message: 'Ссылка скопирована',
+                        title: 'Ссылка скопирована',
+                        message: 'Теперь можно делиться с друзьями!',
                         buttons: [{type: 'ok'}]
                     });
                 }, 500);
@@ -166,13 +183,6 @@
 
         // Назначаем обработчик на кнопку
         document.getElementById('copyButton').addEventListener('click', copyLink);
-
-        // Адаптация под разные устройства
-        tg.onEvent('viewportChanged', (event) => {
-            if (event.isStateStable) {
-                tg.ready();
-            }
-        });
 
         // Инициализация
         tg.ready();
