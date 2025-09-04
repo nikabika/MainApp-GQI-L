@@ -25,8 +25,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            position: relative;
         }
 
         .container {
@@ -34,9 +33,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            flex: 1;
             padding: 20px;
             text-align: center;
             gap: 20px;
+            transition: opacity 0.3s ease;
         }
 
         .gif-container {
@@ -66,22 +67,29 @@
 
         /* Стили для состояния подключения */
         .connection-state {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .connection-state.visible {
+            opacity: 1;
+            pointer-events: all;
         }
 
         .loading-spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border: 3px solid rgba(0, 0, 0, 0.1);
             border-top: 3px solid var(--tg-theme-button-color, #2481cc);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -90,6 +98,7 @@
         .connection-text {
             font-size: 16px;
             color: var(--tg-theme-text-color, #000000);
+            font-weight: 500;
         }
 
         @keyframes spin {
@@ -136,80 +145,80 @@
         // Получаем параметры из URL
         const urlParams = new URLSearchParams(window.location.search);
         const referrerId = urlParams.get('ref');
-        const isConnecting = referrerId !== null;
-
+        const isJoining = !!referrerId;
+        
         // Создаем уникальную ссылку с ID пользователя
         const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
         const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}`;
         
+        // Создаем кнопку через Telegram Web App API
+        let mainButton = tg.MainButton;
+        mainButton.setText("Поделиться");
+        mainButton.show();
+        
         // Элементы DOM
         const mainContainer = document.getElementById('mainContainer');
         const connectionState = document.getElementById('connectionState');
-        const mainButton = tg.MainButton;
-
-        // Настройка основной кнопки
-        mainButton.setText("Поделиться");
-        mainButton.show();
-
-        // Функция для показа состояния подключения
-        function showConnectionState() {
-            connectionState.style.display = 'flex';
-            mainButton.hide(); // Убираем кнопку только когда активно колесико
-            
-            // Симуляция подключения на 3 секунды
-            setTimeout(() => {
-                // Здесь будет логика перехода к игре
-                tg.showAlert("Подключение установлено! Начинаем игру...", function() {
-                    tg.close();
-                });
-            }, 3000);
-        }
 
         // Функция для вибрации через Telegram API
         function vibrate() {
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Функция для предложения поделиться
+        // Функция для показа состояния подключения
+        function showConnectionState() {
+            mainContainer.style.opacity = '0.3';
+            connectionState.classList.add('visible');
+            mainButton.hide();
+        }
+
+        // Функция для скрытия состояния подключения
+        function hideConnectionState() {
+            mainContainer.style.opacity = '1';
+            connectionState.classList.remove('visible');
+            mainButton.show();
+        }
+
+        // Функция для открытия share dialog
         function shareLink() {
             vibrate();
             
-            // Используем Telegram Share功能
-            if (tg.share) {
-                tg.share(shareLink, "Присоединяйся к игре в Камень-Ножницы-Бумага!", function(success) {
-                    if (!success) {
-                        // Если sharing не поддерживается, копируем в буфер
-                        copyToClipboard();
-                    }
+            // Прячем основной интерфейс и показываем подключение
+            showConnectionState();
+            
+            // Имитируем процесс подключения на 3 секунды
+            setTimeout(() => {
+                // Открываем нативный шеринг Telegram
+                tg.shareUrl(shareLink, "Присоединяйся к игре!", () => {
+                    // После шеринга возвращаем обычное состояние
+                    hideConnectionState();
                 });
-            } else {
-                copyToClipboard();
-            }
+            }, 3000);
         }
 
-        // Функция для копирования в буфер
-        async function copyToClipboard() {
-            try {
-                await navigator.clipboard.writeText(shareLink);
-                tg.showAlert("Ссылка скопирована! Теперь можешь отправить её другу.", function() {});
-            } catch (err) {
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось скопировать ссылку',
-                    buttons: [{type: 'ok'}]
-                });
-            }
+        // Если пользователь присоединяется по ссылке
+        if (isJoining) {
+            // Сразу показываем состояние подключения
+            showConnectionState();
+            
+            // Имитируем подключение на 3 секунды
+            setTimeout(() => {
+                // Здесь будет логика настоящего подключения к игре
+                console.log('Подключение установлено!');
+                
+                // Можно скрыть состояние подключения или перейти к игре
+                // hideConnectionState();
+                
+            }, 3000);
+            
+            // Меняем текст кнопки для присоединившегося
+            mainButton.setText("Присоединиться");
         }
 
-        // Обработчик клика по кнопке
+        // Назначаем обработчик на кнопку Telegram
         mainButton.onClick(shareLink);
 
-        // Если это реферальная ссылка - показываем подключение
-        if (isConnecting) {
-            showConnectionState();
-        }
-
-        // Дополнительная защита от выделения через JavaScript
+        // Дополнительная защита от выделения
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
             return false;
