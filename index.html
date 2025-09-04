@@ -52,39 +52,6 @@
             max-width: 250px;
         }
 
-        .tg-button-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 16px;
-            background: var(--tg-theme-bg-color, #ffffff);
-            border-top: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
-        }
-
-        .tg-button {
-            width: 100%;
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 14px 24px;
-            border-radius: 10px;
-            font-size: 17px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .tg-button:active {
-            opacity: 0.8;
-            transform: scale(0.98);
-        }
-
         .loading-spinner {
             width: 18px;
             height: 18px;
@@ -114,49 +81,40 @@
         </div>
     </div>
 
-    <div class="tg-button-bottom">
-        <button class="tg-button" id="copyButton">
-            <span id="buttonText">Скопировать ссылку</span>
-            <div class="loading-spinner hidden" id="loadingSpinner"></div>
-        </button>
-    </div>
-
     <script>
         // Инициализация Telegram Web App
-        const tg = window.Telegram.WebApp;
+        let tg = window.Telegram.WebApp;
+        
+        // Расширяем на весь экран
         tg.expand();
-        tg.enableClosingConfirmation();
-        tg.BackButton.hide();
-
-        // Функция для вибрации
+        
+        // Создаем кнопку через Telegram Web App API
+        let mainButton = tg.MainButton;
+        mainButton.setText("Скопировать ссылку");
+        mainButton.show();
+        
+        // Функция для вибрации через Telegram API
         function vibrate() {
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
+            // Используем Telegram Haptic Feedback
+            tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Функция для показа загрузки
+        // Функция для показа загрузки на кнопке
         function showLoading() {
-            const buttonText = document.getElementById('buttonText');
-            const spinner = document.getElementById('loadingSpinner');
-            
-            buttonText.classList.add('hidden');
-            spinner.classList.remove('hidden');
+            mainButton.setText("");
+            mainButton.showProgress(false);
         }
 
         // Функция для скрытия загрузки
         function hideLoading() {
-            const buttonText = document.getElementById('buttonText');
-            const spinner = document.getElementById('loadingSpinner');
-            
-            buttonText.classList.remove('hidden');
-            spinner.classList.add('hidden');
+            mainButton.setText("Скопировать ссылку");
+            mainButton.hideProgress();
         }
 
         // Функция для копирования ссылки
         async function copyLink() {
-            vibrate();
-            showLoading();
+            vibrate(); // Вибрация через Telegram API
+            showLoading(); // Показываем спиннер
             
             try {
                 const link = window.location.href;
@@ -181,8 +139,8 @@
             }
         }
 
-        // Назначаем обработчик на кнопку
-        document.getElementById('copyButton').addEventListener('click', copyLink);
+        // Назначаем обработчик на кнопку Telegram
+        mainButton.onClick(copyLink);
 
         // Инициализация
         tg.ready();
