@@ -6,6 +6,7 @@
     <title>Камень-Ножницы-Бумага</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Защита от выделения */
         * {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -35,6 +36,7 @@
             padding: 20px;
             text-align: center;
             gap: 20px;
+            transition: opacity 0.3s ease;
         }
 
         .gif-container {
@@ -62,24 +64,27 @@
             max-width: 250px;
         }
 
-        /* Стили для экрана загрузки */
         .loading-screen {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background: var(--tg-theme-bg-color, #ffffff);
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
             gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
         .loading-screen.active {
-            display: flex;
+            opacity: 1;
+            pointer-events: all;
         }
 
         .loading-spinner {
@@ -103,6 +108,14 @@
 
         .hidden {
             display: none;
+        }
+
+        img, div, p {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
         }
     </style>
 </head>
@@ -131,79 +144,82 @@
         // Получаем параметры из URL
         const urlParams = new URLSearchParams(window.location.search);
         const referrerId = urlParams.get('ref');
-        const isJoining = referrerId !== null;
         
         // Создаем уникальную ссылку с ID пользователя
         const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
         const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}`;
+        
+        // Создаем кнопку через Telegram Web App API
+        let mainButton = tg.MainButton;
+        mainButton.setText("Скопировать ссылку");
+        mainButton.show();
         
         // Функция для показа экрана загрузки
         function showLoadingScreen() {
             const mainContainer = document.getElementById('mainContainer');
             const loadingScreen = document.getElementById('loadingScreen');
             
-            mainContainer.style.display = 'none';
+            mainContainer.style.opacity = '0.3';
             loadingScreen.classList.add('active');
             
-            // Через 3 секунды скрываем загрузку (в реальном приложении здесь была бы логика игры)
+            // Через 3 секунды скрываем загрузку
             setTimeout(() => {
                 hideLoadingScreen();
             }, 3000);
         }
         
+        // Функция для скрытия экрана загрузки
         function hideLoadingScreen() {
             const mainContainer = document.getElementById('mainContainer');
             const loadingScreen = document.getElementById('loadingScreen');
             
+            mainContainer.style.opacity = '1';
             loadingScreen.classList.remove('active');
-            mainContainer.style.display = 'flex';
         }
-        
-        // Функция для шаринга ссылки
-        function shareLink() {
-            // Используем Telegram Share API
-            if (tg.share) {
-                tg.share(shareLink, "Присоединяйся к игре в Камень-Ножницы-Бумага!", () => {
-                    console.log("Шаринг завершен");
-                });
-            } else {
-                // Fallback для копирования
-                navigator.clipboard.writeText(shareLink).then(() => {
-                    tg.showAlert("Ссылка скопирована! Теперь можешь отправить её другу.");
-                });
-            }
-        }
-        
-        // Создаем кнопку через Telegram Web App API
-        let mainButton = tg.MainButton;
-        
-        if (isJoining) {
-            // Если пользователь присоединяется по ссылке
-            mainButton.setText("Присоединиться");
-            mainButton.onClick(showLoadingScreen);
-            showLoadingScreen(); // Автоматически показываем загрузку
-        } else {
-            // Если пользователь создает игру
-            mainButton.setText("Поделиться ссылкой");
-            mainButton.onClick(shareLink);
-        }
-        
-        mainButton.show();
-        
+
         // Функция для вибрации через Telegram API
         function vibrate() {
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Дополнительная защита от выделения через JavaScript
+        // Функция для показа алерта
+        function showAlert() {
+            tg.showAlert("Ссылка скопирована!", function() {});
+        }
+
+        // Функция для копирования ссылки
+        async function copyLink() {
+            vibrate();
+            
+            try {
+                await navigator.clipboard.writeText(shareLink);
+                showAlert();
+                
+            } catch (err) {
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось скопировать ссылку',
+                    buttons: [{type: 'ok'}]
+                });
+            }
+        }
+
+        // Назначаем обработчик на кнопку Telegram
+        mainButton.onClick(copyLink);
+
+        // Если пользователь перешел по реферальной ссылке (второй игрок)
+        if (referrerId) {
+            // Показываем экран загрузки сразу
+            showLoadingScreen();
+        }
+
+        // Дополнительная защита от выделения
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
-            return false;
         });
 
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            return false;
         });
 
         // Инициализация
