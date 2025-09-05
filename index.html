@@ -155,9 +155,6 @@
         const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
         const userFirstName = tg.initDataUnsafe.user?.first_name || 'Игрок';
         
-        // Создаем уникальную ссылку
-        const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}`;
-        
         // Создаем кнопку через Telegram Web App API
         let mainButton = tg.MainButton;
         mainButton.setText("Скопировать ссылку");
@@ -240,7 +237,6 @@
                     },
                     (payload) => {
                         console.log('Lobby updated:', payload.new);
-                        // Здесь можно обрабатывать изменения статуса лобби
                     }
                 )
                 .subscribe();
@@ -264,11 +260,27 @@
                 // Создаем лобби при копировании ссылки
                 const lobby = await createLobby();
                 if (lobby) {
-                    const lobbyLink = `https://t.me/kmn_gamebot?start=ref_${userId}&lobby=${lobby.id}`;
-                    await navigator.clipboard.writeText(lobbyLink);
-                    showAlert();
+                    // Правильная ссылка для приглашения
+                    const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}_lobby_${lobby.id}`;
+                    
+                    // Создаем временный элемент для копирования
+                    const tempInput = document.createElement('input');
+                    tempInput.value = shareLink;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    
+                    // Копируем в буфер обмена
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    
+                    if (successful) {
+                        showAlert();
+                    } else {
+                        throw new Error('Copy failed');
+                    }
                 }
             } catch (err) {
+                console.error('Copy error:', err);
                 tg.showPopup({
                     title: 'Ошибка',
                     message: 'Не удалось скопировать ссылку',
@@ -299,9 +311,12 @@
         // Назначаем обработчик на кнопку Telegram
         mainButton.onClick(copyLink);
 
-        // Защита от выделения
+        // Защита от выделения (но разрешаем для копирования)
         document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
+            // Разрешаем выделение только для элементов ввода
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
         });
 
         document.addEventListener('contextmenu', function(e) {
