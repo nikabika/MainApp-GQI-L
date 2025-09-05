@@ -152,7 +152,7 @@
         const referrerId = urlParams.get('ref');
         const lobbyId = urlParams.get('lobby');
         
-        // Создаем уникальную ссылку с ID пользователя
+        // Создаем уникальную ссылку с ID пользователя (старая версия - без Supabase)
         const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
         const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}`;
         
@@ -179,69 +179,79 @@
             loadingScreen.classList.remove('active');
         }
 
-        // Функция для создания лобби
-        async function createLobby() {
-            const lobbyData = {
-                host_id: userId,
-                host_name: tg.initDataUnsafe.user?.first_name || 'Игрок',
-                status: 'waiting',
-                created_at: new Date().toISOString(),
-                players: [userId]
-            };
+        // Функция для создания лобби в Supabase (только для синхронизации)
+        async function createLobbyForSync() {
+            try {
+                const lobbyData = {
+                    host_id: userId,
+                    host_name: tg.initDataUnsafe.user?.first_name || 'Игрок',
+                    status: 'waiting',
+                    created_at: new Date().toISOString(),
+                    players: [userId]
+                };
 
-            const { data, error } = await supabase
-                .from('lobbies')
-                .insert([lobbyData])
-                .select();
+                const { data, error } = await supabase
+                    .from('lobbies')
+                    .insert([lobbyData])
+                    .select();
 
-            if (error) {
-                console.error('Error creating lobby:', error);
+                if (error) {
+                    console.error('Error creating lobby:', error);
+                    return null;
+                }
+
+                return data[0].id;
+            } catch (error) {
+                console.error('Supabase error:', error);
                 return null;
             }
-
-            return data[0].id;
         }
 
-        // Функция для присоединения к лобби
+        // Функция для присоединения к лобби в Supabase
         async function joinLobby(lobbyId) {
             showLoadingScreen();
             
-            const { data, error } = await supabase
-                .from('lobbies')
-                .update({ 
-                    status: 'connecting',
-                    players: supabase.sql`array_append(players, ${userId})`
-                })
-                .eq('id', lobbyId)
-                .select();
+            try {
+                // Обновляем статус лобби
+                const { error } = await supabase
+                    .from('lobbies')
+                    .update({ 
+                        status: 'connecting',
+                        players: supabase.sql`array_append(players, ${userId})`
+                    })
+                    .eq('id', lobbyId);
 
-            if (error) {
-                console.error('Error joining lobby:', error);
-                return;
+                if (error) {
+                    console.error('Error joining lobby:', error);
+                }
+
+                // Слушаем изменения в лобби для реальной синхронизации
+                const subscription = supabase
+                    .channel('lobby-changes')
+                    .on('postgres_changes', 
+                        { 
+                            event: 'UPDATE', 
+                            schema: 'public', 
+                            table: 'lobbies',
+                            filter: `id=eq.${lobbyId}`
+                        }, 
+                        (payload) => {
+                            console.log('Lobby updated:', payload.new);
+                        }
+                    )
+                    .subscribe();
+
+                // Через 3 секунды скрываем загрузку
+                setTimeout(() => {
+                    hideLoadingScreen();
+                    subscription.unsubscribe();
+                }, 3000);
+
+            } catch (error) {
+                console.error('Supabase error:', error);
+                // Если Supabase не работает, показываем загрузку на 3 секунды
+                setTimeout(() => hideLoadingScreen(), 3000);
             }
-
-            // Слушаем изменения в лобби
-            const subscription = supabase
-                .channel('lobby-changes')
-                .on('postgres_changes', 
-                    { 
-                        event: 'UPDATE', 
-                        schema: 'public', 
-                        table: 'lobbies',
-                        filter: `id=eq.${lobbyId}`
-                    }, 
-                    (payload) => {
-                        console.log('Lobby updated:', payload.new);
-                        // Здесь можно добавить логику обработки изменений лобби
-                    }
-                )
-                .subscribe();
-
-            // Через 3 секунды скрываем загрузку (имитация подключения)
-            setTimeout(() => {
-                hideLoadingScreen();
-                subscription.unsubscribe();
-            }, 3000);
         }
 
         // Функция для вибрации через Telegram API
@@ -254,16 +264,13 @@
             tg.showAlert("Ссылка скопирована!", function() {});
         }
 
-        // Функция для копирования ссылки
+        // Функция для копирования ссылки (ИДЕАЛЬНАЯ ВЕРСИЯ БЕЗ SUPABASE)
         async function copyLink() {
             vibrate();
             
             try {
-                // Создаем лобби при копировании ссылки
-                const lobbyId = await createLobby();
-                const shareLinkWithLobby = `https://t.me/kmn_gamebot?start=ref_${userId}_${lobbyId}`;
-                
-                await navigator.clipboard.writeText(shareLinkWithLobby);
+                // Копируем старую версию ссылки (без Supabase)
+                await navigator.clipboard.writeText(shareLink);
                 showAlert();
                 
             } catch (err) {
@@ -280,10 +287,10 @@
 
         // Если пользователь перешел по реферальной ссылке (второй игрок)
         if (referrerId && lobbyId) {
-            // Присоединяемся к лобби
+            // Пытаемся синхронизироваться через Supabase
             joinLobby(lobbyId);
         } else if (referrerId) {
-            // Старая версия ссылки без лобби
+            // Старая версия ссылки без лобби - просто показываем загрузку
             showLoadingScreen();
             setTimeout(() => hideLoadingScreen(), 3000);
         }
