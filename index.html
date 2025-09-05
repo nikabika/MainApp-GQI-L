@@ -7,6 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Защита от выделения */
         * {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -151,16 +152,16 @@
         const referrerId = urlParams.get('ref');
         const lobbyId = urlParams.get('lobby');
         
-        // Данные пользователя
+        // Создаем уникальную ссылку с ID пользователя
         const userId = tg.initDataUnsafe.user?.id || Math.random().toString(36).substr(2, 9);
-        const userFirstName = tg.initDataUnsafe.user?.first_name || 'Игрок';
+        const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}`;
         
         // Создаем кнопку через Telegram Web App API
         let mainButton = tg.MainButton;
         mainButton.setText("Скопировать ссылку");
         mainButton.show();
         
-        // Функция для показа/скрытия экрана загрузки
+        // Функция для показа экрана загрузки
         function showLoadingScreen() {
             const mainContainer = document.getElementById('mainContainer');
             const loadingScreen = document.getElementById('loadingScreen');
@@ -169,6 +170,7 @@
             loadingScreen.classList.add('active');
         }
         
+        // Функция для скрытия экрана загрузки
         function hideLoadingScreen() {
             const mainContainer = document.getElementById('mainContainer');
             const loadingScreen = document.getElementById('loadingScreen');
@@ -179,70 +181,70 @@
 
         // Функция для создания лобби
         async function createLobby() {
-            try {
-                const { data, error } = await supabase
-                    .from('lobbies')
-                    .insert([
-                        {
-                            creator_id: userId,
-                            creator_name: userFirstName,
-                            status: 'waiting',
-                            created_at: new Date().toISOString()
-                        }
-                    ])
-                    .select()
-                    .single();
+            const lobbyData = {
+                host_id: userId,
+                host_name: tg.initDataUnsafe.user?.first_name || 'Игрок',
+                status: 'waiting',
+                created_at: new Date().toISOString(),
+                players: [userId]
+            };
 
-                if (error) throw error;
-                return data;
-            } catch (error) {
+            const { data, error } = await supabase
+                .from('lobbies')
+                .insert([lobbyData])
+                .select();
+
+            if (error) {
                 console.error('Error creating lobby:', error);
                 return null;
             }
+
+            return data[0].id;
         }
 
         // Функция для присоединения к лобби
         async function joinLobby(lobbyId) {
-            try {
-                const { data, error } = await supabase
-                    .from('lobbies')
-                    .update({
-                        player2_id: userId,
-                        player2_name: userFirstName,
-                        status: 'connected',
-                        connected_at: new Date().toISOString()
-                    })
-                    .eq('id', lobbyId)
-                    .select()
-                    .single();
+            showLoadingScreen();
+            
+            const { data, error } = await supabase
+                .from('lobbies')
+                .update({ 
+                    status: 'connecting',
+                    players: supabase.sql`array_append(players, ${userId})`
+                })
+                .eq('id', lobbyId)
+                .select();
 
-                if (error) throw error;
-                return data;
-            } catch (error) {
+            if (error) {
                 console.error('Error joining lobby:', error);
-                return null;
+                return;
             }
-        }
 
-        // Функция для подписки на изменения лобби
-        function subscribeToLobby(lobbyId) {
-            return supabase
+            // Слушаем изменения в лобби
+            const subscription = supabase
                 .channel('lobby-changes')
                 .on('postgres_changes', 
-                    {
-                        event: 'UPDATE',
-                        schema: 'public',
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
                         table: 'lobbies',
                         filter: `id=eq.${lobbyId}`
-                    },
+                    }, 
                     (payload) => {
                         console.log('Lobby updated:', payload.new);
+                        // Здесь можно добавить логику обработки изменений лобби
                     }
                 )
                 .subscribe();
+
+            // Через 3 секунды скрываем загрузку (имитация подключения)
+            setTimeout(() => {
+                hideLoadingScreen();
+                subscription.unsubscribe();
+            }, 3000);
         }
 
-        // Функция для вибрации
+        // Функция для вибрации через Telegram API
         function vibrate() {
             tg.HapticFeedback.impactOccurred('light');
         }
@@ -258,29 +260,13 @@
             
             try {
                 // Создаем лобби при копировании ссылки
-                const lobby = await createLobby();
-                if (lobby) {
-                    // Правильная ссылка для приглашения
-                    const shareLink = `https://t.me/kmn_gamebot?start=ref_${userId}_lobby_${lobby.id}`;
-                    
-                    // Создаем временный элемент для копирования
-                    const tempInput = document.createElement('input');
-                    tempInput.value = shareLink;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    
-                    // Копируем в буфер обмена
-                    const successful = document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    
-                    if (successful) {
-                        showAlert();
-                    } else {
-                        throw new Error('Copy failed');
-                    }
-                }
+                const lobbyId = await createLobby();
+                const shareLinkWithLobby = `https://t.me/kmn_gamebot?start=ref_${userId}_${lobbyId}`;
+                
+                await navigator.clipboard.writeText(shareLinkWithLobby);
+                showAlert();
+                
             } catch (err) {
-                console.error('Copy error:', err);
                 tg.showPopup({
                     title: 'Ошибка',
                     message: 'Не удалось скопировать ссылку',
@@ -289,34 +275,22 @@
             }
         }
 
-        // Основная логика
-        async function init() {
-            if (lobbyId && referrerId) {
-                // Второй игрок присоединяется к лобби
-                showLoadingScreen();
-                
-                const lobby = await joinLobby(lobbyId);
-                if (lobby) {
-                    const subscription = subscribeToLobby(lobbyId);
-                    
-                    // Синхронизированная загрузка на 3 секунды
-                    setTimeout(() => {
-                        hideLoadingScreen();
-                        subscription.unsubscribe();
-                    }, 3000);
-                }
-            }
-        }
-
         // Назначаем обработчик на кнопку Telegram
         mainButton.onClick(copyLink);
 
-        // Защита от выделения (но разрешаем для копирования)
+        // Если пользователь перешел по реферальной ссылке (второй игрок)
+        if (referrerId && lobbyId) {
+            // Присоединяемся к лобби
+            joinLobby(lobbyId);
+        } else if (referrerId) {
+            // Старая версия ссылки без лобби
+            showLoadingScreen();
+            setTimeout(() => hideLoadingScreen(), 3000);
+        }
+
+        // Дополнительная защита от выделения
         document.addEventListener('selectstart', function(e) {
-            // Разрешаем выделение только для элементов ввода
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                e.preventDefault();
-            }
+            e.preventDefault();
         });
 
         document.addEventListener('contextmenu', function(e) {
@@ -325,7 +299,6 @@
 
         // Инициализация
         tg.ready();
-        init();
     </script>
 </body>
 </html>
