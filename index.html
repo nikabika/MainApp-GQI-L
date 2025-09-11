@@ -2,153 +2,317 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LEGO Collector</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoLego</title>
+    <link href="https://fonts.cdnfonts.com/css/avenir-next-cyr" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
-        body { min-height: 100vh; background: #1c1c1e; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-        
-        .card-container { width: 344px; height: 494px; perspective: 1000px; margin-bottom: 20px; }
-        .card { width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-        .card.flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 17px; overflow: hidden; }
-        .card-front { background: transparent; display: flex; justify-content: center; align-items: center; }
-        .card-back { background: linear-gradient(to bottom, #24315E, #1A2550); transform: rotateY(180deg); display: flex; flex-direction: column; padding: 15px; border: 25px solid #F3C142; }
-        .card-image { width: 294px; height: 444px; object-fit: contain; border-radius: 12px; }
-        
-        .back-content { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
-        .card-top { text-align: center; margin-bottom: 15px; }
-        .class-icon { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
-        .character-name { color: #fff; font-size: 24px; font-weight: 700; text-align: center; text-transform: uppercase; }
-        .card-stats { width: 100%; }
-        .stat { display: flex; justify-content: space-between; margin: 20px 0; color: #ccc; }
-        .stat-value { color: #fff; font-weight: 600; }
-        .rarity-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; color: #fff; }
-        .common { background: #555; } .rare { background: #50AFDF; } .epic { background: #8a2be2; } .mythic { background: #ff8c00; }
-        
-        .sparkle { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; }
-        
-        .fallback-button { position: fixed; bottom: 16px; left: 16px; right: 16px; height: 50px; background: #2481cc; color: white; border-radius: 15px; display: none; align-items: center; justify-content: center; font-weight: 500; font-size: 17px; cursor: pointer; z-index: 1000; border: none; }
-        .fallback-button:active { background: #1c6ca8; }
-        
-        @media (max-width: 480px) { .card-container { width: 280px; height: 400px; } .card-image { width: 240px; height: 360px; } .card-back { border-width: 18px; } }
+        :root {
+            --bg: #000000;
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.5);
+            --card-bg: #1C1C1E;
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #0088CC;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .counter-container {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .counter-number {
+            font-size: 64px;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .counter-label {
+            font-size: 24px;
+            color: var(--text);
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        .hint-icon {
+            position: absolute;
+            top: 50px;
+            left: calc(50% + 2px);
+            transform: translateX(100%);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg);
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .tg-card {
+            position: absolute;
+            top: 155px; /* 50px + 64px + 6px + 35px */
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            border-radius: 18px;
+            border: 1px solid var(--card-border);
+            width: calc(100% - 40px);
+            max-width: 400px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        /* Эффект жидкого стекла с градиентом по бокам */
+        .tg-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0) 20%,
+                rgba(255, 255, 255, 0) 80%,
+                rgba(255, 255, 255, 0.1) 100%
+            );
+            border-radius: 18px;
+            pointer-events: none;
+        }
+
+        .tg-card:hover {
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        .tg-content {
+            flex: 1;
+            padding-right: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tg-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tg-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .tg-icon-container {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .tg-icon {
+            font-size: 28px;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .tg-card:hover .tg-icon {
+            transform: scale(1.1);
+        }
+
+        .tg-chevron {
+            margin-left: 4px;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .tg-card:hover .tg-chevron {
+            transform: translateX(2px);
+        }
+
+        .tg-gradient {
+            position: absolute;
+            right: -50px;
+            top: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(0, 136, 204, 0.2) 0%, rgba(0, 136, 204, 0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-card {
+            position: fixed;
+            bottom: 15px;
+            left: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 21;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .modal-content {
+            flex: 1;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .modal-close {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="card-container">
-        <div class="card" id="card">
-            <div class="card-face card-front">
-                <img id="character-image" class="card-image" src="" alt="LEGO Character">
+    <div class="counter-container">
+        <div class="counter-number">0</div>
+        <div class="counter-label">сооб.</div>
+    </div>
+
+    <div class="hint-icon" id="hintButton">?</div>
+
+    <div class="tg-card" id="tgCard">
+        <div class="tg-gradient"></div>
+        <div class="tg-content">
+            <div class="tg-title">У нас есть Телеграм-канал!</div>
+            <div class="tg-subtitle">Там каждый день много интересного
+                <span class="tg-chevron">›</span>
             </div>
-            <div class="card-face card-back">
-                <div class="back-content">
-                    <div class="card-top">
-                        <img id="class-icon" class="class-icon" src="" alt="Class Icon">
-                        <h2 class="character-name" id="character-name">ДЕНГАР</h2>
-                    </div>
-                    <div class="card-stats">
-                        <div class="stat"><span>Редкость:</span><span class="stat-value"><span class="rarity-badge" id="stat-rarity">Эпик</span></span></div>
-                        <div class="stat"><span>Паттерн:</span><span class="stat-value" id="stat-pattern">17%</span></div>
-                        <div class="stat"><span>Класс:</span><span class="stat-value" id="stat-class">Наемники</span></div>
-                    </div>
-                </div>
+        </div>
+        <div class="tg-icon-container">
+            <i class="fab fa-telegram tg-icon"></i>
+        </div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card">
+            <img src="https://cdn.qwenlm.ai/f6e892ea-d64c-4028-b7e3-68db70c87da1/56050719-a529-485d-aafc-0bb07b429206_%D0%98%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F_%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiZjZlODkyZWEtZDY0Yy00MDI4LWI3ZTMtNjhkYjcwYzg3ZGExIiwicmVzb3VyY2VfaWQiOiI1NjA1MDcxOS1hNTI5LTQ4NWQtYWFmYy0wYmIwN2I0MjkyMDYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hyYij8VqCJklCdZUYe0479PjSCidT-iV_LcGniWLGvc&x-oss-process=image/resize,m_mfit,w_320,h_320" alt="Батальон NoLego" class="modal-image">
+            <div class="modal-content">
+                <div class="modal-title">Батальон NoLego</div>
+                <div class="modal-text">Общайтесь в нашем чате, чтобы зарабатывать сообщения!</div>
+            </div>
+            <div class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
             </div>
         </div>
     </div>
 
-    <button class="fallback-button" id="fallback-button">ЗАБРАТЬ</button>
-
     <script>
-        let tg = window.Telegram.WebApp;
-        
-        function triggerVibration(level = 1) {
-            if (navigator.vibrate) navigator.vibrate(level === 3 ? 100 : 50);
-            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred(level === 3 ? 'heavy' : 'light');
-        }
-        
-        function createSparkles() {
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#6c5ce7', '#a29bfe'];
-            for (let i = 0; i < 30; i++) {
-                const sparkle = document.createElement('div');
-                sparkle.className = 'sparkle';
-                sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
-                sparkle.style.left = Math.random() * window.innerWidth + 'px';
-                sparkle.style.bottom = '-20px';
-                document.body.appendChild(sparkle);
-                
-                const duration = 0.8 + Math.random() * 0.4;
-                sparkle.animate([
-                    { transform: 'translateY(0) scale(1)', opacity: 1 },
-                    { transform: `translateY(-${window.innerHeight * 0.7}px) translateX(${Math.random() * 100 - 50}px) scale(1.5)`, opacity: 0.8 },
-                    { transform: `translateY(-${window.innerHeight}px) translateX(${Math.random() * 40 - 20}px) scale(0.2)`, opacity: 0 }
-                ], { duration: duration * 1000, easing: 'cubic-bezier(0.3, 0, 0.7, 1)' });
-                
-                setTimeout(() => sparkle.remove(), duration * 1000);
+        // Обработка клика по карточке Telegram
+        document.getElementById('tgCard').addEventListener('click', function() {
+            window.location.href = 'https://t.me/noLEGObutGreat';
+        });
+
+        // Модальное окно
+        const hintButton = document.getElementById('hintButton');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+
+        hintButton.addEventListener('click', function() {
+            modalOverlay.classList.add('active');
+        });
+
+        modalClose.addEventListener('click', function() {
+            modalOverlay.classList.remove('active');
+        });
+
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
             }
-        }
-        
-        if (tg) {
-            tg.expand();
-            tg.MainButton.setText("ЗАБРАТЬ");
-            tg.MainButton.show();
-            tg.MainButton.enable();
-            tg.MainButton.onClick(() => triggerVibration());
-        } else {
-            document.getElementById('fallback-button').style.display = 'flex';
-            document.getElementById('fallback-button').onclick = () => triggerVibration();
-        }
-
-        const classIcons = {
-            'Наемники': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/e158e2bb-c35d-4ec8-b9aa-837be7e698ba_%D0%9D%D0%90%D0%95%D0%9C%D0%9D%D0%98%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJlMTU4ZTJiYi1jMzVkLTRlYzgtYjlhYS04MzdiZTdlNjk4YmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OHhADc6mLfopVGpgCLR7hgHUMxOqM7YnsqcDbs0QdPE&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Сепаратисты': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/cb824ce4-2b50-4fbb-9e65-d8c9da68285b_%D0%A1%D0%95%D0%9F%D0%90%D0%A0%D0%90%D0%A2%D0%98%D0%A1%D0%A2%D0%AB.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjYjgyNGNlNC0yYjUwLTRmYmItOWU2NS1kOGM5ZGE2ODI4NWIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.0U5E1ndnQeZ6lVGYdkeUoIRPJhDGKO1DI2mt4FGuI5o&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Империя': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/9e05e37a-85eb-4c6b-a8a2-bd539b8a35ea_%D0%98%D0%9C%D0%9F%D0%95%D0%A0%D0%98%D0%AF.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5ZTA1ZTM3YS04NWViLTRjNmItYThhMi1iZDUzOWI4YTM1ZWEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Ic7ctvPIfkb72ur5834jYbHWgFjpNag3LBNuXH6fSuI&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Повстанцы': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/1f4e0a90-a608-4570-9aa5-6229dea8adc0_%D0%9F%D0%9E%D0%92%D0%A1%D0%A2%D0%90%D0%9D%D0%A6%D0%AB_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIxZjRlMGE5MC1hNjA8LTQ5NzAtOWFhNS02MjI5ZGVhOGFkYzAiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.0_xBlq_s5TuGn78vmTdGPoUQ-RHl-8aLTImBieGPX9o&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Республика': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/a3840aa4-e089-40d1-8500-f1ab2fb68686_%D0%A0%D0%95%D0%A1%D0%9F%D0%A3%D0%91%D0%9B%D0%98%D0%9A%D0%90_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJhMzg0MGFhNC1lMDg5LTQwZDEtODUwMC1mMWFiMmZiNjg2ODYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.6xJc5p7xS6B87IgvPzgFuv22wzd_C-ongl6rVxpYYSQ&x-oss-process=image/resize,m_mfit,w_320,h_320',
-            'Старая Республика': 'https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/c69fdcd9-4177-4070-9525-727d226553a6_%D0%A1%D0%A2%D0%90%D0%A0%D0%90%D0%AF_%D0%A0%D0%95%D0%A1%D0%9F%D0%A3%D0%91%D0%9B%D0%98%D0%9A%D0%90_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiJjNjlmZGNkOS00MTc3LTQ0NzAtOTUyNS03MjdkMjI2NTUzYTYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.OWM4BSs7PF-oX9xIcj9MC-pgIosdFskUjj3VQ7wb-QQ&x-oss-process=image/resize,m_mfit,w_320,h_320'
-        };
-
-        const characterCards = [
-            { url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/959eb7b2-940f-48e9-ba2a-fb90c1c2adb5_%D0%94%D0%95%D0%9D%D0%93%D0%90%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI5NTllYjdiMi05NDBmLTQ4ZTktYmEyYS1mYjkwYzFjMmFkYjUiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.hKMznfJDj88tmMvkphyeKLDraLFf_WRfeQ5yHg4WRtQ&x-oss-process=image/resize,m_mfit,w_320,h_320", name: "ДЕНГАР", class: "Наемники", rarity: "epic", weight: 1 },
-            { url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/7c399af7-1a69-4c00-996f-ca8438a8747c_%D0%91%D0%9E%D0%91%D0%90_%D0%A4%D0%95%D0%A2%D0%A2.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI3YzM5OWFmNy0xYTY5LTRjMDAtOTk2Zi1jYTg0MzhhODc0N2MiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.8q-1PBMMKdPT9bpmh0k2IAOtyelpvjMnoL1aXgioGyo&x-oss-process=image/resize,m_mfit,w_320,h_320", name: "БОБА ФЕТТ", class: "Наемники", rarity: "epic", weight: 1 },
-            { url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/2e7c07e8-2adf-45af-9228-84d5c942dd29_%D0%A8%D0%A2%D0%A3%D0%A0%D0%9C%D0%9E%D0%92%D0%98%D0%9A_.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIyZTdjMDdlOC0yYWRmLTQ1YWYtOTIyOC04NGQ1Yzk0MmRkMjkiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.n2ib1vj1Pke2VoDdWfMQfZWDG5XRih8WwowNRV6oyoA&x-oss-process=image/resize,m_mfit,w_320,h_320", name: "ШТУРМОВИК", class: "Империя", rarity: "common", weight: 1 },
-            { url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/48b442e2-6380-497a-916e-0b54db72bbd9_%D0%9B%D0%AE%D0%9A_%D0%A1%D0%9A%D0%90%D0%98%CC%86%D0%A3%D0%9E%D0%9A%D0%95%D0%A0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI0OGI0NDJlMi02MzgwLTQ5N2EtOTE2ZS0wYjU0ZGI3MmJiZDkiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.JdRSAdbOowUj-AhsMBKeyW8Z_ZQ7FInld_lGFlspVAs&x-oss-process=image/resize,m_mfit,w_320,h_320", name: "ЛЮК СКАЙУОКЕР", class: "Повстанцы", rarity: "rare", weight: 1 },
-            { url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/828d0d9e-789a-4276-be08-af73fd5ba1a2_%D0%9A%D0%9B%D0%9E%D0%9D_%D0%90%D0%A1%D0%9E%D0%9A%D0%98.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI4MjhkMGQ5ZS03ODlhLTQyNzYtYmUwOC1hZjczZmQ1YmExYTIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.Hm4KdFLa4s7DQk9H8bz8PnvTYVtA_dJjhFnr2qLwYb4&x-oss-process=image/resize,m_mfit,w_320,h_320", name: "КЛОН АСОКИ", class: "Республика", rarity: "rare", weight: 1 },
-            { url: "https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/284a141b-11c0-4364-b517-5bdb7b4e2af6_%D0%94%D0%90%D0%A0%D0%A2_%D0%A2%D0%90%D0%9B%D0%9E%D0%9D.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiIyODRhMTQxYi0xMWMwLTQzNjQtYjUxNy01YmRiN2I4ZTJhZjYiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.7dEPyg9sIgNlPG5GYYdc6OC_Gi7a4d19ZPeftDmV98U&x-oss-process=image/resize,m_mfit,w_320,h_320", name: "ДАРТ ТАЛОН", class: "Старая Республика", rarity: "mythic", weight: 0.85 }
-        ];
-
-        function getRandomPattern() { return Math.random() < 0.7 ? 17 + Math.floor(Math.random() * 3) : Math.random() < 0.95 ? 20 + Math.floor(Math.random() * 31) : 51 + Math.floor(Math.random() * 49); }
-        
-        function showRandomCard() {
-            const weights = characterCards.map(card => card.weight);
-            const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-            let random = Math.random() * totalWeight;
-            let selectedCard = characterCards[characterCards.length - 1];
-            
-            for (let i = 0; i < characterCards.length; i++) {
-                random -= characterCards[i].weight;
-                if (random <= 0) { selectedCard = characterCards[i]; break; }
-            }
-            
-            document.getElementById('character-image').src = selectedCard.url;
-            document.getElementById('character-name').textContent = selectedCard.name;
-            document.getElementById('stat-rarity').textContent = {'common': 'Обычная', 'rare': 'Редкая', 'epic': 'Эпик', 'mythic': 'Мифик'}[selectedCard.rarity];
-            document.getElementById('stat-rarity').className = 'rarity-badge ' + selectedCard.rarity;
-            document.getElementById('stat-pattern').textContent = getRandomPattern() + '%';
-            document.getElementById('stat-class').textContent = selectedCard.class;
-            document.getElementById('class-icon').src = classIcons[selectedCard.class];
-        }
-
-        document.getElementById('card').onclick = () => document.getElementById('card').classList.toggle('flipped');
-        
-        window.onload = () => {
-            showRandomCard();
-            setTimeout(() => {
-                triggerVibration(3);
-                setTimeout(() => triggerVibration(3), 300);
-                setTimeout(createSparkles, 1000);
-            }, 500);
-        };
+        });
     </script>
 </body>
 </html>
