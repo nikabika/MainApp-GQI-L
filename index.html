@@ -2,533 +2,194 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
     <style>
-        @font-face {
-            font-family: 'Avenir Next';
-            src: local('Avenir Next'), local('Avenir-Next');
-            font-weight: bold;
-            font-style: normal;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #1C1C1E;
+            background-color: #121212;
             color: #FFFFFF;
-            height: 100vh;
-            overflow: hidden;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
+            align-items: center;
         }
 
-        /* Градиентный фон */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60%;
-            background: radial-gradient(circle at center top, #8B56FC 0%, #1C1C1E 70%);
-            z-index: -1;
-        }
-
-        /* Верхняя панель */
-        .top-panel-container {
-            position: absolute;
-            top: 15px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .top-panel {
+        .header {
             display: flex;
             align-items: center;
-            width: calc(100% - 30px);
+            width: 100%;
             max-width: 400px;
+            margin-bottom: 30px;
         }
 
-        .avatar-box {
-            width: 50px;
-            height: 50px;
-            background: rgba(44, 44, 46, 1);
-            z-index: 3;
-            border-radius: 12px;
-            overflow: hidden;
+        .avatar-container {
+            width: 56px;
+            height: 56px;
+            border-radius: 15px;
+            background-color: #8E8E93;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
         }
 
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .avatar-placeholder {
+            width: 30px;
+            height: 30px;
+            background-color: #C7C7CC;
+            border-radius: 50%;
         }
 
         .user-info {
-            margin-left: 10px;
-            flex-grow: 1;
-            min-width: 0;
-            background: rgba(44, 44, 46, 1);
-            height: 54px;
-            border-radius: 12px;
-            padding: 0 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .username {
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .level {
-            font-size: 14px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
-            margin: 2px 0 0;
-        }
-
-        /* Основной контент */
-        .content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            position: relative;
-            margin-top: 80px;
-        }
-
-        .balance-text {
-            font-size: 36px;
-            font-weight: 800;
-            color: #FFFFFF;
-            margin-bottom: 45px;
-            font-family: 'Avenir Next', -apple-system, sans-serif;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            transform: translateY(-15px);
-        }
-
-        .gif-container {
-            width: 100%;
-            max-width: 230px;
-            height: 230px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transform: translateY(-30px);
-            transition: transform 0.1s ease;
-        }
-
-        .gif-container:active {
-            transform: translateY(-30px) scale(0.95);
-        }
-
-        .gif-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-
-        /* Анимация +1 */
-        .plus-one {
-            position: absolute;
-            font-size: 32px;
-            font-weight: 800;
-            color: #8B56FC;
-            text-shadow: 0 0 20px rgba(139, 86, 252, 0.8);
-            opacity: 0;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        @keyframes fallFromTop {
-            0% {
-                opacity: 1;
-                transform: translateY(-100vh) rotate(0deg);
-            }
-            20% {
-                opacity: 1;
-                transform: translateY(-50px) rotate(10deg);
-            }
-            40% {
-                opacity: 1;
-                transform: translateY(0) rotate(-8deg);
-            }
-            60% {
-                opacity: 1;
-                transform: translateY(50px) rotate(5deg);
-            }
-            80% {
-                opacity: 0.7;
-                transform: translateY(100px) rotate(-3deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(150px) rotate(0deg);
-            }
-        }
-
-        @keyframes fallFromLeft {
-            0% {
-                opacity: 1;
-                transform: translateX(-100vw) translateY(-100px) rotate(-45deg);
-            }
-            30% {
-                opacity: 1;
-                transform: translateX(-50px) translateY(0) rotate(-15deg);
-            }
-            60% {
-                opacity: 0.8;
-                transform: translateX(0) translateY(50px) rotate(0deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateX(50px) translateY(100px) rotate(15deg);
-            }
-        }
-
-        @keyframes fallFromRight {
-            0% {
-                opacity: 1;
-                transform: translateX(100vw) translateY(-100px) rotate(45deg);
-            }
-            30% {
-                opacity: 1;
-                transform: translateX(50px) translateY(0) rotate(15deg);
-            }
-            60% {
-                opacity: 0.8;
-                transform: translateX(0) translateY(50px) rotate(0deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateX(-50px) translateY(100px) rotate(-15deg);
-            }
-        }
-
-        /* Подвал */
-        .footer {
-            background-color: #171717;
             height: 60px;
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            margin-left: 15px;
             display: flex;
-            justify-content: space-around;
             align-items: center;
             padding: 0 20px;
         }
 
-        .footer-icon {
-            width: 44px;
-            height: 44px;
+        .username {
+            font-size: 22px;
+            font-weight: 600;
+            color: #FFFFFF;
+        }
+
+        .balance {
+            margin-top: 17px; /* Поднято на 3px (было 20px) */
+            font-size: 46px;
+            font-weight: 700;
+            color: #FFFFFF;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background-color: #2C2C2E; /* Цвет как у верхнего прямоугольника */
+            border-radius: 17px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 70px; /* Меньшая высота */
+        }
+
+        .stat-content {
             display: flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            transition: background-color 0.2s ease;
-            color: #FFFFFF;
-            font-size: 20px;
+            flex: 1;
         }
 
-        .footer-icon:active {
-            background-color: rgba(255, 255, 255, 0.1);
+        .stat-emoji {
+            font-size: 28px;
+            margin-right: 12px;
         }
 
-        /* Предотвращение выделения */
-        img {
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            user-drag: none;
+        .stat-text {
+            display: flex;
+            flex-direction: column;
         }
 
-        @media (max-height: 700px) {
-            .gif-container {
-                max-width: 200px;
-                height: 200px;
-            }
-            
-            .balance-text {
-                font-size: 32px;
-            }
-            
-            .footer {
-                height: 55px;
-            }
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
         }
 
-        @media (max-height: 600px) {
-            .gif-container {
-                max-width: 180px;
-                height: 180px;
+        .stat-description {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        @media (max-width: 400px) {
+            .stats-container {
+                flex-direction: column;
             }
             
-            .balance-text {
-                font-size: 28px;
-            }
-            
-            .footer {
-                height: 50px;
-            }
-            
-            .footer-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
+            .stat-box {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Верхняя панель -->
-    <div class="top-panel-container">
-        <div class="top-panel">
-            <div class="avatar-box" id="avatarBox">
-                <img class="avatar-img" id="avatarImg" src="" alt="Аватар">
+    <div class="header">
+        <div class="avatar-container">
+            <div class="avatar-placeholder"></div>
+        </div>
+        <div class="user-info">
+            <span class="username">Алексей</span>
+        </div>
+    </div>
+
+    <div class="balance">$0</div>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-content">
+                <div class="stat-emoji">⚡️</div>
+                <div class="stat-text">
+                    <div class="stat-value">500</div>
+                    <div class="stat-description">доступно</div>
+                </div>
             </div>
-            <div class="user-info">
-                <div class="username" id="username">Гость</div>
-                <div class="level">Гость</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-content">
+                <div class="stat-emoji">🛒</div>
+                <div class="stat-text">
+                    <div class="stat-value">Магазин</div>
+                    <div class="stat-description">открыть</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Основной контент -->
-    <div class="content">
-        <div class="balance-text" id="balance">$0</div>
-        <div class="gif-container" id="gifContainer">
-            <img src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
-        </div>
-    </div>
-
-    <!-- Контейнер для анимаций -->
-    <div id="animationsContainer"></div>
-
-    <!-- Подвал -->
-    <div class="footer">
-        <div class="footer-icon">
-            <i data-feather="dollar-sign"></i>
-        </div>
-        <div class="footer-icon">
-            <i data-feather="shopping-bag"></i>
-        </div>
-        <div class="footer-icon">
-            <i data-feather="gift"></i>
-        </div>
-        <div class="footer-icon">
-            <i data-feather="user"></i>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script>
         // Инициализация Telegram WebApp
-        let tg = window.Telegram.WebApp;
+        let tg = window.Telegram?.WebApp;
         
-        // Инициализация feather icons
-        feather.replace();
-        
-        // Показываем главную кнопку
-        tg.expand();
-        tg.enableClosingConfirmation();
-        
-        // Загружаем данные пользователя
-        const user = tg.initDataUnsafe?.user;
-        const avatarBox = document.getElementById('avatarBox');
-        const avatarImg = document.getElementById('avatarImg');
-        const usernameElement = document.getElementById('username');
-        const levelElement = document.querySelector('.level');
-        const balanceElement = document.getElementById('balance');
-        const gifContainer = document.getElementById('gifContainer');
-        const animationsContainer = document.getElementById('animationsContainer');
-        
-        // Переменные для счета
-        let balance = 0;
-        
-        // Функция для отображения аватара
-        function showFallbackAvatar(user) {
-            avatarImg.style.display = 'none';
-            avatarBox.style.backgroundColor = '#5ac8fa';
-            avatarBox.style.display = 'flex';
-            avatarBox.style.alignItems = 'center';
-            avatarBox.style.justifyContent = 'center';
+        if (tg) {
+            // Инициализация приложения
+            tg.expand();
+            tg.enableClosingConfirmation();
             
-            const initials = document.createElement('div');
-            initials.textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'Г';
-            initials.style.color = 'white';
-            initials.style.fontSize = '24px';
-            initials.style.fontWeight = 'bold';
+            // Получение данных пользователя
+            const user = tg.initDataUnsafe?.user;
             
-            while (avatarBox.firstChild) {
-                avatarBox.removeChild(avatarBox.firstChild);
+            // Обновление интерфейса с данными пользователя
+            if (user) {
+                const usernameElement = document.querySelector('.username');
+                if (user.username) {
+                    usernameElement.textContent = '@' + user.username;
+                } else if (user.first_name) {
+                    usernameElement.textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+                }
             }
             
-            avatarBox.appendChild(initials);
-        }
-        
-        // Загрузка данных пользователя
-        if (user) {
-            usernameElement.textContent = user.first_name || 'Гость';
-            levelElement.textContent = 'Гость';
-            
-            if (user.photo_url) {
-                avatarImg.src = user.photo_url;
-                avatarImg.onerror = function() {
-                    showFallbackAvatar(user);
-                };
-            } else {
-                showFallbackAvatar(user);
-            }
+            console.log('Telegram WebApp initialized:', tg);
+            console.log('User data:', user);
         } else {
-            usernameElement.textContent = 'Гость';
-            levelElement.textContent = 'Гость';
-            showFallbackAvatar({ first_name: 'Г' });
+            console.log('Not in Telegram environment');
         }
-        
-        // Загрузка сохраненного баланса
-        function loadSavedBalance() {
-            const savedBalance = localStorage.getItem('userBalance');
-            
-            if (savedBalance) {
-                balance = parseInt(savedBalance);
-            }
-            
-            balanceElement.textContent = `$${balance}`;
-        }
-        
-        // Инициализация баланса
-        loadSavedBalance();
-        
-        // Функция создания анимации +1
-        function createPlusOneAnimation() {
-            const animations = [
-                { animation: 'fallFromTop', x: '50%', y: '0%' },
-                { animation: 'fallFromLeft', x: '30%', y: '40%' },
-                { animation: 'fallFromRight', x: '70%', y: '40%' },
-                { animation: 'fallFromLeft', x: '20%', y: '20%' },
-                { animation: 'fallFromRight', x: '80%', y: '20%' }
-            ];
-            
-            const randomAnim = animations[Math.floor(Math.random() * animations.length)];
-            
-            const plusOne = document.createElement('div');
-            plusOne.className = 'plus-one';
-            plusOne.textContent = '+1';
-            plusOne.style.left = randomAnim.x;
-            plusOne.style.top = randomAnim.y;
-            plusOne.style.animation = `${randomAnim.animation} 1.5s ease-out forwards`;
-            
-            animationsContainer.appendChild(plusOne);
-            
-            // Удаляем элемент после анимации
-            setTimeout(() => {
-                animationsContainer.removeChild(plusOne);
-            }, 1500);
-        }
-        
-        // Обработчик клика по гифке
-        gifContainer.addEventListener('click', () => {
-            // Вибрация
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-            
-            // Добавляем балл
-            balance++;
-            balanceElement.textContent = `$${balance}`;
-            
-            // Сохраняем баланс
-            localStorage.setItem('userBalance', balance);
-            
-            // Создаем анимации
-            createPlusOneAnimation();
-            setTimeout(() => createPlusOneAnimation(), 100);
-            setTimeout(() => createPlusOneAnimation(), 200);
-        });
-        
-        // Обработчики для иконок в футере
-        document.querySelectorAll('.footer-icon').forEach((icon, index) => {
-            icon.addEventListener('click', () => {
-                // Вибрация для тактильного отклика
-                if (navigator.vibrate) {
-                    navigator.vibrate(10);
-                }
-                
-                // Действия при клике на иконки
-                switch(index) {
-                    case 0:
-                        tg.showPopup({
-                            title: "Баланс",
-                            message: `Ваш баланс: $${balance}`,
-                            buttons: [{type: "ok"}]
-                        });
-                        break;
-                    case 1:
-                        tg.showPopup({
-                            title: "Магазин",
-                            message: "Открыть магазин",
-                            buttons: [{type: "ok"}]
-                        });
-                        break;
-                    case 2:
-                        tg.showPopup({
-                            title: "Подарки",
-                            message: "Раздел подарков",
-                            buttons: [{type: "ok"}]
-                        });
-                        break;
-                    case 3:
-                        tg.showPopup({
-                            title: "Профиль",
-                            message: `Гость | Баланс: $${balance}`,
-                            buttons: [{type: "ok"}]
-                        });
-                        break;
-                }
-            });
-        });
-        
-        // Предзагрузка гифки для лучшего UX
-        window.addEventListener('load', function() {
-            const gif = new Image();
-            gif.src = "https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp";
-        });
-        
-        // Дополнительная защита от выделения текста
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
     </script>
 </body>
 </html>
