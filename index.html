@@ -76,12 +76,32 @@
         }
 
         .balance {
-            margin-top: 15px; /* Поднято на 2px выше (было 17px) */
+            margin-top: 15px;
             font-size: 46px;
             font-weight: 700;
             color: #FFFFFF;
             text-align: center;
             margin-bottom: 25px;
+        }
+
+        .gif-container {
+            margin-bottom: 35px;
+            width: 240px; /* В 2 раза больше */
+            height: 240px; /* В 2 раза больше */
+            border-radius: 24px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .gif-container:active {
+            transform: scale(0.97);
+        }
+
+        .gif-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .stats-container {
@@ -99,6 +119,16 @@
             display: flex;
             flex-direction: column;
             height: 70px;
+            position: relative;
+        }
+
+        .stat-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0.6;
+            width: 20px;
+            height: 20px;
         }
 
         .stat-content {
@@ -136,6 +166,11 @@
             .stat-box {
                 width: 100%;
             }
+            
+            .gif-container {
+                width: 200px;
+                height: 200px;
+            }
         }
     </style>
 </head>
@@ -150,10 +185,20 @@
         </div>
     </div>
 
-    <div class="balance">$0</div>
+    <div class="balance" id="balance">$0</div>
+
+    <div class="gif-container" id="gif-container">
+        <img class="gif-image" src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
+    </div>
 
     <div class="stats-container">
         <div class="stat-box">
+            <!-- Правильная иконка arrow-up-right из Tabler Icons -->
+            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M17 7l-10 10" />
+                <path d="M8 7l9 0l0 9" />
+            </svg>
             <div class="stat-content">
                 <div class="stat-emoji">⚡️</div>
                 <div class="stat-text">
@@ -164,6 +209,12 @@
         </div>
         
         <div class="stat-box">
+            <!-- Правильная иконка arrow-up-right из Tabler Icons -->
+            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M17 7l-10 10" />
+                <path d="M8 7l9 0l0 9" />
+            </svg>
             <div class="stat-content">
                 <div class="stat-emoji">🛒</div>
                 <div class="stat-text">
@@ -178,6 +229,11 @@
         // Инициализация Telegram WebApp
         let tg = window.Telegram?.WebApp;
         
+        // Переменные для отслеживания баланса и КД
+        let balance = 0;
+        let lastClickTime = 0;
+        const cooldown = 350; // 0.35 секунды в миллисекундах
+        
         // Функция для легкой вибрации
         function vibrate() {
             if (navigator.vibrate) {
@@ -187,9 +243,36 @@
             }
         }
         
-        // Добавляем обработчик клика на всю страницу
-        document.addEventListener('click', function(e) {
+        // Функция для обработки клика по гифке
+        function handleGifClick() {
+            const currentTime = Date.now();
+            
+            // Проверка кд
+            if (currentTime - lastClickTime < cooldown) {
+                return;
+            }
+            
+            // Обновляем время последнего клика
+            lastClickTime = currentTime;
+            
+            // Увеличиваем баланс
+            balance += 1;
+            
+            // Обновляем отображение баланса
+            document.getElementById('balance').textContent = `$${balance}`;
+            
+            // Запускаем вибрацию
             vibrate();
+        }
+        
+        // Добавляем обработчик клика на гифку
+        document.getElementById('gif-container').addEventListener('click', handleGifClick);
+        
+        // Добавляем обработчик клика на всю страницу (кроме гифки)
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#gif-container')) {
+                vibrate();
+            }
         });
         
         if (tg) {
