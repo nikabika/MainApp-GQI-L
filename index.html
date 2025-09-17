@@ -28,8 +28,8 @@
             align-items: center;
             touch-action: manipulation;
             position: relative;
-            padding-top: 145px; /* Увеличили сдвиг для полноэкранного режима (85 + 60) */
-            padding-bottom: 35px; /* Увеличили отступ снизу до 35px */
+            padding-top: 160px; /* Увеличенный отступ сверху для шапки */
+            padding-bottom: 15px; /* Отступ снизу */
         }
 
         .blur-background {
@@ -59,7 +59,7 @@
             margin-bottom: 30px;
             z-index: 2;
             position: fixed;
-            top: 80px; /* Сдвинули на 60px вниз (20 + 60) */
+            top: 75px; /* Сдвиг шапки на 75px вниз */
             left: 50%;
             transform: translateX(-50%);
             padding: 0 20px;
@@ -127,21 +127,25 @@
         }
 
         .balance {
-            margin-top: 15px;
+            position: fixed;
+            top: 150px; /* Сдвиг баланса на 150px вниз (75px + высота шапки) */
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 46px;
             font-weight: 700;
             color: #FFFFFF;
             text-align: center;
-            margin-bottom: 25px;
             z-index: 2;
-            transform: translateY(60px); /* Сдвинули баланс на 60px вниз */
+            width: 100%;
+            max-width: 400px;
+            padding: 0 20px;
         }
 
         .gif-wrapper {
             position: relative;
             display: inline-block;
-            margin-bottom: 35px;
-            transform: translateY(60px); /* Сдвинули гифку на 60px вниз */
+            margin-top: 30px; /* Отступ от баланса */
+            margin-bottom: 25px; /* Отступ до контента снизу */
         }
 
         .gif-container {
@@ -199,7 +203,10 @@
             flex-direction: column;
             width: 100%;
             max-width: 400px;
-            margin-top: auto; /* Прижимаем контент к низу */
+            margin-top: 25px; /* Отступ от гифки */
+            overflow-y: auto; /* Скроллбар если не влезает */
+            max-height: calc(100vh - 500px); /* Ограничение высоты с расчетом на остальные элементы */
+            padding-bottom: 10px;
         }
 
         .stats-container {
@@ -301,159 +308,22 @@
             font-size: 32px;
         }
 
-        /* Навигационные стрелки */
-        .nav-arrows {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            z-index: 10;
+        /* Стили для скроллбара */
+        .content-container::-webkit-scrollbar {
+            width: 4px;
         }
 
-        .nav-arrow {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #2C2C2E;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s ease;
+        .content-container::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .nav-arrow:hover {
-            opacity: 1;
+        .content-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
         }
 
-        .nav-arrow svg {
-            width: 24px;
-            height: 24px;
-            color: white;
-        }
-
-        /* Страницы */
-        .page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #121212;
-            padding: 80px 20px 35px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 5;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .page.active {
-            transform: translateX(0);
-        }
-
-        .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .page-content {
-            width: 100%;
-            max-width: 400px;
-        }
-
-        /* Страница магазина */
-        .shop-items {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .shop-item {
-            background-color: #2C2C2E;
-            border-radius: 17px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-
-        .shop-item:active {
-            transform: scale(0.97);
-        }
-
-        .shop-item-emoji {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .shop-item-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-
-        .shop-item-price {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Страница модификаторов */
-        .modifiers-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .modifier-item {
-            background-color: #2C2C2E;
-            border-radius: 17px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-
-        .modifier-item:active {
-            transform: scale(0.97);
-        }
-
-        .modifier-emoji {
-            font-size: 32px;
-            margin-right: 15px;
-        }
-
-        .modifier-info {
-            flex: 1;
-        }
-
-        .modifier-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .modifier-description {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .modifier-price {
-            font-size: 16px;
-            font-weight: 600;
-            color: #40a7e3;
+        .content-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         /* Модальное окно */
@@ -661,9 +531,9 @@
                 width: 200px;
                 height: 200px;
             }
-
-            .shop-items {
-                grid-template-columns: 1fr;
+            
+            .content-container {
+                max-height: calc(100vh - 450px); /* Уменьшаем высоту на маленьких экранах */
             }
         }
     </style>
@@ -671,161 +541,80 @@
 <body>
     <div class="blur-background" id="blur-background"></div>
 
-    <!-- Навигационные стрелки -->
-    <div class="nav-arrows">
-        <div class="nav-arrow back-arrow" id="back-arrow" style="display: none;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M15 6l-6 6l6 6" />
-            </svg>
+    <div class="header">
+        <div class="avatar-container">
+            <div class="avatar-placeholder"></div>
+            <img class="user-avatar" id="user-avatar" src="" alt="Аватар">
         </div>
-        <div class="nav-arrow" style="visibility: hidden;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="user-info">
+            <svg class="user-info-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M9 6l6 6l-6 6" />
+                <path d="M17 7l-10 10" />
+                <path d="M8 7l9 0l0 9" />
             </svg>
+            <div class="username" id="username">Имя</div>
+            <div class="user-tag" id="user-tag">@username</div>
         </div>
     </div>
 
-    <!-- Главная страница -->
-    <div class="page active" id="main-page">
-        <div class="header">
-            <div class="avatar-container">
-                <div class="avatar-placeholder"></div>
-                <img class="user-avatar" id="user-avatar" src="" alt="Аватар">
+    <div class="balance" id="balance">$0</div>
+
+    <div class="gif-wrapper">
+        <div class="gif-container" id="gif-container">
+            <img class="gif-image" src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
+        </div>
+        <div class="talisman-button" id="talisman-button">
+            <div class="plus-icon">+</div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <div class="stats-container">
+            <div class="stat-box energy-box" id="energy-box">
+                <div class="stat-content">
+                    <div class="stat-emoji">⚡️</div>
+                    <div class="stat-text">
+                        <div class="stat-value" id="energy-value">500</div>
+                        <div class="stat-description" id="energy-description">доступно</div>
+                    </div>
+                </div>
             </div>
-            <div class="user-info">
-                <svg class="user-info-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            
+            <div class="stat-box">
+                <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                     <path d="M17 7l-10 10" />
                     <path d="M8 7l9 0l0 9" />
                 </svg>
-                <div class="username" id="username">Имя</div>
-                <div class="user-tag" id="user-tag">@username</div>
+                <div class="stat-content">
+                    <div class="stat-emoji">🛒</div>
+                    <div class="stat-text">
+                        <div class="stat-value">Магазин</div>
+                        <div class="stat-description">открыть</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="balance" id="balance">$0</div>
-
-        <div class="gif-wrapper">
-            <div class="gif-container" id="gif-container">
-                <img class="gif-image" src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
-            </div>
-            <div class="talisman-button" id="talisman-button">
-                <div class="plus-icon">+</div>
-            </div>
-        </div>
-
-        <div class="content-container">
-            <div class="stats-container">
-                <div class="stat-box energy-box" id="energy-box">
-                    <div class="stat-content">
-                        <div class="stat-emoji">⚡️</div>
-                        <div class="stat-text">
-                            <div class="stat-value" id="energy-value">500</div>
-                            <div class="stat-description" id="energy-description">доступно</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-box" id="shop-box">
-                    <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M17 7l-10 10" />
-                        <path d="M8 7l9 0l0 9" />
-                    </svg>
-                    <div class="stat-content">
-                        <div class="stat-emoji">🛒</div>
-                        <div class="stat-text">
-                            <div class="stat-value">Магазин</div>
-                            <div class="stat-description">открыть</div>
-                        </div>
+        <!-- Новая строка с модификаторами и заданиями -->
+        <div class="second-row">
+            <div class="modifiers-box" id="modifiers-box">
+                <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M17 7l-10 10" />
+                    <path d="M8 7l9 0l0 9" />
+                </svg>
+                <div class="stat-content">
+                    <div class="stat-emoji">💪</div>
+                    <div class="stat-text">
+                        <div class="stat-value">Модификаторы</div>
+                        <div class="stat-description">открыть</div>
                     </div>
                 </div>
             </div>
-
-            <!-- Новая строка с модификаторами и заданиями -->
-            <div class="second-row">
-                <div class="modifiers-box" id="modifiers-box">
-                    <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M17 7l-10 10" />
-                        <path d="M8 7l9 0l0 9" />
-                    </svg>
-                    <div class="stat-content">
-                        <div class="stat-emoji">💪</div>
-                        <div class="stat-text">
-                            <div class="stat-value">Модификаторы</div>
-                            <div class="stat-description">открыть</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="tasks-box" id="tasks-box">
-                    <div class="tasks-emoji">🎯</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Страница магазина -->
-    <div class="page" id="shop-page">
-        <h2 class="page-title">Магазин</h2>
-        <div class="page-content">
-            <div class="shop-items">
-                <div class="shop-item">
-                    <div class="shop-item-emoji">⚡️</div>
-                    <div class="shop-item-name">Энергия</div>
-                    <div class="shop-item-price">💎15</div>
-                </div>
-                <div class="shop-item">
-                    <div class="shop-item-emoji">💎</div>
-                    <div class="shop-item-name">Кристаллы</div>
-                    <div class="shop-item-price">$10</div>
-                </div>
-                <div class="shop-item">
-                    <div class="shop-item-emoji">✨</div>
-                    <div class="shop-item-name">Бустер</div>
-                    <div class="shop-item-price">💎30</div>
-                </div>
-                <div class="shop-item">
-                    <div class="shop-item-emoji">🛡️</div>
-                    <div class="shop-item-name">Защита</div>
-                    <div class="shop-item-price">💎25</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Страница модификаторов -->
-    <div class="page" id="modifiers-page">
-        <h2 class="page-title">Модификаторы</h2>
-        <div class="page-content">
-            <div class="modifiers-list">
-                <div class="modifier-item">
-                    <div class="modifier-emoji">🚀</div>
-                    <div class="modifier-info">
-                        <div class="modifier-name">Ускорение</div>
-                        <div class="modifier-description">Увеличивает скорость зарабатывания</div>
-                    </div>
-                    <div class="modifier-price">💎50</div>
-                </div>
-                <div class="modifier-item">
-                    <div class="modifier-emoji">💰</div>
-                    <div class="modifier-info">
-                        <div class="modifier-name">Мультипликатор</div>
-                        <div class="modifier-description">Удваивает получаемый доход</div>
-                    </div>
-                    <div class="modifier-price">💎100</div>
-                </div>
-                <div class="modifier-item">
-                    <div class="modifier-emoji">🔮</div>
-                    <div class="modifier-info">
-                        <div class="modifier-name">Удача</div>
-                        <div class="modifier-description">Увеличивает шанс бонусов</div>
-                    </div>
-                    <div class="modifier-price">💎75</div>
-                </div>
+            
+            <div class="tasks-box" id="tasks-box">
+                <div class="tasks-emoji">🎯</div>
             </div>
         </div>
     </div>
@@ -865,10 +654,9 @@
         // Инициализация Telegram WebApp
         let tg = window.Telegram?.WebApp;
         
-        // Переменные для отслеживания состояния
+        // Переменные для отслеживания баланса, энергии и КД
         let balance = 0;
         let energy = 500;
-        let crystals = 100; // Добавили кристаллы
         let lastClickTime = 0;
         let cooldownTimer = null;
         const energyCooldown = 180; // 3 минуты в секундах
@@ -892,17 +680,6 @@
         const tasksAlertOverlayElement = document.getElementById('tasks-alert-overlay');
         const tasksAlertButtonElement = document.getElementById('tasks-alert-button');
         const talismanButtonElement = document.getElementById('talisman-button');
-        const shopBoxElement = document.getElementById('shop-box');
-        const modifiersBoxElement = document.getElementById('modifiers-box');
-        const backArrowElement = document.getElementById('back-arrow');
-        
-        // Страницы
-        const mainPageElement = document.getElementById('main-page');
-        const shopPageElement = document.getElementById('shop-page');
-        const modifiersPageElement = document.getElementById('modifiers-page');
-        
-        // Текущая активная страница
-        let currentPage = 'main';
         
         // Функция для легкой вибрации
         function vibrate() {
@@ -927,18 +704,10 @@
             
             // Увеличиваем баланс
             balance += 1;
-            updateBalanceDisplay();
+            balanceElement.textContent = `$${balance}`;
             
             // Запускаем вибрацию
             vibrate();
-            
-            // Сохраняем состояние
-            saveGameState();
-        }
-        
-        // Функция для обновления отображения баланса
-        function updateBalanceDisplay() {
-            balanceElement.textContent = `$${balance}`;
         }
         
         // Функция для обновления отображения энергии
@@ -975,7 +744,6 @@
                     cooldownTimer = null;
                     energy = 500;
                     updateEnergyDisplay();
-                    saveGameState();
                 }
             }, 1000);
         }
@@ -1055,63 +823,6 @@
             document.body.style.overflow = '';
         }
         
-        // Функция для переключения страниц
-        function navigateTo(page) {
-            // Скрываем текущую страницу
-            document.getElementById(`${currentPage}-page`).classList.remove('active');
-            
-            // Показываем новую страницу
-            document.getElementById(`${page}-page`).classList.add('active');
-            
-            // Показываем/скрываем стрелку назад
-            if (page === 'main') {
-                backArrowElement.style.display = 'none';
-            } else {
-                backArrowElement.style.display = 'flex';
-            }
-            
-            // Обновляем текущую страницу
-            currentPage = page;
-            
-            vibrate();
-        }
-        
-        // Функция для сохранения состояния игры
-        function saveGameState() {
-            const gameState = {
-                balance: balance,
-                energy: energy,
-                crystals: crystals,
-                lastSave: Date.now()
-            };
-            
-            localStorage.setItem('gameState', JSON.stringify(gameState));
-            
-            // Если в Telegram, отправляем данные на сервер
-            if (tg && tg.sendData) {
-                tg.sendData(JSON.stringify(gameState));
-            }
-        }
-        
-        // Функция для загрузки состояния игры
-        function loadGameState() {
-            const savedState = localStorage.getItem('gameState');
-            
-            if (savedState) {
-                try {
-                    const gameState = JSON.parse(savedState);
-                    balance = gameState.balance || 0;
-                    energy = gameState.energy || 500;
-                    crystals = gameState.crystals || 100;
-                    
-                    updateBalanceDisplay();
-                    updateEnergyDisplay();
-                } catch (e) {
-                    console.error('Error loading game state:', e);
-                }
-            }
-        }
-        
         // Функция для установки цвета кнопки
         function setButtonColor() {
             if (tg && tg.themeParams.button_color) {
@@ -1135,34 +846,21 @@
         
         // Обработчик клика по кнопке покупки
         buyButtonElement.addEventListener('click', () => {
-            // Проверяем, хватает ли кристаллов
-            if (crystals >= 15) {
-                // Списание кристаллов
-                crystals -= 15;
-                
-                // Восстанавливаем энергию
-                energy = 500;
-                updateEnergyDisplay();
-                
-                // Останавливаем таймер, если он был активен
-                if (cooldownTimer) {
-                    clearInterval(cooldownTimer);
-                    cooldownTimer = null;
-                }
-                
-                // Сохраняем состояние
-                saveGameState();
-                
-                // Вибрация при покупке
-                vibrate();
-            } else {
-                // Если не хватает кристаллов, показываем сообщение
-                alert('Недостаточно кристаллов!');
-                vibrate();
+            // Восстанавливаем энергию
+            energy = 500;
+            updateEnergyDisplay();
+            
+            // Останавливаем таймер, если он был активен
+            if (cooldownTimer) {
+                clearInterval(cooldownTimer);
+                cooldownTimer = null;
             }
             
             // Закрываем модальное окно
             closeModal();
+            
+            // Вибрация при покупке
+            vibrate();
         });
         
         // Обработчик клика по кнопке алерта талисманов
@@ -1181,29 +879,11 @@
             }
         });
         
-        // Обработчик клика по гифке
+        // Обработчик клика по гифке для открытия алерта талисманов
         gifContainerElement.addEventListener('click', handleGifClick);
         
         // Обработчик клика по кнопке талисмана
         talismanButtonElement.addEventListener('click', openTalismanAlert);
-        
-        // Обработчик клика по магазину
-        shopBoxElement.addEventListener('click', () => {
-            navigateTo('shop');
-        });
-        
-        // Обработчик клика по модификаторам
-        modifiersBoxElement.addEventListener('click', () => {
-            navigateTo('modifiers');
-        });
-        
-        // Обработчик клика по стрелке назад
-        backArrowElement.addEventListener('click', () => {
-            navigateTo('main');
-        });
-        
-        // Обработчик клика по блоку заданий
-        tasksBoxElement.addEventListener('click', openTasksAlert);
         
         // Обработчик клика на всю страницу (кроме гифки)
         document.addEventListener('click', function(e) {
@@ -1211,6 +891,9 @@
                 vibrate();
             }
         });
+        
+        // Обработчик клика по блоку заданий
+        tasksBoxElement.addEventListener('click', openTasksAlert);
         
         if (tg) {
             // Инициализация приложения
@@ -1257,9 +940,6 @@
             setButtonColor();
         }
 
-        // Загрузка состояния игры
-        loadGameState();
-
         // Запрет масштабирования и выделения текста
         document.addEventListener('touchstart', function(event) {
             if (event.touches.length > 1) {
@@ -1275,9 +955,6 @@
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
         });
-
-        // Автосохранение каждые 30 секунд
-        setInterval(saveGameState, 30000);
     </script>
 </body>
 </html>
