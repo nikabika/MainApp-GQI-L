@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Профиль - Telegram Mini App</title>
+    <title>Модификации - Telegram Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -22,7 +22,7 @@
         body {
             background-color: #121212;
             color: #FFFFFF;
-            padding: 20px;
+            padding: 16px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -30,10 +30,16 @@
             touch-action: manipulation;
         }
 
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
         .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -42,12 +48,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 10;
-            transition: transform 0.1s ease;
-        }
-
-        .back-button:active {
-            transform: scale(0.95);
+            flex-shrink: 0;
         }
 
         .back-icon {
@@ -56,203 +57,219 @@
             color: white;
         }
 
-        .avatar-container {
-            width: 120px;
-            height: 120px;
-            border-radius: 17px;
-            background-color: #2C2C2E;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .avatar-placeholder {
-            width: 60px;
-            height: 60px;
-            background-color: #8E8E93;
-            border-radius: 50%;
-        }
-
-        .user-avatar {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-
-        .username {
-            font-size: 24px;
+        .page-title {
+            font-size: 18px;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 5px;
+            flex-grow: 1;
+            padding: 0 12px;
         }
 
-        .user-tag {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.7);
-            text-align: center;
-            margin-bottom: 30px;
+        .money-indicator {
+            background-color: #2C2C2E;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
         }
 
-        .settings-container {
+        .upgrade-container {
             width: 100%;
             max-width: 400px;
-        }
-
-        .setting-item {
-            background-color: #2C2C2E;
-            border-radius: 17px;
-            padding: 16px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: transform 0.1s ease;
-        }
-
-        .setting-item:active {
-            transform: scale(0.98);
-        }
-
-        .setting-content {
-            display: flex;
-            align-items: center;
-            flex: 1;
-        }
-
-        .setting-emoji {
-            font-size: 28px;
-            margin-right: 15px;
-        }
-
-        .setting-text {
             display: flex;
             flex-direction: column;
+            gap: 12px;
         }
 
-        .setting-title {
-            font-size: 16px;
+        .upgrade-banner {
+            background-color: #2C2C2E;
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .upgrade-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-weight: 600;
-            margin-bottom: 4px;
+            font-size: 16px;
         }
 
-        .setting-description {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.6);
-            line-height: 1.3;
+        .upgrade-emoji {
+            font-size: 22px;
+            width: 30px;
+            text-align: center;
         }
 
-        /* Стили для переключателя */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 51px;
-            height: 31px;
-            flex-shrink: 0;
-            margin-left: 15px;
+        .upgrade-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 12px;
         }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .upgrade-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
         }
 
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: .3s;
-            border-radius: 34px;
+        .energy-bars {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            height: 26px;
         }
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 27px;
-            width: 27px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
+        .energy-bar {
+            width: 6px;
+            background-color: #3A3A3C;
+            border-radius: 2px;
+            transition: background-color 0.2s ease;
         }
 
-        input:checked + .slider {
+        .energy-bar.filled {
             background-color: #40a7e3;
         }
 
-        input:checked + .slider:before {
-            transform: translateX(20px);
+        .bar-1 { height: 8px; }
+        .bar-2 { height: 10px; }
+        .bar-3 { height: 12px; }
+        .bar-4 { height: 14px; }
+        .bar-5 { height: 16px; }
+        .bar-6 { height: 18px; }
+        .bar-7 { height: 20px; }
+        .bar-8 { height: 22px; }
+        .bar-9 { height: 24px; }
+        .bar-10 { height: 26px; }
+
+        .level-text {
+            font-size: 12px;
+            color: #8E8E93;
+            font-weight: 500;
+        }
+
+        .upgrade-button {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background-color: #40a7e3;
+            color: white;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            min-width: 110px;
+        }
+
+        .upgrade-button:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
+        .upgrade-button:disabled {
+            background-color: #3A3A3C;
+            color: #8E8E93;
+            cursor: not-allowed;
+            transform: none;
         }
 
         /* Адаптивность */
-        @media (max-width: 400px) {
-            .avatar-container {
-                width: 100px;
-                height: 100px;
+        @media (max-width: 360px) {
+            .upgrade-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
             }
             
-            .username {
-                font-size: 20px;
+            .upgrade-button {
+                align-self: stretch;
+                text-align: center;
             }
             
-            .user-tag {
-                font-size: 14px;
+            .page-title {
+                font-size: 16px;
+            }
+            
+            .money-indicator {
+                font-size: 13px;
+                padding: 6px 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="back-button" id="back-button">
-        <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M15 6l-6 6l6 6" />
-        </svg>
-    </div>
-
-    <div class="avatar-container">
-        <div class="avatar-placeholder" id="avatar-placeholder"></div>
-        <img class="user-avatar" id="user-avatar" src="" alt="Аватар">
-    </div>
-
-    <div class="username" id="username">Имя</div>
-    <div class="user-tag" id="user-tag">@username</div>
-
-    <div class="settings-container">
-        <div class="setting-item">
-            <div class="setting-content">
-                <div class="setting-emoji">🐊</div>
-                <div class="setting-text">
-                    <div class="setting-title">Анимированные иконки</div>
-                    <div class="setting-description">Иконки баннеров станут анимированными. Не рекомендуется слабым устройствам</div>
-                </div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="animated-icons">
-                <span class="slider"></span>
-            </label>
+    <div class="header">
+        <div class="back-button" id="back-button">
+            <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M15 6l-6 6l6 6" />
+            </svg>
         </div>
-        
-        <div class="setting-item">
-            <div class="setting-content">
-                <div class="setting-emoji">🎁</div>
-                <div class="setting-text">
-                    <div class="setting-title">Баннеры розыгрышей</div>
-                    <div class="setting-description">Автоматические уведомления о действующих розыгрышах</div>
-                </div>
+        <div class="page-title">Модификации</div>
+        <div class="money-indicator">
+            <span>$</span>
+            <span id="money-count">0</span>
+        </div>
+    </div>
+
+    <div class="upgrade-container">
+        <div class="upgrade-banner" id="energy-upgrade">
+            <div class="upgrade-header">
+                <span class="upgrade-emoji">⚡️</span>
+                <span>Лимит энергии</span>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="giveaway-banners">
-                <span class="slider"></span>
-            </label>
+            <div class="upgrade-content">
+                <div class="upgrade-info">
+                    <div class="energy-bars" id="energy-bars">
+                        <!-- Energy bars will be generated by JavaScript -->
+                    </div>
+                    <div class="level-text">Уровень: <span id="energy-level">1</span>/10</div>
+                </div>
+                <button class="upgrade-button" id="energy-upgrade-btn">$2500</button>
+            </div>
+        </div>
+
+        <div class="upgrade-banner" id="autofarm-upgrade">
+            <div class="upgrade-header">
+                <span class="upgrade-emoji">💪</span>
+                <span>Авто-фарм</span>
+            </div>
+            <div class="upgrade-content">
+                <div class="upgrade-info">
+                    <div class="energy-bars" id="autofarm-bars">
+                        <!-- Autofarm bars will be generated by JavaScript -->
+                    </div>
+                    <div class="level-text">Уровень: <span id="autofarm-level">0</span>/10</div>
+                </div>
+                <button class="upgrade-button" id="autofarm-upgrade-btn">$1000</button>
+            </div>
+        </div>
+
+        <div class="upgrade-banner" id="income-upgrade">
+            <div class="upgrade-header">
+                <span class="upgrade-emoji">💲</span>
+                <span>Доход</span>
+            </div>
+            <div class="upgrade-content">
+                <div class="upgrade-info">
+                    <div class="energy-bars" id="income-bars">
+                        <!-- Income bars will be generated by JavaScript -->
+                    </div>
+                    <div class="level-text">Уровень: <span id="income-level">1</span>/10</div>
+                </div>
+                <button class="upgrade-button" id="income-upgrade-btn">$1500</button>
+            </div>
         </div>
     </div>
 
@@ -262,37 +279,147 @@
         
         // Элементы DOM
         const backButton = document.getElementById('back-button');
-        const usernameElement = document.getElementById('username');
-        const userTagElement = document.getElementById('user-tag');
-        const avatarElement = document.getElementById('user-avatar');
-        const avatarPlaceholder = document.getElementById('avatar-placeholder');
-        const animatedIconsSwitch = document.getElementById('animated-icons');
-        const giveawayBannersSwitch = document.getElementById('giveaway-banners');
+        const moneyCount = document.getElementById('money-count');
+        const energyBars = document.getElementById('energy-bars');
+        const autofarmBars = document.getElementById('autofarm-bars');
+        const incomeBars = document.getElementById('income-bars');
+        const energyLevel = document.getElementById('energy-level');
+        const autofarmLevel = document.getElementById('autofarm-level');
+        const incomeLevel = document.getElementById('income-level');
+        const energyUpgradeBtn = document.getElementById('energy-upgrade-btn');
+        const autofarmUpgradeBtn = document.getElementById('autofarm-upgrade-btn');
+        const incomeUpgradeBtn = document.getElementById('income-upgrade-btn');
+        
+        // Состояние модификаций
+        const modifications = {
+            energy: {
+                level: 1,
+                basePrice: 2500,
+                priceIncrement: 1200,
+                currentPrice: 2500,
+                maxLevel: 10
+            },
+            autofarm: {
+                level: 0,
+                basePrice: 1000,
+                priceIncrement: 1000,
+                currentPrice: 1000,
+                maxLevel: 10
+            },
+            income: {
+                level: 1,
+                basePrice: 1500,
+                priceIncrement: 1100,
+                currentPrice: 1500,
+                maxLevel: 10
+            }
+        };
         
         // Функция для легкой вибрации
         function vibrate() {
             if (navigator.vibrate) {
-                navigator.vibrate(1);
+                navigator.vibrate(10);
             } else if (window.Telegram?.WebApp?.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
         }
         
-        // Функция для установки цвета переключателей
-        function setSwitchColor() {
+        // Функция для установки акцентного цвета
+        function setAccentColor() {
             if (tg && tg.themeParams.button_color) {
-                document.documentElement.style.setProperty('--accent-color', tg.themeParams.button_color);
+                const accentColor = tg.themeParams.button_color;
                 
-                // Добавляем стили для акцентного цвета
-                const style = document.createElement('style');
-                style.textContent = `
-                    input:checked + .slider {
-                        background-color: ${tg.themeParams.button_color} !important;
-                    }
-                `;
-                document.head.appendChild(style);
+                // Устанавливаем цвет для всех кнопок апгрейда
+                document.querySelectorAll('.upgrade-button:not(:disabled)').forEach(button => {
+                    button.style.backgroundColor = accentColor;
+                });
+                
+                // Устанавливаем цвет для заполненных баров
+                document.querySelectorAll('.energy-bar.filled').forEach(bar => {
+                    bar.style.backgroundColor = accentColor;
+                });
             }
         }
+        
+        // Функция для создания шкал
+        function createBars(container, filledCount, totalCount) {
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= totalCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = `energy-bar bar-${i} ${i <= filledCount ? 'filled' : ''}`;
+                container.appendChild(bar);
+            }
+        }
+        
+        // Функция для обновления отображения модификаций
+        function updateModifications() {
+            // Обновляем шкалы
+            createBars(energyBars, modifications.energy.level, modifications.energy.maxLevel);
+            createBars(autofarmBars, modifications.autofarm.level, modifications.autofarm.maxLevel);
+            createBars(incomeBars, modifications.income.level, modifications.income.maxLevel);
+            
+            // Обновляем уровни
+            energyLevel.textContent = modifications.energy.level;
+            autofarmLevel.textContent = modifications.autofarm.level;
+            incomeLevel.textContent = modifications.income.level;
+            
+            // Обновляем цены на кнопках
+            energyUpgradeBtn.textContent = `$${modifications.energy.currentPrice}`;
+            autofarmUpgradeBtn.textContent = `$${modifications.autofarm.currentPrice}`;
+            incomeUpgradeBtn.textContent = `$${modifications.income.currentPrice}`;
+            
+            // Отключаем кнопки, если достигнут максимальный уровень
+            if (modifications.energy.level >= modifications.energy.maxLevel) {
+                energyUpgradeBtn.disabled = true;
+                energyUpgradeBtn.textContent = 'Макс. ур.';
+            } else {
+                energyUpgradeBtn.disabled = false;
+            }
+            
+            if (modifications.autofarm.level >= modifications.autofarm.maxLevel) {
+                autofarmUpgradeBtn.disabled = true;
+                autofarmUpgradeBtn.textContent = 'Макс. ур.';
+            } else {
+                autofarmUpgradeBtn.disabled = false;
+            }
+            
+            if (modifications.income.level >= modifications.income.maxLevel) {
+                incomeUpgradeBtn.disabled = true;
+                incomeUpgradeBtn.textContent = 'Макс. ур.';
+            } else {
+                incomeUpgradeBtn.disabled = false;
+            }
+            
+            // Устанавливаем акцентный цвет
+            setAccentColor();
+        }
+        
+        // Функция для апгрейда модификации
+        function upgradeModification(type) {
+            vibrate();
+            
+            const mod = modifications[type];
+            
+            // Проверяем, можно ли улучшить (не максимальный уровень)
+            if (mod.level < mod.maxLevel) {
+                // Увеличиваем уровень
+                mod.level++;
+                
+                // Увеличиваем цену
+                mod.currentPrice = mod.basePrice + (mod.level * mod.priceIncrement);
+                
+                // Обновляем отображение
+                updateModifications();
+                
+                console.log(`Улучшено: ${type} до уровня ${mod.level}. Новая цена: $${mod.currentPrice}`);
+            }
+        }
+        
+        // Обработчики кликов по кнопкам апгрейда
+        energyUpgradeBtn.addEventListener('click', () => upgradeModification('energy'));
+        autofarmUpgradeBtn.addEventListener('click', () => upgradeModification('autofarm'));
+        incomeUpgradeBtn.addEventListener('click', () => upgradeModification('income'));
         
         // Обработчик клика по кнопке "Назад"
         backButton.addEventListener('click', () => {
@@ -304,29 +431,6 @@
                 // Для тестирования вне Telegram
                 window.history.back();
             }
-        });
-        
-        // Обработчики переключателей
-        animatedIconsSwitch.addEventListener('change', () => {
-            vibrate();
-            // Здесь можно добавить логику сохранения настройки
-            console.log('Анимированные иконки:', animatedIconsSwitch.checked);
-        });
-        
-        giveawayBannersSwitch.addEventListener('change', () => {
-            vibrate();
-            // Здесь можно добавить логику сохранения настройки
-            console.log('Баннеры розыгрышей:', giveawayBannersSwitch.checked);
-        });
-        
-        // Обработчик клика по настройкам для вибрации
-        document.querySelectorAll('.setting-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                // Вибрация только если кликнули не по самому переключателю
-                if (!e.target.closest('.switch')) {
-                    vibrate();
-                }
-            });
         });
         
         // Запрет масштабирования и выделения
@@ -344,44 +448,17 @@
             lastTouchEnd = now;
         }, false);
         
-        if (tg) {
-            // Получение данных пользователя
-            const user = tg.initDataUnsafe?.user;
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            updateModifications();
             
-            // Обновление интерфейса с данными пользователя
-            if (user) {
-                if (user.first_name) {
-                    usernameElement.textContent = user.first_name;
-                }
-                
-                if (user.username) {
-                    userTagElement.textContent = `@${user.username}`;
-                } else {
-                    userTagElement.style.display = 'none';
-                }
-                
-                // Загрузка аватарки, если доступна
-                if (user.photo_url) {
-                    avatarElement.src = user.photo_url;
-                    avatarElement.style.display = 'block';
-                    avatarPlaceholder.style.display = 'none';
-                }
+            if (tg) {
+                console.log('Telegram WebApp initialized:', tg);
+                tg.expand();
+            } else {
+                console.log('Not in Telegram environment - using mock data');
             }
-            
-            // Устанавливаем цвет переключателей в соответствии с акцентным цветом Telegram
-            setSwitchColor();
-            
-            console.log('Telegram WebApp initialized:', tg);
-            console.log('User data:', user);
-        } else {
-            console.log('Not in Telegram environment - using mock data');
-            // Заглушка для тестирования вне Telegram
-            usernameElement.textContent = 'Тестовый Пользователь';
-            userTagElement.textContent = '@testuser';
-            
-            // Устанавливаем цвет переключателей по умолчанию
-            setSwitchColor();
-        }
+        });
     </script>
 </body>
 </html>
