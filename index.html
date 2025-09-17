@@ -47,27 +47,28 @@
         }
 
         .crystals-container {
-            position: absolute;
-            top: 25px;
-            right: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
             z-index: 3;
         }
 
         .crystals-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #2C2C2E;
             border-radius: 12px;
             padding: 8px 16px;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease;
         }
 
         .crystals-box:active {
             transform: scale(0.95);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
         }
 
         .crystals-icon {
@@ -301,20 +302,41 @@
             margin-bottom: 15px;
         }
 
+        .promo-input-container {
+            position: relative;
+            width: 85%;
+            margin-bottom: 20px;
+        }
+
         .promo-input {
             width: 100%;
-            padding: 16px;
+            padding: 16px 16px 16px 45px;
             border-radius: 15px;
             background-color: #121212;
             border: none;
             color: white;
             font-size: 16px;
-            text-align: center;
-            margin-bottom: 20px;
+            text-align: left;
         }
 
         .promo-input::placeholder {
             color: rgba(255, 255, 255, 0.5);
+        }
+
+        .paste-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.7;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            transition: opacity 0.2s ease;
+        }
+
+        .paste-icon:active {
+            opacity: 1;
         }
 
         .modal-button {
@@ -331,6 +353,76 @@
         }
 
         .modal-button:active {
+            transform: scale(0.97);
+        }
+
+        /* Анимация кристаллов */
+        @keyframes crystalsIncrease {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .crystals-animate {
+            animation: crystalsIncrease 0.5s ease-in-out;
+        }
+
+        /* Алерт окно */
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 101;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .alert-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .alert-box {
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 25px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .alert-overlay.active .alert-box {
+            transform: scale(1);
+        }
+
+        .alert-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .alert-button {
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-weight: 600;
+            background-color: #40a7e3;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.1s ease;
+        }
+
+        .alert-button:active {
             transform: scale(0.97);
         }
         
@@ -431,9 +523,24 @@
                 <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgAD2AIAAox2IUQ.webp" alt="Промокод" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div class="modal-title">Введи промокод</div>
-            <input type="text" class="promo-input" placeholder="ABCDfe12345" id="promo-input">
+            <div class="promo-input-container">
+                <svg class="paste-icon" id="paste-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                    <rect x="9" y="3" width="6" height="4" rx="2" />
+                </svg>
+                <input type="text" class="promo-input" placeholder="ABCDfe12345" id="promo-input">
+            </div>
             <div class="modal-description">Есть промокод? Введи его и получи плюшки!</div>
             <button class="modal-button" id="apply-promo-button">Применить</button>
+        </div>
+    </div>
+
+    <!-- Алерт окно -->
+    <div class="alert-overlay" id="alert-overlay">
+        <div class="alert-box">
+            <div class="alert-title" id="alert-title"></div>
+            <button class="alert-button" id="alert-button">Закрыть</button>
         </div>
     </div>
 
@@ -447,6 +554,7 @@
         let crystals = 0;
         let cooldownTimer = null;
         const energyCooldown = 180; // 3 минуты в секундах
+        let usedPromoCodes = new Set(); // Для отслеживания использованных промокодов
         
         // Элементы DOM
         const balanceElement = document.getElementById('balance');
@@ -466,6 +574,10 @@
         const crystalsAmountElement = document.getElementById('crystals-amount');
         const applyPromoButtonElement = document.getElementById('apply-promo-button');
         const promoInputElement = document.getElementById('promo-input');
+        const pasteIconElement = document.getElementById('paste-icon');
+        const alertOverlayElement = document.getElementById('alert-overlay');
+        const alertTitleElement = document.getElementById('alert-title');
+        const alertButtonElement = document.getElementById('alert-button');
         
         // Функция для легкой вибрации
         function vibrate() {
@@ -505,6 +617,14 @@
         // Функция для обновления отображения кристаллов
         function updateCrystalsDisplay() {
             crystalsAmountElement.textContent = crystals;
+        }
+        
+        // Функция для анимации увеличения кристаллов
+        function animateCrystalsIncrease() {
+            crystalsAmountElement.classList.add('crystals-animate');
+            setTimeout(() => {
+                crystalsAmountElement.classList.remove('crystals-animate');
+            }, 500);
         }
         
         // Функция для форматирования времени (мм:сс)
@@ -554,12 +674,57 @@
             document.body.style.overflow = '';
         }
         
+        // Функция для показа алерта
+        function showAlert(title, buttonText) {
+            alertTitleElement.textContent = title;
+            alertButtonElement.textContent = buttonText;
+            alertOverlayElement.classList.add('active');
+        }
+        
+        // Функция для скрытия алерта
+        function hideAlert() {
+            alertOverlayElement.classList.remove('active');
+        }
+        
+        // Функция для вставки из буфера обмена
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                promoInputElement.value = text;
+                vibrate();
+            } catch (err) {
+                console.error('Не удалось прочитать буфер обмена:', err);
+            }
+        }
+        
+        // Функция для проверки промокода
+        function checkPromoCode(code) {
+            // Проверяем, не использовался ли уже этот промокод
+            if (usedPromoCodes.has(code)) {
+                return { valid: false, message: "Этот промокод уже был использован" };
+            }
+            
+            // Проверяем специальный промокод
+            if (code === "Fq6670Cvty7Ui") {
+                usedPromoCodes.add(code);
+                return { 
+                    valid: true, 
+                    message: "Промокод применен успешно!", 
+                    reward: 50 
+                };
+            }
+            
+            // Если промокод не найден
+            return { valid: false, message: "Промокод не найден" };
+        }
+        
         // Функция для установки цвета кнопки
         function setButtonColor() {
             const accentColor = tg && tg.themeParams.button_color ? tg.themeParams.button_color : '#40a7e3';
             
             buyButtonElement.style.backgroundColor = accentColor;
             applyPromoButtonElement.style.backgroundColor = accentColor;
+            alertButtonElement.style.backgroundColor = accentColor;
         }
         
         // Функция для адаптации под полноэкранный режим
@@ -578,6 +743,10 @@
             if (e.target === promoModalOverlayElement) closeModal();
         });
         
+        alertOverlayElement.addEventListener('click', (e) => {
+            if (e.target === alertOverlayElement) hideAlert();
+        });
+        
         buyButtonElement.addEventListener('click', () => {
             if (crystals >= 10) {
                 crystals -= 10;
@@ -592,14 +761,40 @@
         applyPromoButtonElement.addEventListener('click', () => {
             const promoCode = promoInputElement.value.trim();
             if (promoCode) {
-                // Здесь логика проверки промокода
-                crystals += 50; // Награда за промокод
-                updateCrystalsDisplay();
+                const result = checkPromoCode(promoCode);
+                
+                if (result.valid) {
+                    // Анимированное добавление кристаллов
+                    const oldCrystals = crystals;
+                    crystals += result.reward;
+                    
+                    // Анимация постепенного увеличения
+                    let current = oldCrystals;
+                    const step = Math.ceil(result.reward / 10);
+                    const interval = setInterval(() => {
+                        current += step;
+                        if (current >= crystals) {
+                            current = crystals;
+                            clearInterval(interval);
+                        }
+                        crystalsAmountElement.textContent = current;
+                        animateCrystalsIncrease();
+                    }, 50);
+                    
+                    showAlert(result.message, "Готово");
+                    promoInputElement.value = '';
+                } else {
+                    showAlert(result.message, "Закрыть");
+                }
+                
                 closeModal();
                 vibrate();
-                promoInputElement.value = '';
             }
         });
+        
+        alertButtonElement.addEventListener('click', hideAlert);
+        
+        pasteIconElement.addEventListener('click', pasteFromClipboard);
         
         energyBoxElement.addEventListener('click', openEnergyModal);
         crystalsBoxElement.addEventListener('click', openPromoModal);
