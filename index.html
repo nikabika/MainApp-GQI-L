@@ -26,7 +26,7 @@
         }
 
         body.fullscreen {
-            padding-top: 75px;
+            padding-top: 80px;
         }
 
         body.blurred {
@@ -46,6 +46,39 @@
             transition: backdrop-filter 0.2s ease, background-color 0.2s ease;
         }
 
+        .crystals-container {
+            position: absolute;
+            top: 25px;
+            right: 20px;
+            z-index: 3;
+        }
+
+        .crystals-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .crystals-box:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .crystals-icon {
+            font-size: 16px;
+        }
+
+        .crystals-amount {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
         .header {
             display: flex;
             align-items: center;
@@ -53,6 +86,7 @@
             max-width: 400px;
             margin-bottom: 30px;
             z-index: 2;
+            margin-top: 10px;
         }
 
         .avatar-container {
@@ -197,7 +231,7 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        /* Модальное окно */
+        /* Модальные окна */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -264,7 +298,23 @@
             font-size: 14px;
             text-align: center;
             color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 25px;
+            margin-bottom: 15px;
+        }
+
+        .promo-input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 15px;
+            background-color: #121212;
+            border: none;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .promo-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .modal-button {
@@ -297,10 +347,25 @@
                 width: 200px;
                 height: 200px;
             }
+
+            .crystals-box {
+                padding: 6px 12px;
+            }
+
+            .crystals-amount {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="crystals-container">
+        <div class="crystals-box" id="crystals-box">
+            <span class="crystals-icon">💎</span>
+            <span class="crystals-amount" id="crystals-amount">0</span>
+        </div>
+    </div>
+
     <div class="header">
         <div class="avatar-container">
             <div class="avatar-placeholder"></div>
@@ -345,9 +410,9 @@
         </div>
     </div>
 
-    <!-- Модальное окно -->
-    <div class="modal-overlay" id="modal-overlay">
-        <div class="modal" id="modal">
+    <!-- Модальное окно энергии -->
+    <div class="modal-overlay" id="energy-modal-overlay">
+        <div class="modal" id="energy-modal">
             <div class="modal-handle"></div>
             <div class="modal-gif">
                 <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp" alt="Энергия" style="width: 100%; height: 100%; object-fit: cover;">
@@ -358,13 +423,28 @@
         </div>
     </div>
 
+    <!-- Модальное окно промокода -->
+    <div class="modal-overlay" id="promo-modal-overlay">
+        <div class="modal" id="promo-modal">
+            <div class="modal-handle"></div>
+            <div class="modal-gif">
+                <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgAD2AIAAox2IUQ.webp" alt="Промокод" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="modal-title">Введи промокод</div>
+            <input type="text" class="promo-input" placeholder="ABCDfe12345" id="promo-input">
+            <div class="modal-description">Есть промокод? Введи его и получи плюшки!</div>
+            <button class="modal-button" id="apply-promo-button">Применить</button>
+        </div>
+    </div>
+
     <script>
         // Инициализация Telegram WebApp
         let tg = window.Telegram?.WebApp;
         
-        // Переменные для отслеживания баланса, энергии и КД
+        // Переменные для отслеживания баланса, энергии и кристаллов
         let balance = 0;
         let energy = 500;
+        let crystals = 0;
         let cooldownTimer = null;
         const energyCooldown = 180; // 3 минуты в секундах
         
@@ -374,12 +454,18 @@
         const energyDescriptionElement = document.getElementById('energy-description');
         const energyBoxElement = document.getElementById('energy-box');
         const gifContainerElement = document.getElementById('gif-container');
-        const modalOverlayElement = document.getElementById('modal-overlay');
-        const modalElement = document.getElementById('modal');
+        const energyModalOverlayElement = document.getElementById('energy-modal-overlay');
+        const energyModalElement = document.getElementById('energy-modal');
+        const promoModalOverlayElement = document.getElementById('promo-modal-overlay');
+        const promoModalElement = document.getElementById('promo-modal');
         const bodyElement = document.body;
         const buyButtonElement = document.getElementById('buy-button');
         const usernameElement = document.getElementById('username');
         const userTagElement = document.getElementById('user-tag');
+        const crystalsBoxElement = document.getElementById('crystals-box');
+        const crystalsAmountElement = document.getElementById('crystals-amount');
+        const applyPromoButtonElement = document.getElementById('apply-promo-button');
+        const promoInputElement = document.getElementById('promo-input');
         
         // Функция для легкой вибрации
         function vibrate() {
@@ -416,6 +502,11 @@
             energyDescriptionElement.textContent = energy > 0 ? 'доступно' : 'перезагрузка';
         }
         
+        // Функция для обновления отображения кристаллов
+        function updateCrystalsDisplay() {
+            crystalsAmountElement.textContent = crystals;
+        }
+        
         // Функция для форматирования времени (мм:сс)
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -423,64 +514,52 @@
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         
-        // Функция для запуска таймера перезарядки энергии
-        function startEnergyCooldown() {
-            let timeLeft = energyCooldown;
-            
-            if (cooldownTimer) {
-                clearInterval(cooldownTimer);
-            }
-            
-            cooldownTimer = setInterval(() => {
-                timeLeft -= 1;
-                energyValueElement.textContent = formatTime(timeLeft);
-                
-                if (timeLeft <= 0) {
-                    clearInterval(cooldownTimer);
-                    energy = 500;
-                    updateEnergyDisplay();
-                }
-            }, 1000);
-        }
-        
         // Функция для открытия модального окна энергии
         function openEnergyModal() {
             bodyElement.classList.add('blurred');
-            modalOverlayElement.classList.add('active');
+            energyModalOverlayElement.classList.add('active');
             
-            // Небольшая задержка для активации анимации
             setTimeout(() => {
-                modalElement.classList.add('active');
+                energyModalElement.classList.add('active');
             }, 10);
             
-            // Блокируем прокрутку фона
             document.body.style.overflow = 'hidden';
+            vibrate();
+        }
+        
+        // Функция для открытия модального окна промокода
+        function openPromoModal() {
+            bodyElement.classList.add('blurred');
+            promoModalOverlayElement.classList.add('active');
             
+            setTimeout(() => {
+                promoModalElement.classList.add('active');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden';
             vibrate();
         }
         
         // Функция для закрытия модального окна
         function closeModal() {
-            modalElement.classList.remove('active');
+            energyModalElement.classList.remove('active');
+            promoModalElement.classList.remove('active');
             bodyElement.classList.remove('blurred');
             
-            // Убираем оверлей с небольшой задержкой для плавности
             setTimeout(() => {
-                modalOverlayElement.classList.remove('active');
+                energyModalOverlayElement.classList.remove('active');
+                promoModalOverlayElement.classList.remove('active');
             }, 200);
             
-            // Разблокируем прокрутку фона
             document.body.style.overflow = '';
         }
         
         // Функция для установки цвета кнопки
         function setButtonColor() {
-            if (tg && tg.themeParams.button_color) {
-                buyButtonElement.style.backgroundColor = tg.themeParams.button_color;
-            } else {
-                // Цвет по умолчанию, если не удалось определить акцентный цвет
-                buyButtonElement.style.backgroundColor = '#40a7e3';
-            }
+            const accentColor = tg && tg.themeParams.button_color ? tg.themeParams.button_color : '#40a7e3';
+            
+            buyButtonElement.style.backgroundColor = accentColor;
+            applyPromoButtonElement.style.backgroundColor = accentColor;
         }
         
         // Функция для адаптации под полноэкранный режим
@@ -490,70 +569,70 @@
             }
         }
         
-        // Обработчик клика по оверлею для закрытия модального окна
-        modalOverlayElement.addEventListener('click', (e) => {
-            if (e.target === modalOverlayElement) {
+        // Обработчики событий
+        energyModalOverlayElement.addEventListener('click', (e) => {
+            if (e.target === energyModalOverlayElement) closeModal();
+        });
+        
+        promoModalOverlayElement.addEventListener('click', (e) => {
+            if (e.target === promoModalOverlayElement) closeModal();
+        });
+        
+        buyButtonElement.addEventListener('click', () => {
+            if (crystals >= 10) {
+                crystals -= 10;
+                energy = 500;
+                updateEnergyDisplay();
+                updateCrystalsDisplay();
                 closeModal();
+                vibrate();
             }
         });
         
-        // Обработчик клика по кнопке покупки
-        buyButtonElement.addEventListener('click', () => {
-            // Восстанавливаем энергию
-            energy = 500;
-            updateEnergyDisplay();
-            
-            // Закрываем модальное окно
-            closeModal();
-            
-            // Вибрация при покупке
-            vibrate();
+        applyPromoButtonElement.addEventListener('click', () => {
+            const promoCode = promoInputElement.value.trim();
+            if (promoCode) {
+                // Здесь логика проверки промокода
+                crystals += 50; // Награда за промокод
+                updateCrystalsDisplay();
+                closeModal();
+                vibrate();
+                promoInputElement.value = '';
+            }
         });
         
-        // Обработчик клика по энергии
-        energyBoxElement.addEventListener('click', () => {
-            openEnergyModal();
-        });
-        
-        // Добавляем обработчик клика на гифку
+        energyBoxElement.addEventListener('click', openEnergyModal);
+        crystalsBoxElement.addEventListener('click', openPromoModal);
         gifContainerElement.addEventListener('click', handleGifClick);
         
-        // Добавляем обработчик клика на всю страницу (кроме гифки)
         document.addEventListener('click', function(e) {
             if (!e.target.closest('#gif-container') && !e.target.closest('.modal')) {
                 vibrate();
             }
         });
         
+        // Инициализация приложения
         if (tg) {
-            // Инициализация приложения
             tg.expand();
             tg.enableClosingConfirmation();
-            
-            // Адаптируем под полноэкранный режим
             adaptToFullscreen();
             
-            // Получение данных пользователя
             const user = tg.initDataUnsafe?.user;
             
-            // Обновление интерфейса с данными пользователя
             if (user) {
                 const avatarElement = document.getElementById('user-avatar');
                 const avatarPlaceholder = document.querySelector('.avatar-placeholder');
                 
-                // Форматируем имя пользователя
                 if (user.first_name) {
                     usernameElement.textContent = user.first_name;
                 } else if (user.username) {
                     usernameElement.textContent = user.username;
                 }
                 
-                // Добавляем username под именем
                 if (user.username) {
                     userTagElement.textContent = '@' + user.username;
                 }
                 
-                // Загрузка аватарки, если доступна
                 if (user.photo_url) {
                     avatarElement.src = user.photo_url;
                     avatarElement.style.display = 'block';
@@ -561,20 +640,16 @@
                 }
             }
             
-            // Устанавливаем цвет кнопки в соответствии с акцентным цветом Telegram
             setButtonColor();
-            
-            console.log('Telegram WebApp initialized:', tg);
-            console.log('User data:', user);
         } else {
-            console.log('Not in Telegram environment - using mock data');
-            // Заглушка для тестирования вне Telegram
             usernameElement.textContent = 'Пользователь';
             userTagElement.textContent = '@testuser';
-            
-            // Устанавливаем цвет кнопки по умолчанию
             setButtonColor();
         }
+        
+        // Инициализация значений
+        updateCrystalsDisplay();
+        updateEnergyDisplay();
     </script>
 </body>
 </html>
