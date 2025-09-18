@@ -11,46 +11,51 @@
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --bg-color: #121212;
+            --card-bg: #2C2C2E;
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --accent-color: #40a7e3;
+            --blur-bg: rgba(0, 0, 0, 0.6);
         }
 
         body {
-            background-color: #121212;
-            color: #FFFFFF;
-            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             touch-action: manipulation;
+            padding: 25px 20px;
             position: relative;
-            overflow: hidden;
         }
 
-        body.fullscreen {
-            padding-top: 80px;
-        }
-
-        body.blurred {
-            overflow: hidden;
-        }
-
-        body.blurred::before {
-            content: '';
+        .blur-background {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: var(--blur-bg);
             backdrop-filter: grayscale(100%) blur(5px);
             z-index: 99;
-            transition: backdrop-filter 0.2s ease, background-color 0.2s ease;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .blur-background.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .header {
@@ -60,7 +65,6 @@
             max-width: 400px;
             margin-bottom: 30px;
             z-index: 2;
-            margin-top: 10px;
         }
 
         .avatar-container {
@@ -87,47 +91,58 @@
             height: 100%;
             object-fit: cover;
             display: none;
-            -webkit-user-drag: none;
-            pointer-events: none;
         }
 
         .user-info {
             flex: 1;
             height: 60px;
-            background-color: #2C2C2E;
+            background-color: var(--card-bg);
             border-radius: 17px;
             margin-left: 15px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 0 20px;
+            position: relative;
         }
 
         .username {
             font-size: 18px;
             font-weight: 600;
-            color: #FFFFFF;
+            color: var(--text-primary);
             line-height: 1.2;
         }
 
         .user-tag {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 2px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.2;
+        }
+
+        .icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            opacity: 0.4;
+            width: 16px;
+            height: 16px;
         }
 
         .balance {
-            margin-top: 15px;
             font-size: 46px;
             font-weight: 700;
-            color: #FFFFFF;
             text-align: center;
             margin-bottom: 25px;
             z-index: 2;
         }
 
-        .gif-container {
+        .gif-wrapper {
+            position: relative;
+            display: inline-block;
             margin-bottom: 35px;
+        }
+
+        .gif-container {
             width: 240px;
             height: 240px;
             border-radius: 24px;
@@ -135,6 +150,7 @@
             cursor: pointer;
             transition: transform 0.1s ease;
             z-index: 2;
+            position: relative;
         }
 
         .gif-container:active {
@@ -145,22 +161,55 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            -webkit-user-drag: none;
             pointer-events: none;
+        }
+
+        .talisman-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 72px;
+            height: 72px;
+            background-color: var(--bg-color);
+            border: 1.5px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+            transition: transform 0.1s ease;
+        }
+
+        .talisman-button:active {
+            transform: scale(0.9);
+        }
+
+        .plus-icon {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 32px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+            margin-top: auto;
         }
 
         .stats-container {
             display: flex;
             gap: 15px;
             width: 100%;
-            max-width: 400px;
-            z-index: 2;
-            margin-top: 35px; /* Сдвигаем контент ниже */
+            margin-bottom: 15px;
         }
 
         .stat-box {
             flex: 1;
-            background-color: #2C2C2E;
+            background-color: var(--card-bg);
             border-radius: 17px;
             padding: 12px;
             display: flex;
@@ -168,20 +217,6 @@
             height: 70px;
             position: relative;
             cursor: pointer;
-        }
-
-        .energy-box {
-            cursor: pointer;
-        }
-
-        .stat-icon {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            opacity: 0.6;
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
         }
 
         .stat-content {
@@ -193,13 +228,11 @@
         .stat-emoji {
             font-size: 28px;
             margin-right: 12px;
-            pointer-events: none;
         }
 
         .stat-text {
             display: flex;
             flex-direction: column;
-            pointer-events: none;
         }
 
         .stat-value {
@@ -210,10 +243,49 @@
 
         .stat-description {
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-secondary);
         }
 
-        /* Модальные окна */
+        .second-row {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .modifiers-box {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: 17px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 70px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tasks-box {
+            width: 70px;
+            background-color: var(--card-bg);
+            border-radius: 17px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 70px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .tasks-box:active {
+            transform: scale(0.97);
+        }
+
+        .tasks-emoji {
+            font-size: 32px;
+        }
+
+        /* Модальное окно */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -237,7 +309,7 @@
         .modal {
             position: relative;
             width: 100%;
-            background-color: #2C2C2E;
+            background-color: var(--card-bg);
             border-top-left-radius: 17px;
             border-top-right-radius: 17px;
             padding: 20px;
@@ -245,12 +317,39 @@
             flex-direction: column;
             align-items: center;
             transform: translateY(100%);
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-width: 500px;
         }
 
         .modal.active {
-            transform: translateY(0);
+            animation: modalSlideIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+        }
+
+        .modal.closing {
+            animation: modalSlideOut 0.3s ease forwards;
+        }
+
+        @keyframes modalSlideIn {
+            0% {
+                transform: translateY(100%);
+            }
+            70% {
+                transform: translateY(-5%);
+            }
+            85% {
+                transform: translateY(1%);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes modalSlideOut {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100%);
+            }
         }
 
         .modal-handle {
@@ -259,7 +358,6 @@
             background-color: rgba(255, 255, 255, 0.4);
             border-radius: 100px;
             margin-bottom: 15px;
-            pointer-events: none;
         }
 
         .modal-gif {
@@ -270,44 +368,18 @@
             margin-bottom: 20px;
         }
 
-        .modal-gif img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            -webkit-user-drag: none;
-            pointer-events: none;
-        }
-
         .modal-title {
             font-size: 20px;
             font-weight: 700;
             text-align: center;
             margin-bottom: 10px;
-            pointer-events: none;
         }
 
         .modal-description {
             font-size: 14px;
             text-align: center;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 15px;
-            pointer-events: none;
-        }
-
-        .promo-input {
-            width: 100%;
-            padding: 16px;
-            border-radius: 15px;
-            background-color: #121212;
-            border: none;
-            color: white;
-            font-size: 16px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .promo-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--text-secondary);
+            margin-bottom: 25px;
         }
 
         .modal-button {
@@ -326,14 +398,92 @@
         .modal-button:active {
             transform: scale(0.97);
         }
+
+        /* Алерт */
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .alert-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .alert {
+            background-color: var(--card-bg);
+            border-radius: 17px;
+            padding: 25px;
+            width: 85%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .alert-overlay.active .alert {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .alert-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .alert-description {
+            font-size: 14px;
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .alert-button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            border: none;
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .alert-button:active {
+            transform: scale(0.97);
+        }
         
         @media (max-width: 400px) {
-            .stats-container {
+            .stats-container, .second-row {
                 flex-direction: column;
             }
             
-            .stat-box {
+            .stat-box, .modifiers-box {
                 width: 100%;
+            }
+            
+            .tasks-box {
+                width: 100%;
+                height: 60px;
             }
             
             .gif-container {
@@ -344,74 +494,109 @@
     </style>
 </head>
 <body>
+    <div class="blur-background" id="blur-background"></div>
+
     <div class="header">
         <div class="avatar-container">
             <div class="avatar-placeholder"></div>
             <img class="user-avatar" id="user-avatar" src="" alt="Аватар">
         </div>
         <div class="user-info">
-            <span class="username" id="username">Загрузка...</span>
-            <span class="user-tag" id="user-tag">@username</span>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M17 7l-10 10" />
+                <path d="M8 7l9 0l0 9" />
+            </svg>
+            <div class="username" id="username">Имя</div>
+            <div class="user-tag" id="user-tag">@username</div>
         </div>
     </div>
 
     <div class="balance" id="balance">$0</div>
 
-    <div class="gif-container" id="gif-container">
-        <img class="gif-image" src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
+    <div class="gif-wrapper">
+        <div class="gif-container" id="gif-container">
+            <img class="gif-image" src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
+        </div>
+        <div class="talisman-button" id="talisman-button">
+            <div class="plus-icon">+</div>
+        </div>
     </div>
 
-    <div class="stats-container">
-        <div class="stat-box energy-box" id="energy-box">
-            <div class="stat-content">
-                <div class="stat-emoji">⚡️</div>
-                <div class="stat-text">
-                    <div class="stat-value" id="energy-value">500</div>
-                    <div class="stat-description" id="energy-description">доступно</div>
+    <div class="content-container">
+        <div class="stats-container">
+            <div class="stat-box energy-box" id="energy-box">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M17 7l-10 10" />
+                    <path d="M8 7l9 0l0 9" />
+                </svg>
+                <div class="stat-content">
+                    <div class="stat-emoji">⚡️</div>
+                    <div class="stat-text">
+                        <div class="stat-value" id="energy-value">500</div>
+                        <div class="stat-description" id="energy-description">доступно</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-box" id="shop-box">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M17 7l-10 10" />
+                    <path d="M8 7l9 0l0 9" />
+                </svg>
+                <div class="stat-content">
+                    <div class="stat-emoji">🛒</div>
+                    <div class="stat-text">
+                        <div class="stat-value">Магазин</div>
+                        <div class="stat-description">открыть</div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <div class="stat-box">
-            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M17 7l-10 10" />
-                <path d="M8 7l9 0l0 9" />
-            </svg>
-            <div class="stat-content">
-                <div class="stat-emoji">🛒</div>
-                <div class="stat-text">
-                    <div class="stat-value">Магазин</div>
-                    <div class="stat-description">открыть</div>
+
+        <div class="second-row">
+            <div class="modifiers-box" id="modifiers-box">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M17 7l-10 10" />
+                    <path d="M8 7l9 0l0 9" />
+                </svg>
+                <div class="stat-content">
+                    <div class="stat-emoji">💪</div>
+                    <div class="stat-text">
+                        <div class="stat-value">Модификаторы</div>
+                        <div class="stat-description">открыть</div>
+                    </div>
                 </div>
             </div>
+            
+            <div class="tasks-box" id="tasks-box">
+                <div class="tasks-emoji">🎯</div>
+            </div>
         </div>
     </div>
 
-    <!-- Модальное окно энергии -->
-    <div class="modal-overlay" id="energy-modal-overlay">
-        <div class="modal" id="energy-modal">
+    <!-- Универсальное модальное окно -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal">
             <div class="modal-handle"></div>
-            <div class="modal-gif">
-                <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp" alt="Энергия">
+            <div class="modal-gif" id="modal-gif">
+                <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp" alt="Энергия" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
-            <div class="modal-title">Хочешь больше энергии?</div>
-            <div class="modal-description">Энергию можно восстановить за кристаллы</div>
-            <button class="modal-button" id="buy-button">Купить за 💎10</button>
+            <div class="modal-title" id="modal-title">Хочешь больше энергии?</div>
+            <div class="modal-description" id="modal-description">Энергию можно восстановить за кристаллы</div>
+            <button class="modal-button" id="modal-button">Купить за 💎15</button>
         </div>
     </div>
 
-    <!-- Модальное окно промокода -->
-    <div class="modal-overlay" id="promo-modal-overlay">
-        <div class="modal" id="promo-modal">
-            <div class="modal-handle"></div>
-            <div class="modal-gif">
-                <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgAD2AIAAox2IUQ.webp" alt="Промокод">
-            </div>
-            <div class="modal-title">Введи промокод</div>
-            <input type="text" class="promo-input" placeholder="ABCDfe12345" id="promo-input">
-            <div class="modal-description">Есть промокод? Введи его и получи плюшки!</div>
-            <button class="modal-button" id="apply-promo-button">Применить</button>
+    <!-- Универсальный алерт -->
+    <div class="alert-overlay" id="alert-overlay">
+        <div class="alert" id="alert">
+            <div class="alert-title" id="alert-title">У тебя пока нет талисманов</div>
+            <div class="alert-description" id="alert-description">Их можно выиграть в розыгрышах, или приобрести в магазине</div>
+            <button class="alert-button" id="alert-button">Понятно</button>
         </div>
     </div>
 
@@ -419,10 +604,10 @@
         // Инициализация Telegram WebApp
         let tg = window.Telegram?.WebApp;
         
-        // Переменные для отслеживания баланса, энергии и кристаллов
+        // Переменные для отслеживания баланса, энергии и КД
         let balance = 0;
         let energy = 500;
-        let crystals = 0;
+        let lastClickTime = 0;
         let cooldownTimer = null;
         const energyCooldown = 180; // 3 минуты в секундах
         
@@ -432,16 +617,24 @@
         const energyDescriptionElement = document.getElementById('energy-description');
         const energyBoxElement = document.getElementById('energy-box');
         const gifContainerElement = document.getElementById('gif-container');
-        const energyModalOverlayElement = document.getElementById('energy-modal-overlay');
-        const energyModalElement = document.getElementById('energy-modal');
-        const promoModalOverlayElement = document.getElementById('promo-modal-overlay');
-        const promoModalElement = document.getElementById('promo-modal');
-        const bodyElement = document.body;
-        const buyButtonElement = document.getElementById('buy-button');
+        const modalOverlayElement = document.getElementById('modal-overlay');
+        const modalElement = document.getElementById('modal');
+        const modalGifElement = document.getElementById('modal-gif');
+        const modalTitleElement = document.getElementById('modal-title');
+        const modalDescriptionElement = document.getElementById('modal-description');
+        const modalButtonElement = document.getElementById('modal-button');
+        const blurBackgroundElement = document.getElementById('blur-background');
         const usernameElement = document.getElementById('username');
         const userTagElement = document.getElementById('user-tag');
-        const applyPromoButtonElement = document.getElementById('apply-promo-button');
-        const promoInputElement = document.getElementById('promo-input');
+        const alertOverlayElement = document.getElementById('alert-overlay');
+        const alertElement = document.getElementById('alert');
+        const alertTitleElement = document.getElementById('alert-title');
+        const alertDescriptionElement = document.getElementById('alert-description');
+        const alertButtonElement = document.getElementById('alert-button');
+        const tasksBoxElement = document.getElementById('tasks-box');
+        const talismanButtonElement = document.getElementById('talisman-button');
+        const shopBoxElement = document.getElementById('shop-box');
+        const modifiersBoxElement = document.getElementById('modifiers-box');
         
         // Функция для легкой вибрации
         function vibrate() {
@@ -456,7 +649,13 @@
         function handleGifClick() {
             // Проверка энергии
             if (energy <= 0) {
-                openEnergyModal();
+                showModal(
+                    'https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp',
+                    'Хочешь больше энергии?',
+                    'Энергию можно восстановить за кристаллы',
+                    'Купить за 💎15',
+                    handleEnergyPurchase
+                );
                 return;
             }
             
@@ -476,6 +675,10 @@
         function updateEnergyDisplay() {
             energyValueElement.textContent = energy > 0 ? energy : formatTime(energyCooldown);
             energyDescriptionElement.textContent = energy > 0 ? 'доступно' : 'перезагрузка';
+            
+            if (energy <= 0 && !cooldownTimer) {
+                startEnergyCooldown();
+            }
         }
         
         // Функция для форматирования времени (мм:сс)
@@ -485,124 +688,246 @@
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         
-        // Функция для открытия модального окна энергии
-        function openEnergyModal() {
-            bodyElement.classList.add('blurred');
-            energyModalOverlayElement.classList.add('active');
+        // Функция для запуска таймера перезарядки энергии
+        function startEnergyCooldown() {
+            let timeLeft = energyCooldown;
+            
+            if (cooldownTimer) {
+                clearInterval(cooldownTimer);
+            }
+            
+            cooldownTimer = setInterval(() => {
+                timeLeft -= 1;
+                energyValueElement.textContent = formatTime(timeLeft);
+                
+                if (timeLeft <= 0) {
+                    clearInterval(cooldownTimer);
+                    cooldownTimer = null;
+                    energy = 500;
+                    updateEnergyDisplay();
+                }
+            }, 1000);
+        }
+        
+        // Универсальная функция для показа модального окна
+        function showModal(imageSrc, title, description, buttonText, buttonCallback) {
+            // Устанавливаем контент
+            modalGifElement.innerHTML = `<img src="${imageSrc}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            modalTitleElement.textContent = title;
+            modalDescriptionElement.textContent = description;
+            modalButtonElement.textContent = buttonText;
+            
+            // Удаляем предыдущие обработчики и добавляем новый
+            modalButtonElement.onclick = buttonCallback;
+            
+            // Показываем модальное окно
+            blurBackgroundElement.classList.add('active');
+            modalOverlayElement.classList.add('active');
             
             setTimeout(() => {
-                energyModalElement.classList.add('active');
+                modalElement.classList.add('active');
             }, 10);
             
+            // Блокируем прокрутку фона
             document.body.style.overflow = 'hidden';
+            
             vibrate();
         }
         
-        // Функция для открытия модального окна промокода
-        function openPromoModal() {
-            bodyElement.classList.add('blurred');
-            promoModalOverlayElement.classList.add('active');
+        // Универсальная функция для показа алерта
+        function showAlert(title, description, buttonText, buttonCallback) {
+            // Устанавливаем контент
+            alertTitleElement.textContent = title;
+            alertDescriptionElement.textContent = description;
+            alertButtonElement.textContent = buttonText;
             
-            setTimeout(() => {
-                promoModalElement.classList.add('active');
-            }, 10);
+            // Удаляем предыдущие обработчики и добавляем новый
+            alertButtonElement.onclick = buttonCallback;
             
+            // Показываем алерт
+            blurBackgroundElement.classList.add('active');
+            alertOverlayElement.classList.add('active');
+            
+            // Блокируем прокрутку фона
             document.body.style.overflow = 'hidden';
+            
             vibrate();
         }
         
         // Функция для закрытия модального окна
         function closeModal() {
-            energyModalElement.classList.remove('active');
-            promoModalElement.classList.remove('active');
-            bodyElement.classList.remove('blurred');
+            // Сразу убираем размытие
+            blurBackgroundElement.classList.remove('active');
+            
+            // Анимируем закрытие модалки
+            modalElement.classList.remove('active');
+            modalElement.classList.add('closing');
             
             setTimeout(() => {
-                energyModalOverlayElement.classList.remove('active');
-                promoModalOverlayElement.classList.remove('active');
-            }, 200);
+                modalOverlayElement.classList.remove('active');
+                modalElement.classList.remove('closing');
+            }, 300);
             
+            // Разблокируем прокрутку фона
             document.body.style.overflow = '';
+        }
+        
+        // Функция для закрытия алерта
+        function closeAlert() {
+            // Сразу убираем размытие
+            blurBackgroundElement.classList.remove('active');
+            alertOverlayElement.classList.remove('active');
+            
+            // Разблокируем прокрутку фона
+            document.body.style.overflow = '';
+        }
+        
+        // Обработчик покупки энергии
+        function handleEnergyPurchase() {
+            // Восстанавливаем энергию
+            energy = 500;
+            updateEnergyDisplay();
+            
+            // Останавливаем таймер, если он был активен
+            if (cooldownTimer) {
+                clearInterval(cooldownTimer);
+                cooldownTimer = null;
+            }
+            
+            // Закрываем модальное окно
+            closeModal();
+            
+            // Вибрация при покупке
+            vibrate();
+        }
+        
+        // Обработчик для талисманов
+        function handleTalismanAlert() {
+            showAlert(
+                'У тебя пока нет талисманов', 
+                'Их можно выиграть в розыгрышах, или приобрести в магазине', 
+                'Понятно', 
+                closeAlert
+            );
+        }
+        
+        // Обработчик для заданий
+        function handleTasksAlert() {
+            showAlert(
+                'В разработке', 
+                'Задания будут доступны в следующей версии. Наверно.', 
+                'Понятно', 
+                closeAlert
+            );
+        }
+        
+        // Обработчик для магазина
+        function handleShopAlert() {
+            showAlert(
+                'Магазин скоро откроется', 
+                'Следите за обновлениями в нашем канале', 
+                'Хорошо', 
+                closeAlert
+            );
+        }
+        
+        // Обработчик для модификаторов
+        function handleModifiersAlert() {
+            showAlert(
+                'Модификаторы', 
+                'Эта функция появится в будущих обновлениях', 
+                'Жду с нетерпением', 
+                closeAlert
+            );
         }
         
         // Функция для установки цвета кнопки
         function setButtonColor() {
-            const accentColor = tg && tg.themeParams.button_color ? tg.themeParams.button_color : '#40a7e3';
-            
-            buyButtonElement.style.backgroundColor = accentColor;
-            applyPromoButtonElement.style.backgroundColor = accentColor;
-        }
-        
-        // Функция для адаптации под полноэкранный режим
-        function adaptToFullscreen() {
-            if (tg && tg.isExpanded) {
-                bodyElement.classList.add('fullscreen');
+            if (tg && tg.themeParams.button_color) {
+                modalButtonElement.style.backgroundColor = tg.themeParams.button_color;
+                alertButtonElement.style.backgroundColor = tg.themeParams.button_color;
+            } else {
+                // Цвет по умолчанию, если не удалось определить акцентный цвет
+                modalButtonElement.style.backgroundColor = '#40a7e3';
+                alertButtonElement.style.backgroundColor = '#40a7e3';
             }
         }
         
-        // Обработчики событий
-        energyModalOverlayElement.addEventListener('click', (e) => {
-            if (e.target === energyModalOverlayElement) closeModal();
-        });
-        
-        promoModalOverlayElement.addEventListener('click', (e) => {
-            if (e.target === promoModalOverlayElement) closeModal();
-        });
-        
-        buyButtonElement.addEventListener('click', () => {
-            if (crystals >= 10) {
-                crystals -= 10;
-                energy = 500;
-                updateEnergyDisplay();
+        // Обработчик клика по оверлею для закрытия модального окна
+        modalOverlayElement.addEventListener('click', (e) => {
+            if (e.target === modalOverlayElement) {
                 closeModal();
+            }
+        });
+        
+        // Обработчик клика по оверлею для закрытия алерта
+        alertOverlayElement.addEventListener('click', (e) => {
+            if (e.target === alertOverlayElement) {
+                closeAlert();
+            }
+        });
+        
+        // Обработчик клика по энергии
+        energyBoxElement.addEventListener('click', () => {
+            // Открываем модалку только если нет энергии
+            if (energy <= 0) {
+                showModal(
+                    'https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp',
+                    'Хочешь больше энергии?',
+                    'Энергию можно восстановить за кристаллы',
+                    'Купить за 💎15',
+                    handleEnergyPurchase
+                );
+            } else {
                 vibrate();
             }
         });
         
-        applyPromoButtonElement.addEventListener('click', () => {
-            const promoCode = promoInputElement.value.trim();
-            if (promoCode) {
-                // Здесь логика проверки промокода
-                crystals += 50; // Награда за промокод
-                closeModal();
-                vibrate();
-                promoInputElement.value = '';
-            }
-        });
-        
-        energyBoxElement.addEventListener('click', openEnergyModal);
+        // Обработчик клика по гифке
         gifContainerElement.addEventListener('click', handleGifClick);
         
+        // Обработчик клика по кнопке талисмана
+        talismanButtonElement.addEventListener('click', handleTalismanAlert);
+        
+        // Обработчик клика по блоку заданий
+        tasksBoxElement.addEventListener('click', handleTasksAlert);
+        
+        // Обработчик клика по магазину
+        shopBoxElement.addEventListener('click', handleShopAlert);
+        
+        // Обработчик клика по модификаторам
+        modifiersBoxElement.addEventListener('click', handleModifiersAlert);
+        
+        // Обработчик клика на всю страницу (кроме гифки)
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('#gif-container') && !e.target.closest('.modal')) {
+            if (!e.target.closest('#gif-container') && !e.target.closest('.modal') && !e.target.closest('.alert')) {
                 vibrate();
             }
         });
         
-        // Инициализация приложения
         if (tg) {
+            // Инициализация приложения
             tg.expand();
             tg.enableClosingConfirmation();
-            adaptToFullscreen();
             
+            // Получение данных пользователя
             const user = tg.initDataUnsafe?.user;
             
+            // Обновление интерфейса с данными пользователя
             if (user) {
-                const avatarElement = document.getElementById('user-avatar');
-                const avatarPlaceholder = document.querySelector('.avatar-placeholder');
-                
                 if (user.first_name) {
                     usernameElement.textContent = user.first_name;
-                } else if (user.username) {
-                    usernameElement.textContent = user.username;
                 }
                 
                 if (user.username) {
-                    userTagElement.textContent = '@' + user.username;
+                    userTagElement.textContent = `@${user.username}`;
                 } else {
-                    userTagElement.textContent = 'игрок';
+                    userTagElement.style.display = 'none';
                 }
                 
+                // Загрузка аватарки, если доступна
+                const avatarElement = document.getElementById('user-avatar');
+                const avatarPlaceholder = document.querySelector('.avatar-placeholder');
                 if (user.photo_url) {
                     avatarElement.src = user.photo_url;
                     avatarElement.style.display = 'block';
@@ -610,15 +935,36 @@
                 }
             }
             
+            // Устанавливаем цвет кнопки в соответствии с акцентным цветом Telegram
             setButtonColor();
+            
+            console.log('Telegram WebApp initialized:', tg);
+            console.log('User data:', user);
         } else {
-            usernameElement.textContent = 'Пользователь';
+            console.log('Not in Telegram environment - using mock data');
+            // Заглушка для тестирования вне Telegram
+            usernameElement.textContent = 'Тестовый';
             userTagElement.textContent = '@testuser';
+            
+            // Устанавливаем цвет кнопки по умолчанию
             setButtonColor();
         }
-        
-        // Инициализация значений
-        updateEnergyDisplay();
+
+        // Запрет масштабирования и выделения текста
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('gesturestart', function(event) {
+            event.preventDefault();
+        });
+
+        // Запрет контекстного меню (долгое нажатие)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html>
