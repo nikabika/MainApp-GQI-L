@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Trends</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -22,69 +24,90 @@
         html, body {
             height: 100%;
             overflow: hidden;
+            background-color: #000000;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--tg-theme-bg-color, #0f0f0f);
-            color: var(--tg-theme-text-color, #ffffff);
+            background-color: #000000;
+            color: #ffffff;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            height: -webkit-fill-available; /* Для мобильных браузеров */
+            height: -webkit-fill-available;
         }
         
+        /* Контейнер с отступом под верхнюю панель Telegram */
         .container {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 0;
             position: relative;
+            padding-top: 16px; /* Отступ под верхний бар Telegram */
         }
         
         .header {
-            height: 54px;
+            height: 44px;
             display: flex;
             align-items: center;
             padding: 0 16px;
-            background-color: var(--tg-theme-bg-color, #0f0f0f);
+            background-color: #000000;
             position: sticky;
             top: 0;
             z-index: 100;
+            margin-top: 16px; /* Дополнительный отступ для Telegram UI */
+        }
+        
+        .app-title {
+            font-weight: 800;
+            font-size: 22px;
+            margin-left: 12px;
+            color: #ffffff;
         }
         
         .user-avatar {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            border: 2px solid var(--tg-theme-button-color, #2f8bc3);
+            border: 2px solid #2f8bc3;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: var(--tg-theme-secondary-bg-color, #1a1a1a);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background-color: #1a1a1a;
+            color: #ffffff;
+            overflow: hidden;
         }
         
-        .user-avatar i {
-            font-size: 18px;
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
         }
         
         .content {
             padding: 16px;
             text-align: center;
-            min-height: calc(100vh - 124px);
+            min-height: calc(100vh - 140px);
         }
         
         .footer {
             height: 60px;
-            background-color: var(--tg-theme-secondary-bg-color, #121212);
+            background-color: #000000;
             display: flex;
             justify-content: space-around;
             align-items: center;
             padding: 0 10px;
             position: relative;
+            border-top: 1px solid #1a1a1a;
         }
         
         .nav-item {
@@ -94,52 +117,72 @@
             justify-content: center;
             flex: 1;
             padding: 5px 0;
-            color: var(--tg-theme-text-color, #ffffff);
+            color: #ffffff;
             text-decoration: none;
         }
         
         .nav-icon {
-            font-size: 20px;
-            margin-bottom: 3px;
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            margin-bottom: 4px;
             opacity: 0.9;
         }
         
         .nav-text {
             font-size: 11px;
             opacity: 0.7;
+            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
         
         .create-button {
-            width: 50px;
-            height: 50px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
-            background-color: var(--tg-theme-button-color, #2f8bc3);
+            background-color: #2f8bc3;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--tg-theme-button-text-color, #ffffff);
-            margin-top: -25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            color: white;
+            margin-top: -27px;
+            box-shadow: 0 4px 15px rgba(47, 139, 195, 0.4);
             position: relative;
             z-index: 101;
+            transition: transform 0.2s;
         }
         
-        .create-button i {
-            font-size: 22px;
+        .create-button:active {
+            transform: scale(0.95);
+        }
+        
+        .create-button-icon {
+            width: 24px;
+            height: 24px;
+            stroke: white;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
         }
         
         h1 {
-            margin-top: 20px;
+            margin-top: 10px;
             margin-bottom: 20px;
             font-size: 24px;
-            color: var(--tg-theme-text-color, #ffffff);
+            color: #ffffff;
         }
         
         p {
             opacity: 0.8;
             line-height: 1.5;
             margin-bottom: 15px;
-            color: var(--tg-theme-hint-color, #cccccc);
+            color: #aaaaaa;
         }
         
         /* Анимации */
@@ -165,13 +208,26 @@
             width: 100%;
             max-width: 300px;
             height: 180px;
-            background: var(--tg-theme-secondary-bg-color, #1a1a1a);
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--tg-theme-button-color, #2f8bc3);
+            color: #2f8bc3;
             font-size: 40px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .video-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(47, 139, 195, 0.1) 0%, transparent 100%);
+            pointer-events: none;
         }
         
         /* Адаптация под разные устройства */
@@ -180,19 +236,13 @@
                 font-size: 10px;
             }
             
-            .nav-icon {
-                font-size: 18px;
+            .app-title {
+                font-size: 20px;
             }
             
             .create-button {
-                width: 45px;
-                height: 45px;
-            }
-        }
-        
-        @media (min-height: 700px) {
-            .content {
-                padding-top: 30px;
+                width: 50px;
+                height: 50px;
             }
         }
         
@@ -206,54 +256,99 @@
         }
         
         .container::-webkit-scrollbar-thumb {
-            background: var(--tg-theme-button-color, #2f8bc3);
+            background: #2f8bc3;
             border-radius: 2px;
+        }
+        
+        /* Состояния активной навигации */
+        .nav-item.active .nav-icon {
+            opacity: 1;
+            color: #2f8bc3;
+        }
+        
+        .nav-item.active .nav-text {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="user-avatar" id="user-avatar">
-            <i class="fas fa-user"></i>
+        <div class="header-content">
+            <div class="user-avatar" id="user-avatar">
+                <i data-feather="user"></i>
+            </div>
+            <div class="app-title" id="app-title">Trends</div>
         </div>
     </div>
     
     <div class="container">
         <div class="content">
-            <h1 id="app-title">Trends</h1>
+            <h1 id="main-title">Trends</h1>
             <p id="welcome-text">Добро пожаловать в Trends! Создавайте короткие видео и делитесь ими в Stories.</p>
             
             <div class="demo-content">
                 <div class="video-card">
-                    <i class="fas fa-play-circle"></i>
+                    <i data-feather="play" class="video-icon"></i>
                 </div>
                 <div class="video-card">
-                    <i class="fas fa-play-circle"></i>
+                    <i data-feather="play" class="video-icon"></i>
                 </div>
                 <div class="video-card">
-                    <i class="fas fa-play-circle"></i>
+                    <i data-feather="play" class="video-icon"></i>
                 </div>
             </div>
         </div>
     </div>
     
     <div class="footer">
-        <a href="#" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-compass"></i></div>
-            <div class="nav-text" id="mainstream-text">Мейнстрим</div>
+        <a href="#" class="nav-item active">
+            <svg class="nav-icon" id="compass-icon">
+                <use xlink:href="#compass-icon-src" />
+            </svg>
+            <div class="nav-text" id="trends-text">Trends</div>
         </a>
         
         <div class="nav-item">
             <div class="create-button">
-                <i class="fas fa-plus"></i>
+                <svg class="create-button-icon">
+                    <use xlink:href="#plus-icon-src" />
+                </svg>
             </div>
         </div>
         
         <a href="#" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-user"></i></div>
-            <div class="nav-text" id="profile-text">Профиль</div>
+            <svg class="nav-icon" id="user-icon">
+                <use xlink:href="#user-icon-src" />
+            </svg>
+            <div class="nav-text" id="profile-text">Profile</div>
         </a>
     </div>
+
+    <!-- SVG иконки для Feather Icons -->
+    <svg style="display: none;">
+        <!-- Compass Icon -->
+        <symbol id="compass-icon-src" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+        </symbol>
+        
+        <!-- Plus Icon -->
+        <symbol id="plus-icon-src" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </symbol>
+        
+        <!-- User Icon -->
+        <symbol id="user-icon-src" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </symbol>
+        
+        <!-- Play Icon -->
+        <symbol id="play-icon-src" viewBox="0 0 24 24">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </symbol>
+    </svg>
 
     <script>
         // Инициализация Telegram WebApp
@@ -287,18 +382,13 @@
                 // Пытаемся использовать фото пользователя
                 if (user.photo_url) {
                     document.getElementById('user-avatar').innerHTML = 
-                        `<img src="${user.photo_url}" style="width:100%; height:100%; border-radius:50%;">`;
-                } else {
-                    // Или используем инициалы
-                    const firstName = user.first_name || '';
-                    const lastName = user.last_name || '';
-                    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'U';
-                    document.getElementById('user-avatar').innerHTML = initials;
+                        `<img src="${user.photo_url}" alt="User Avatar">`;
                 }
             }
             
             // Устанавливаем язык
-            setLanguage(tg.initDataUnsafe.user?.language_code || navigator.language);
+            const userLanguage = tg.initDataUnsafe.user?.language_code || navigator.language;
+            setLanguage(userLanguage);
         }
         
         // Определение языка и установка соответствующих текстов
@@ -306,14 +396,14 @@
             const lang = langCode ? langCode.split('-')[0] : 'en';
             
             if (lang === 'ru') {
-                document.getElementById('mainstream-text').textContent = 'Мейнстрим';
+                document.getElementById('trends-text').textContent = 'Тренды';
                 document.getElementById('profile-text').textContent = 'Профиль';
-                document.getElementById('app-title').textContent = 'Trends';
+                document.getElementById('main-title').textContent = 'Trends';
                 document.getElementById('welcome-text').textContent = 'Добро пожаловать в Trends! Создавайте короткие видео и делитесь ими в Stories.';
             } else {
-                document.getElementById('mainstream-text').textContent = 'Trending';
+                document.getElementById('trends-text').textContent = 'Trends';
                 document.getElementById('profile-text').textContent = 'Profile';
-                document.getElementById('app-title').textContent = 'Trends';
+                document.getElementById('main-title').textContent = 'Trends';
                 document.getElementById('welcome-text').textContent = 'Welcome to Trends! Create short videos and share them in Stories.';
             }
         }
@@ -342,12 +432,11 @@
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            setupTelegramData();
+            // Заменяем иконки feather
+            feather.replace();
             
-            // Изменяем цвет заголовка, если доступен акцентный цвет
-            if (tg.themeParams.button_color) {
-                document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color);
-            }
+            // Настройка данных Telegram
+            setupTelegramData();
             
             // Добавляем обработчики для навигации
             document.querySelectorAll('.nav-item').forEach(item => {
@@ -355,10 +444,18 @@
                     e.preventDefault();
                     tg.HapticFeedback.impactOccurred('light');
                     
-                    if (this.querySelector('.nav-icon i').classList.contains('fa-compass')) {
+                    // Убираем активный класс у всех элементов
+                    document.querySelectorAll('.nav-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    
+                    // Добавляем активный класс к текущему элементу
+                    this.classList.add('active');
+                    
+                    if (this.querySelector('.nav-icon').id === 'compass-icon') {
                         tg.showAlert(tg.initDataUnsafe.user?.language_code === 'ru' ? 
-                            'Переход в Мейнстрим' : 'Going to Trending');
-                    } else if (this.querySelector('.nav-icon i').classList.contains('fa-user')) {
+                            'Переход в Тренды' : 'Going to Trends');
+                    } else if (this.querySelector('.nav-icon').id === 'user-icon') {
                         tg.showAlert(tg.initDataUnsafe.user?.language_code === 'ru' ? 
                             'Переход в Профиль' : 'Going to Profile');
                     }
