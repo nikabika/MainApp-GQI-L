@@ -6,6 +6,8 @@
     <title>Trends</title>
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <!-- Telegram Web App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -44,7 +46,7 @@
             -webkit-overflow-scrolling: touch;
             padding: 0;
             position: relative;
-            padding-top: 16px;
+            padding-top: 65px; /* Отступ для полноэкранного режима */
         }
         
         .header {
@@ -75,7 +77,7 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            border: 2px solid #2f8bc3;
+            border: 2px solid var(--accent-color, #2f8bc3);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -92,14 +94,14 @@
         
         .gif-badge {
             position: absolute;
-            bottom: -19px; /* Сдвиг на 19px вниз */
-            right: -9px;   /* Сдвиг на 9px вправо */
+            bottom: -19px;
+            right: -14px; /* Правее на 5px (было -9px, стало -14px) */
             width: 36px;
             height: 36px;
             border-radius: 50%;
             overflow: hidden;
-            border: 2px solid #000000;
             z-index: 101;
+            display: none; /* Скрыто по умолчанию */
         }
         
         .gif-badge img {
@@ -165,7 +167,7 @@
             width: 64px;
             height: 64px;
             border-radius: 50%;
-            background-color: #2f8bc3;
+            background-color: var(--accent-color, #2f8bc3);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -206,13 +208,13 @@
         
         /* Активное состояние компаса */
         .nav-item.active.compass-item .nav-icon {
-            color: #2f8bc3;
+            color: var(--accent-color, #2f8bc3);
             opacity: 1;
         }
         
         /* Активное состояние профиля */
         .nav-item.active.profile-item .nav-avatar {
-            border-color: #2f8bc3;
+            border-color: var(--accent-color, #2f8bc3);
         }
         
         h1 {
@@ -271,7 +273,7 @@
         }
         
         .container::-webkit-scrollbar-thumb {
-            background: #2f8bc3;
+            background: var(--accent-color, #2f8bc3);
             border-radius: 2px;
         }
         
@@ -299,7 +301,7 @@
     <div class="container">
         <div class="content">
             <h1 id="main-title">Trends</h1>
-            <p id="welcome-text">Добро пожаловать в Trends! Создавайте короткие видео и делижитесь ими в Stories.</p>
+            <p id="welcome-text">Добро пожаловать в Trends! Создавайте короткие видео и делитесь ими в Stories.</p>
         </div>
     </div>
     
@@ -316,17 +318,76 @@
         </div>
         
         <a href="#" class="nav-item profile-item">
-            <div class="nav-avatar">
-                <img src="https://via.placeholder.com/24/1a1a1a/ffffff?text=T" alt="Profile">
+            <div class="nav-avatar" id="nav-avatar">
+                <i class="ti ti-user" style="font-size: 12px; color: #fff;"></i>
             </div>
             <div class="nav-text">Profile</div>
         </a>
     </div>
 
     <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        
+        // Расширяем на весь экран
+        tg.expand();
+        
+        // Устанавливаем акцентный цвет из Telegram
+        function setupAccentColor() {
+            const accentColor = tg.themeParams.accent_color ? `#${tg.themeParams.accent_color.toString(16).padStart(6, '0')}` : '#2f8bc3';
+            document.documentElement.style.setProperty('--accent-color', accentColor);
+        }
+        
+        // Установка данных пользователя
+        function setupUserData() {
+            if (tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                
+                // Устанавливаем аватар пользователя
+                if (user.photo_url) {
+                    document.getElementById('user-avatar').innerHTML = 
+                        `<img src="${user.photo_url}" alt="User Avatar">`;
+                    
+                    // Также устанавливаем аватар в навигации
+                    document.getElementById('nav-avatar').innerHTML = 
+                        `<img src="${user.photo_url}" alt="Profile">`;
+                }
+                
+                // Проверяем username и показываем гифку только для @temkazavr
+                if (user.username && user.username.toLowerCase() === 'temkazavr') {
+                    document.getElementById('gif-badge').style.display = 'block';
+                }
+                
+                // Устанавливаем язык
+                const userLanguage = user.language_code || navigator.language;
+                setLanguage(userLanguage);
+            }
+        }
+        
+        // Определение языка и установка соответствующих текстов
+        function setLanguage(langCode) {
+            const lang = langCode ? langCode.split('-')[0] : 'en';
+            
+            if (lang === 'ru') {
+                document.querySelector('.nav-text').textContent = 'Тренды';
+                document.querySelectorAll('.nav-text')[1].textContent = 'Профиль';
+                document.getElementById('main-title').textContent = 'Trends';
+                document.getElementById('welcome-text').textContent = 'Добро пожаловать в Trends! Создавайте короткие видео и делитесь ими в Stories.';
+            } else {
+                document.querySelector('.nav-text').textContent = 'Trends';
+                document.querySelectorAll('.nav-text')[1].textContent = 'Profile';
+                document.getElementById('main-title').textContent = 'Trends';
+                document.getElementById('welcome-text').textContent = 'Welcome to Trends! Create short videos and share them in Stories.';
+            }
+        }
+        
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            // Просто показываем гифку для демонстрации
-            document.getElementById('gif-badge').style.display = 'block';
+            // Настройка акцентного цвета
+            setupAccentColor();
+            
+            // Настройка данных пользователя
+            setupUserData();
             
             // Базовая навигация
             const navItems = document.querySelectorAll('.nav-item');
@@ -334,6 +395,7 @@
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
+                    tg.HapticFeedback.impactOccurred('light');
                     
                     // Убираем активный класс у всех элементов
                     navItems.forEach(el => {
