@@ -3,967 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Trends</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
-
-        :root {
-            --bg-color: #121212;
-            --card-bg: #2C2C2E;
-            --text-primary: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --accent-color: #40a7e3;
-            --blur-bg: rgba(0, 0, 0, 0.6);
-        }
-
+        
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
             background-color: var(--bg-color);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            touch-action: manipulation;
-            padding: 25px 20px;
-            position: relative;
-        }
-
-        .blur-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--blur-bg);
-            backdrop-filter: grayscale(100%) blur(5px);
-            z-index: 99;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .blur-background.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 30px;
-            z-index: 2;
-        }
-
-        .avatar-container {
-            width: 56px;
-            height: 56px;
-            border-radius: 15px;
-            background-color: #8E8E93;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        .avatar-placeholder {
-            width: 30px;
-            height: 30px;
-            background-color: #C7C7CC;
-            border-radius: 50%;
-        }
-
-        .user-avatar {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-
-        .user-info {
-            flex: 1;
-            height: 60px;
-            background-color: var(--card-bg);
-            border-radius: 17px;
-            margin-left: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 0 20px;
-            position: relative;
-        }
-
-        .username {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
-            line-height: 1.2;
-        }
-
-        .user-tag {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.2;
-        }
-
-        .icon {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            opacity: 0.4;
-            width: 16px;
-            height: 16px;
-        }
-
-        .balance {
-            font-size: 46px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 25px;
-            z-index: 2;
-        }
-
-        .gif-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 35px;
-        }
-
-        .gif-container {
-            width: 240px;
-            height: 240px;
-            border-radius: 24px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            z-index: 2;
-            position: relative;
-        }
-
-        .gif-container:active {
-            transform: scale(0.97);
-        }
-
-        .gif-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-        }
-
-        .talisman-button {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 72px;
-            height: 72px;
-            background-color: var(--bg-color);
-            border: 1.5px dashed rgba(255, 255, 255, 0.4);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 3;
-            transition: transform 0.1s ease;
-        }
-
-        .talisman-button:active {
-            transform: scale(0.9);
-        }
-
-        .plus-icon {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 32px;
-            font-weight: bold;
-            line-height: 1;
-        }
-
-        .content-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 400px;
-            margin-top: auto;
-        }
-
-        .stats-container {
-            display: flex;
-            gap: 15px;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .stat-box {
-            flex: 1;
-            background-color: var(--card-bg);
-            border-radius: 17px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            height: 70px;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .stat-content {
-            display: flex;
-            align-items: center;
-            flex: 1;
-        }
-
-        .stat-emoji {
-            font-size: 28px;
-            margin-right: 12px;
-        }
-
-        .stat-text {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .stat-description {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .second-row {
-            display: flex;
-            gap: 15px;
-            width: 100%;
-        }
-
-        .modifiers-box {
-            flex: 1;
-            background-color: var(--card-bg);
-            border-radius: 17px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            height: 70px;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .tasks-box {
-            width: 70px;
-            background-color: var(--card-bg);
-            border-radius: 17px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 70px;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-
-        .tasks-box:active {
-            transform: scale(0.97);
-        }
-
-        .tasks-emoji {
-            font-size: 32px;
-        }
-
-        /* Модальное окно */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal {
-            position: relative;
-            width: 100%;
-            background-color: var(--card-bg);
-            border-top-left-radius: 17px;
-            border-top-right-radius: 17px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transform: translateY(100%);
-            max-width: 500px;
-        }
-
-        .modal.active {
-            animation: modalSlideIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
-        }
-
-        .modal.closing {
-            animation: modalSlideOut 0.3s ease forwards;
-        }
-
-        @keyframes modalSlideIn {
-            0% {
-                transform: translateY(100%);
-            }
-            70% {
-                transform: translateY(-5%);
-            }
-            85% {
-                transform: translateY(1%);
-            }
-            100% {
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes modalSlideOut {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(100%);
-            }
-        }
-
-        .modal-handle {
-            width: 40px;
-            height: 5px;
-            background-color: rgba(255, 255, 255, 0.4);
-            border-radius: 100px;
-            margin-bottom: 15px;
-        }
-
-        .modal-gif {
-            width: 120px;
-            height: 120px;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .modal-description {
-            font-size: 14px;
-            text-align: center;
-            color: var(--text-secondary);
-            margin-bottom: 25px;
-        }
-
-        .modal-button {
-            width: 85%;
-            padding: 16px;
-            border-radius: 15px;
-            font-weight: 600;
-            font-size: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.1s ease, opacity 0.2s ease;
-            border: none;
-            color: white;
-        }
-
-        .modal-button:active {
-            transform: scale(0.97);
-        }
-
-        /* Алерт */
-        .alert-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .alert-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .alert {
-            background-color: var(--card-bg);
-            border-radius: 17px;
-            padding: 25px;
-            width: 85%;
-            max-width: 320px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transform: scale(0.9);
-            opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .alert-overlay.active .alert {
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        .alert-title {
-            font-size: 18px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .alert-description {
-            font-size: 14px;
-            text-align: center;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-
-        .alert-button {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            border: none;
-            background-color: var(--accent-color);
-            color: white;
-        }
-
-        .alert-button:active {
-            transform: scale(0.97);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
         
-        @media (max-width: 400px) {
-            .stats-container, .second-row {
-                flex-direction: column;
+        :root {
+            --bg-color: #ffffff;
+            --secondary-bg: #f5f5f5;
+            --text-color: #000000;
+            --accent-color: #40a7e3;
+            --footer-bg: #f0f0f0;
+        }
+        
+        body.dark-theme {
+            --bg-color: #0f0f0f;
+            --secondary-bg: #1a1a1a;
+            --text-color: #ffffff;
+            --accent-color: #2f8bc3;
+            --footer-bg: #121212;
+        }
+        
+        .container {
+            max-width: 100%;
+            min-height: 100vh;
+            padding: 50px 0 70px 0;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            background-color: var(--bg-color);
+            z-index: 100;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+        }
+        
+        .user-avatar i {
+            font-size: 18px;
+        }
+        
+        .content {
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: var(--footer-bg);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 5px 0;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+        
+        .nav-text {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .create-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .create-button i {
+            font-size: 22px;
+        }
+        
+        h1 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        p {
+            opacity: 0.8;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .container {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        /* Медиа-запросы для адаптивности */
+        @media (max-width: 320px) {
+            .nav-text {
+                font-size: 10px;
             }
             
-            .stat-box, .modifiers-box {
-                width: 100%;
+            .nav-icon {
+                font-size: 18px;
             }
             
-            .tasks-box {
-                width: 100%;
-                height: 60px;
-            }
-            
-            .gif-container {
-                width: 200px;
-                height: 200px;
+            .create-button {
+                width: 45px;
+                height: 45px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="blur-background" id="blur-background"></div>
-
     <div class="header">
-        <div class="avatar-container">
-            <div class="avatar-placeholder"></div>
-            <img class="user-avatar" id="user-avatar" src="" alt="Аватар">
-        </div>
-        <div class="user-info">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M17 7l-10 10" />
-                <path d="M8 7l9 0l0 9" />
-            </svg>
-            <div class="username" id="username">Имя</div>
-            <div class="user-tag" id="user-tag">@username</div>
+        <div class="user-avatar">
+            <i class="fas fa-user"></i>
         </div>
     </div>
-
-    <div class="balance" id="balance">$0</div>
-
-    <div class="gif-wrapper">
-        <div class="gif-container" id="gif-container">
-            <img class="gif-image" src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
-        </div>
-        <div class="talisman-button" id="talisman-button">
-            <div class="plus-icon">+</div>
+    
+    <div class="container">
+        <div class="content">
+            <h1>Trends</h1>
+            <p>Добро пожаловать в Trends! Создавайте короткие видео и делитесь ими в Stories.</p>
+            <p>Это тестовая версия приложения. Скоро здесь появятся trending видео!</p>
         </div>
     </div>
-
-    <div class="content-container">
-        <div class="stats-container">
-            <div class="stat-box energy-box" id="energy-box">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M17 7l-10 10" />
-                    <path d="M8 7l9 0l0 9" />
-                </svg>
-                <div class="stat-content">
-                    <div class="stat-emoji">⚡️</div>
-                    <div class="stat-text">
-                        <div class="stat-value" id="energy-value">500</div>
-                        <div class="stat-description" id="energy-description">доступно</div>
-                    </div>
-                </div>
+    
+    <div class="footer">
+        <a href="#" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-compass"></i></div>
+            <div class="nav-text" id="mainstream-text">Мейнстрим</div>
+        </a>
+        
+        <div class="nav-item">
+            <div class="create-button">
+                <i class="fas fa-plus"></i>
             </div>
-            
-            <div class="stat-box" id="shop-box">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M17 7l-10 10" />
-                    <path d="M8 7l9 0l0 9" />
-                </svg>
-                <div class="stat-content">
-                    <div class="stat-emoji">🛒</div>
-                    <div class="stat-text">
-                        <div class="stat-value">Магазин</div>
-                        <div class="stat-description">открыть</div>
-                    </div>
-                </div>
-            </div>
+            <div class="nav-text" id="create-text">Создать</div>
         </div>
-
-        <div class="second-row">
-            <div class="modifiers-box" id="modifiers-box">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M17 7l-10 10" />
-                    <path d="M8 7l9 0l0 9" />
-                </svg>
-                <div class="stat-content">
-                    <div class="stat-emoji">💪</div>
-                    <div class="stat-text">
-                        <div class="stat-value">Модификаторы</div>
-                        <div class="stat-description">открыть</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tasks-box" id="tasks-box">
-                <div class="tasks-emoji">🎯</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Универсальное модальное окно -->
-    <div class="modal-overlay" id="modal-overlay">
-        <div class="modal" id="modal">
-            <div class="modal-handle"></div>
-            <div class="modal-gif" id="modal-gif">
-                <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp" alt="Энергия" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <div class="modal-title" id="modal-title">Хочешь больше энергии?</div>
-            <div class="modal-description" id="modal-description">Энергию можно восстановить за кристаллы</div>
-            <button class="modal-button" id="modal-button">Купить за 💎15</button>
-        </div>
-    </div>
-
-    <!-- Универсальный алерт -->
-    <div class="alert-overlay" id="alert-overlay">
-        <div class="alert" id="alert">
-            <div class="alert-title" id="alert-title">У тебя пока нет талисманов</div>
-            <div class="alert-description" id="alert-description">Их можно выиграть в розыгрышах, или приобрести в магазине</div>
-            <button class="alert-button" id="alert-button">Понятно</button>
-        </div>
+        
+        <a href="#" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-user"></i></div>
+            <div class="nav-text" id="profile-text">Профиль</div>
+        </a>
     </div>
 
     <script>
-        // Инициализация Telegram WebApp
-        let tg = window.Telegram?.WebApp;
-        
-        // Переменные для отслеживания баланса, энергии и КД
-        let balance = 0;
-        let energy = 500;
-        let lastClickTime = 0;
-        let cooldownTimer = null;
-        const energyCooldown = 180; // 3 минуты в секундах
-        
-        // Элементы DOM
-        const balanceElement = document.getElementById('balance');
-        const energyValueElement = document.getElementById('energy-value');
-        const energyDescriptionElement = document.getElementById('energy-description');
-        const energyBoxElement = document.getElementById('energy-box');
-        const gifContainerElement = document.getElementById('gif-container');
-        const modalOverlayElement = document.getElementById('modal-overlay');
-        const modalElement = document.getElementById('modal');
-        const modalGifElement = document.getElementById('modal-gif');
-        const modalTitleElement = document.getElementById('modal-title');
-        const modalDescriptionElement = document.getElementById('modal-description');
-        const modalButtonElement = document.getElementById('modal-button');
-        const blurBackgroundElement = document.getElementById('blur-background');
-        const usernameElement = document.getElementById('username');
-        const userTagElement = document.getElementById('user-tag');
-        const alertOverlayElement = document.getElementById('alert-overlay');
-        const alertElement = document.getElementById('alert');
-        const alertTitleElement = document.getElementById('alert-title');
-        const alertDescriptionElement = document.getElementById('alert-description');
-        const alertButtonElement = document.getElementById('alert-button');
-        const tasksBoxElement = document.getElementById('tasks-box');
-        const talismanButtonElement = document.getElementById('talisman-button');
-        const shopBoxElement = document.getElementById('shop-box');
-        const modifiersBoxElement = document.getElementById('modifiers-box');
-        
-        // Функция для легкой вибрации
-        function vibrate() {
-            if (navigator.vibrate) {
-                navigator.vibrate(1);
-            } else if (window.Telegram?.WebApp?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-        
-        // Функция для обработки клика по гифке
-        function handleGifClick() {
-            // Проверка энергии
-            if (energy <= 0) {
-                showModal(
-                    'https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp',
-                    'Хочешь больше энергии?',
-                    'Энергию можно восстановить за кристаллы',
-                    'Купить за 💎15',
-                    handleEnergyPurchase
-                );
-                return;
-            }
+        // Определение темы Telegram
+        function detectTelegramTheme() {
+            // Проверяем, установлена ли тёмная тема
+            const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             
-            // Уменьшаем энергию
-            energy -= 1;
-            updateEnergyDisplay();
-            
-            // Увеличиваем баланс
-            balance += 1;
-            balanceElement.textContent = `$${balance}`;
-            
-            // Запускаем вибрацию
-            vibrate();
-        }
-        
-        // Функция для обновления отображения энергии
-        function updateEnergyDisplay() {
-            energyValueElement.textContent = energy > 0 ? energy : formatTime(energyCooldown);
-            energyDescriptionElement.textContent = energy > 0 ? 'доступно' : 'перезагрузка';
-            
-            if (energy <= 0 && !cooldownTimer) {
-                startEnergyCooldown();
-            }
-        }
-        
-        // Функция для форматирования времени (мм:сс)
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        
-        // Функция для запуска таймера перезарядки энергии
-        function startEnergyCooldown() {
-            let timeLeft = energyCooldown;
-            
-            if (cooldownTimer) {
-                clearInterval(cooldownTimer);
-            }
-            
-            cooldownTimer = setInterval(() => {
-                timeLeft -= 1;
-                energyValueElement.textContent = formatTime(timeLeft);
-                
-                if (timeLeft <= 0) {
-                    clearInterval(cooldownTimer);
-                    cooldownTimer = null;
-                    energy = 500;
-                    updateEnergyDisplay();
-                }
-            }, 1000);
-        }
-        
-        // Универсальная функция для показа модального окна
-        function showModal(imageSrc, title, description, buttonText, buttonCallback) {
-            // Устанавливаем контент
-            modalGifElement.innerHTML = `<img src="${imageSrc}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover;">`;
-            modalTitleElement.textContent = title;
-            modalDescriptionElement.textContent = description;
-            modalButtonElement.textContent = buttonText;
-            
-            // Удаляем предыдущие обработчики и добавляем новый
-            modalButtonElement.onclick = buttonCallback;
-            
-            // Показываем модальное окно
-            blurBackgroundElement.classList.add('active');
-            modalOverlayElement.classList.add('active');
-            
-            setTimeout(() => {
-                modalElement.classList.add('active');
-            }, 10);
-            
-            // Блокируем прокрутку фона
-            document.body.style.overflow = 'hidden';
-            
-            vibrate();
-        }
-        
-        // Универсальная функция для показа алерта
-        function showAlert(title, description, buttonText, buttonCallback) {
-            // Устанавливаем контент
-            alertTitleElement.textContent = title;
-            alertDescriptionElement.textContent = description;
-            alertButtonElement.textContent = buttonText;
-            
-            // Удаляем предыдущие обработчики и добавляем новый
-            alertButtonElement.onclick = buttonCallback;
-            
-            // Показываем алерт
-            blurBackgroundElement.classList.add('active');
-            alertOverlayElement.classList.add('active');
-            
-            // Блокируем прокрутку фона
-            document.body.style.overflow = 'hidden';
-            
-            vibrate();
-        }
-        
-        // Функция для закрытия модального окна
-        function closeModal() {
-            // Сразу убираем размытие
-            blurBackgroundElement.classList.remove('active');
-            
-            // Анимируем закрытие модалки
-            modalElement.classList.remove('active');
-            modalElement.classList.add('closing');
-            
-            setTimeout(() => {
-                modalOverlayElement.classList.remove('active');
-                modalElement.classList.remove('closing');
-            }, 300);
-            
-            // Разблокируем прокрутку фона
-            document.body.style.overflow = '';
-        }
-        
-        // Функция для закрытия алерта
-        function closeAlert() {
-            // Сразу убираем размытие
-            blurBackgroundElement.classList.remove('active');
-            alertOverlayElement.classList.remove('active');
-            
-            // Разблокируем прокрутку фона
-            document.body.style.overflow = '';
-        }
-        
-        // Обработчик покупки энергии
-        function handleEnergyPurchase() {
-            // Восстанавливаем энергию
-            energy = 500;
-            updateEnergyDisplay();
-            
-            // Останавливаем таймер, если он был активен
-            if (cooldownTimer) {
-                clearInterval(cooldownTimer);
-                cooldownTimer = null;
-            }
-            
-            // Закрываем модальное окно
-            closeModal();
-            
-            // Вибрация при покупке
-            vibrate();
-        }
-        
-        // Обработчик для талисманов
-        function handleTalismanAlert() {
-            showAlert(
-                'У тебя пока нет талисманов', 
-                'Их можно выиграть в розыгрышах, или приобрести в магазине', 
-                'Понятно', 
-                closeAlert
-            );
-        }
-        
-        // Обработчик для заданий
-        function handleTasksAlert() {
-            showAlert(
-                'В разработке', 
-                'Задания будут доступны в следующей версии. Наверно.', 
-                'Понятно', 
-                closeAlert
-            );
-        }
-        
-        // Обработчик для магазина
-        function handleShopAlert() {
-            showAlert(
-                'Магазин скоро откроется', 
-                'Следите за обновлениями в нашем канале', 
-                'Хорошо', 
-                closeAlert
-            );
-        }
-        
-        // Обработчик для модификаторов
-        function handleModifiersAlert() {
-            showAlert(
-                'Модификаторы', 
-                'Эта функция появится в будущих обновлениях', 
-                'Жду с нетерпением', 
-                closeAlert
-            );
-        }
-        
-        // Функция для установки цвета кнопки
-        function setButtonColor() {
-            if (tg && tg.themeParams.button_color) {
-                modalButtonElement.style.backgroundColor = tg.themeParams.button_color;
-                alertButtonElement.style.backgroundColor = tg.themeParams.button_color;
+            if (isDark) {
+                document.body.classList.add('dark-theme');
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f0f0f');
             } else {
-                // Цвет по умолчанию, если не удалось определить акцентный цвет
-                modalButtonElement.style.backgroundColor = '#40a7e3';
-                alertButtonElement.style.backgroundColor = '#40a7e3';
+                document.body.classList.remove('dark-theme');
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff');
             }
         }
         
-        // Обработчик клика по оверлею для закрытия модального окна
-        modalOverlayElement.addEventListener('click', (e) => {
-            if (e.target === modalOverlayElement) {
-                closeModal();
-            }
-        });
-        
-        // Обработчик клика по оверлею для закрытия алерта
-        alertOverlayElement.addEventListener('click', (e) => {
-            if (e.target === alertOverlayElement) {
-                closeAlert();
-            }
-        });
-        
-        // Обработчик клика по энергии
-        energyBoxElement.addEventListener('click', () => {
-            // Открываем модалку только если нет энергии
-            if (energy <= 0) {
-                showModal(
-                    'https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp',
-                    'Хочешь больше энергии?',
-                    'Энергию можно восстановить за кристаллы',
-                    'Купить за 💎15',
-                    handleEnergyPurchase
-                );
-            } else {
-                vibrate();
-            }
-        });
-        
-        // Обработчик клика по гифке
-        gifContainerElement.addEventListener('click', handleGifClick);
-        
-        // Обработчик клика по кнопке талисмана
-        talismanButtonElement.addEventListener('click', handleTalismanAlert);
-        
-        // Обработчик клика по блоку заданий
-        tasksBoxElement.addEventListener('click', handleTasksAlert);
-        
-        // Обработчик клика по магазину
-        shopBoxElement.addEventListener('click', handleShopAlert);
-        
-        // Обработчик клика по модификаторам
-        modifiersBoxElement.addEventListener('click', handleModifiersAlert);
-        
-        // Обработчик клика на всю страницу (кроме гифки)
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#gif-container') && !e.target.closest('.modal') && !e.target.closest('.alert')) {
-                vibrate();
-            }
-        });
-        
-        if (tg) {
-            // Инициализация приложения
-            tg.expand();
-            tg.enableClosingConfirmation();
-            
-            // Получение данных пользователя
-            const user = tg.initDataUnsafe?.user;
-            
-            // Обновление интерфейса с данными пользователя
-            if (user) {
-                if (user.first_name) {
-                    usernameElement.textContent = user.first_name;
-                }
-                
-                if (user.username) {
-                    userTagElement.textContent = `@${user.username}`;
-                } else {
-                    userTagElement.style.display = 'none';
-                }
-                
-                // Загрузка аватарки, если доступна
-                const avatarElement = document.getElementById('user-avatar');
-                const avatarPlaceholder = document.querySelector('.avatar-placeholder');
-                if (user.photo_url) {
-                    avatarElement.src = user.photo_url;
-                    avatarElement.style.display = 'block';
-                    avatarPlaceholder.style.display = 'none';
-                }
-            }
-            
-            // Устанавливаем цвет кнопки в соответствии с акцентным цветом Telegram
-            setButtonColor();
-            
-            console.log('Telegram WebApp initialized:', tg);
-            console.log('User data:', user);
-        } else {
-            console.log('Not in Telegram environment - using mock data');
-            // Заглушка для тестирования вне Telegram
-            usernameElement.textContent = 'Тестовый';
-            userTagElement.textContent = '@testuser';
-            
-            // Устанавливаем цвет кнопки по умолчанию
-            setButtonColor();
-        }
-
-        // Запрет масштабирования и выделения текста
+        // Запрет масштабирования
         document.addEventListener('touchstart', function(event) {
             if (event.touches.length > 1) {
                 event.preventDefault();
             }
         }, { passive: false });
-
-        document.addEventListener('gesturestart', function(event) {
-            event.preventDefault();
-        });
-
-        // Запрет контекстного меню (долгое нажатие)
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Определение языка и установка соответствующих текстов
+        function setLanguage() {
+            const userLang = navigator.language || navigator.userLanguage;
+            const lang = userLang.split('-')[0];
+            
+            if (lang === 'ru') {
+                document.getElementById('mainstream-text').textContent = 'Мейнстрим';
+                document.getElementById('create-text').textContent = 'Создать';
+                document.getElementById('profile-text').textContent = 'Профиль';
+            } else {
+                document.getElementById('mainstream-text').textContent = 'Mainstream';
+                document.getElementById('create-text').textContent = 'Create';
+                document.getElementById('profile-text').textContent = 'Profile';
+            }
+        }
+        
+        // Инициализация
+        window.addEventListener('load', function() {
+            detectTelegramTheme();
+            setLanguage();
+            
+            // Слушаем изменения темы
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                detectTelegramTheme();
+            });
         });
     </script>
 </body>
