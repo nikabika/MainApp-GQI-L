@@ -43,7 +43,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 85px 20px 15px;
+            padding: 20px 20px 15px;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
             z-index: 1;
         }
@@ -60,7 +60,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 70px 20px 20px;
+            padding: 20px 20px 20px;
             background-color: #121212;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
@@ -79,7 +79,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 70px 20px 20px;
+            padding: 20px 20px 20px;
             background-color: #121212;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
@@ -98,7 +98,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 70px 16px 16px;
+            padding: 20px 16px 16px;
             background-color: #121212;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
@@ -1484,7 +1484,12 @@
             purchasedTalismans: [],
             selectedTalisman: null,
             usedPromocodes: [],
-            shopLoaded: false
+            shopLoaded: false,
+            userData: {
+                firstName: "Имя",
+                username: "@username",
+                photoUrl: ""
+            }
         };
         
         // Данные товаров
@@ -1564,21 +1569,49 @@
         const animatedEmojis = document.querySelectorAll('.animated-emoji');
         const tasksAnimatedElement = document.querySelector('.tasks-animated');
         
+        // Таймер для обновления данных
+        let dataUpdateInterval = null;
+        let shopLoadingTimeout = null;
+        
         // Загрузка состояния из localStorage
         function loadState() {
-            const savedState = localStorage.getItem('appState');
-            if (savedState) {
-                const parsedState = JSON.parse(savedState);
-                appState = { ...appState, ...parsedState };
-                
-                // Обновляем интерфейс на основе загруженного состояния
-                updateUI();
+            try {
+                const savedState = localStorage.getItem('appState');
+                if (savedState) {
+                    const parsedState = JSON.parse(savedState);
+                    
+                    // Сохраняем только числовые значения и настройки, данные пользователя будем обновлять из Telegram
+                    appState.balance = parsedState.balance || 0;
+                    appState.crystals = parsedState.crystals || 0;
+                    appState.energy = parsedState.energy || 500;
+                    appState.energyLimit = parsedState.energyLimit || 500;
+                    appState.animatedIcons = parsedState.animatedIcons || false;
+                    appState.giveawayBanners = parsedState.giveawayBanners || true;
+                    appState.modifications = parsedState.modifications || {
+                        energy: { level: 1, basePrice: 2500, priceIncrement: 1200, currentPrice: 2500, maxLevel: 10 },
+                        autofarm: { level: 0, basePrice: 1000, priceIncrement: 1000, currentPrice: 1000, maxLevel: 10 },
+                        income: { level: 1, basePrice: 1500, priceIncrement: 1100, currentPrice: 1500, maxLevel: 10 }
+                    };
+                    appState.purchasedTalismans = parsedState.purchasedTalismans || [];
+                    appState.selectedTalisman = parsedState.selectedTalisman || null;
+                    appState.usedPromocodes = parsedState.usedPromocodes || [];
+                    appState.shopLoaded = parsedState.shopLoaded || false;
+                    
+                    // Обновляем интерфейс на основе загруженного состояния
+                    updateUI();
+                }
+            } catch (e) {
+                console.error('Error loading state from localStorage:', e);
             }
         }
         
         // Сохранение состояния в localStorage
         function saveState() {
-            localStorage.setItem('appState', JSON.stringify(appState));
+            try {
+                localStorage.setItem('appState', JSON.stringify(appState));
+            } catch (e) {
+                console.error('Error saving state to localStorage:', e);
+            }
         }
         
         // Обновление интерфейса на основе состояния
@@ -1603,6 +1636,45 @@
             
             // Обновляем талисман
             updateTalismanDisplay();
+            
+            // Обновляем данные пользователя
+            updateUserData();
+        }
+        
+        // Обновление данных пользователя
+        function updateUserData() {
+            usernameElement.textContent = appState.userData.firstName;
+            profileUsernameElement.textContent = appState.userData.firstName;
+            
+            if (appState.userData.username) {
+                userTagElement.textContent = appState.userData.username;
+                profileUserTagElement.textContent = appState.userData.username;
+                userTagElement.style.display = 'block';
+                profileUserTagElement.style.display = 'block';
+            } else {
+                userTagElement.style.display = 'none';
+                profileUserTagElement.style.display = 'none';
+            }
+            
+            // Загрузка аватарки, если доступна
+            const avatarElement = document.getElementById('user-avatar');
+            const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+            
+            if (appState.userData.photoUrl) {
+                avatarElement.src = appState.userData.photoUrl;
+                avatarElement.style.display = 'block';
+                avatarPlaceholder.style.display = 'none';
+                
+                profileUserAvatarElement.src = appState.userData.photoUrl;
+                profileUserAvatarElement.style.display = 'block';
+                profileAvatarPlaceholderElement.style.display = 'none';
+            } else {
+                avatarElement.style.display = 'none';
+                avatarPlaceholder.style.display = 'block';
+                
+                profileUserAvatarElement.style.display = 'none';
+                profileAvatarPlaceholderElement.style.display = 'block';
+            }
         }
         
         // Функция для обновления отображения энергии
@@ -1915,22 +1987,6 @@
             mainScreenElement.classList.add('hidden');
             profileScreenElement.classList.add('active');
             
-            // Обновляем данные профиля
-            profileUsernameElement.textContent = usernameElement.textContent;
-            profileUserTagElement.textContent = userTagElement.textContent;
-            
-            if (userTagElement.style.display === 'none') {
-                profileUserTagElement.style.display = 'none';
-            }
-            
-            // Обновляем аватар
-            const avatarElement = document.getElementById('user-avatar');
-            if (avatarElement.style.display === 'block') {
-                profileUserAvatarElement.src = avatarElement.src;
-                profileUserAvatarElement.style.display = 'block';
-                profileAvatarPlaceholderElement.style.display = 'none';
-            }
-            
             vibrate();
         }
         
@@ -1972,6 +2028,17 @@
         // Функция для загрузки магазина
         function loadShop() {
             const loadingTime = 8000; // 8 секунд
+            const maxLoadingTime = 480000; // 8 минут в миллисекундах
+            
+            // Устанавливаем таймаут на 8 минут
+            shopLoadingTimeout = setTimeout(() => {
+                if (shopLoadingScreenElement.style.display !== 'none') {
+                    shopLoadingScreenElement.style.display = 'none';
+                    appState.shopLoaded = true;
+                    saveState();
+                    console.log('Магазин загружен по таймауту (8 минут)');
+                }
+            }, maxLoadingTime);
             
             // Предзагружаем изображения
             preloadImages().then(() => {
@@ -1980,10 +2047,13 @@
                 const remainingTime = Math.max(loadingTime - elapsed, 1000);
                 
                 setTimeout(() => {
-                    renderProducts();
-                    shopLoadingScreenElement.style.display = 'none';
-                    appState.shopLoaded = true;
-                    saveState();
+                    if (shopLoadingScreenElement.style.display !== 'none') {
+                        renderProducts();
+                        shopLoadingScreenElement.style.display = 'none';
+                        appState.shopLoaded = true;
+                        saveState();
+                        clearTimeout(shopLoadingTimeout);
+                    }
                 }, remainingTime);
             });
             
@@ -2204,7 +2274,7 @@
         }
         
         // Функция для установки цвета кнопки
-        function setButtonColor() {
+        function setAccentColor() {
             if (tg && tg.themeParams.button_color) {
                 const accentColor = tg.themeParams.button_color;
                 
@@ -2247,13 +2317,46 @@
             }
         }
         
+        // Функция для обновления данных пользователя из Telegram
+        function updateUserDataFromTelegram() {
+            if (tg) {
+                const user = tg.initDataUnsafe?.user;
+                
+                if (user) {
+                    // Обновляем данные пользователя
+                    if (user.first_name) {
+                        appState.userData.firstName = user.first_name;
+                    }
+                    
+                    if (user.username) {
+                        appState.userData.username = `@${user.username}`;
+                    } else {
+                        appState.userData.username = "";
+                    }
+                    
+                    if (user.photo_url) {
+                        appState.userData.photoUrl = user.photo_url;
+                    }
+                    
+                    // Обновляем интерфейс
+                    updateUserData();
+                }
+            }
+        }
+        
         // Инициализация приложения
         function initApp() {
             // Загружаем состояние
             loadState();
             
+            // Обновляем данные пользователя из Telegram
+            updateUserDataFromTelegram();
+            
             // Устанавливаем цвет кнопок
-            setButtonColor();
+            setAccentColor();
+            
+            // Запускаем интервал для обновления данных каждые 0.3 секунды
+            dataUpdateInterval = setInterval(updateUserDataFromTelegram, 300);
             
             // Обработчики событий для основного экрана
             gifContainerElement.addEventListener('click', handleGifClick);
@@ -2342,38 +2445,9 @@
                 tg.expand();
                 tg.enableClosingConfirmation();
                 
-                // Получение данных пользователя
-                const user = tg.initDataUnsafe?.user;
-                
-                // Обновление интерфейса с данными пользователя
-                if (user) {
-                    if (user.first_name) {
-                        usernameElement.textContent = user.first_name;
-                    }
-                    
-                    if (user.username) {
-                        userTagElement.textContent = `@${user.username}`;
-                    } else {
-                        userTagElement.style.display = 'none';
-                    }
-                    
-                    // Загрузка аватарки, если доступна
-                    const avatarElement = document.getElementById('user-avatar');
-                    const avatarPlaceholder = document.querySelector('.avatar-placeholder');
-                    if (user.photo_url) {
-                        avatarElement.src = user.photo_url;
-                        avatarElement.style.display = 'block';
-                        avatarPlaceholder.style.display = 'none';
-                    }
-                }
-                
                 console.log('Telegram WebApp initialized:', tg);
-                console.log('User data:', user);
             } else {
                 console.log('Not in Telegram environment - using mock data');
-                // Заглушка для тестирования вне Telegram
-                usernameElement.textContent = 'Тестовый';
-                userTagElement.textContent = '@testuser';
             }
             
             // Запрет масштабирования и выделения текста
@@ -2393,8 +2467,25 @@
             });
         }
         
+        // Очистка при закрытии приложения
+        function cleanup() {
+            if (dataUpdateInterval) {
+                clearInterval(dataUpdateInterval);
+            }
+            if (shopLoadingTimeout) {
+                clearTimeout(shopLoadingTimeout);
+            }
+            if (appState.cooldownTimer) {
+                clearInterval(appState.cooldownTimer);
+            }
+        }
+        
         // Запуск инициализации при загрузке DOM
         document.addEventListener('DOMContentLoaded', initApp);
+        
+        // Очистка при закрытии страницы
+        window.addEventListener('beforeunload', cleanup);
+        window.addEventListener('unload', cleanup);
     </script>
 </body>
 </html>
