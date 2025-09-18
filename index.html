@@ -2,410 +2,255 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trends</title>
-    <!-- Tabler Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <!-- Telegram Web App -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trends Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            background-color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #000000;
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            height: -webkit-fill-available;
-        }
-        
-        /* Контейнер с отступом под верхнюю панель Telegram */
-        .container {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 0;
-            position: relative;
-            padding-top: 65px; /* Отступ для полноэкранного режима */
+            overflow: hidden;
         }
         
         .header {
-            height: 50px;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            background-color: #000000;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            margin-top: 16px;
+            padding: 30px;
         }
         
-        .app-title {
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF2D78 0%, #9C1DE7 100%);
+        }
+        
+        .logo-text {
             font-weight: 800;
-            font-size: 26px;
-            margin-left: 15px;
-            color: #ffffff;
+            font-size: 24px;
         }
         
-        .avatar-container {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .user-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-color, #2f8bc3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #1a1a1a;
-            color: #ffffff;
-            overflow: hidden;
-        }
-        
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .gif-badge {
-            position: absolute;
-            bottom: -19px;
-            right: -14px; /* Правее на 5px (было -9px, стало -14px) */
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            overflow: hidden;
-            z-index: 101;
-            display: none; /* Скрыто по умолчанию */
-        }
-        
-        .gif-badge img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
+        .main-content {
             flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
         
-        .content {
-            padding: 20px;
+        .content-placeholder {
+            color: rgba(255, 255, 255, 0.5);
             text-align: center;
-            min-height: calc(100vh - 140px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            font-size: 18px;
+            max-width: 300px;
         }
         
         .footer {
-            height: 65px;
-            background-color: rgba(30, 30, 30, 0.7);
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            height: 80px;
+            width: 100%;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 0 15px;
-            position: relative;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            padding: 0 20px;
         }
         
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 4px;
             flex: 1;
-            padding: 5px 0;
-            color: #ffffff;
-            text-decoration: none;
         }
         
         .nav-icon {
-            font-size: 24px;
-            margin-bottom: 5px;
-            opacity: 0.9;
+            width: 28px;
+            height: 28px;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.2s ease;
         }
         
-        .nav-text {
-            font-size: 11px;
-            opacity: 0.7;
-            text-transform: uppercase;
+        .nav-icon.active {
+            color: var(--accent-color, #007AFF);
+        }
+        
+        .nav-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
-            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
         }
         
-        .create-button {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background-color: var(--accent-color, #2f8bc3);
+        .nav-label.active {
+            color: var(--accent-color, #007AFF);
+        }
+        
+        .center-button-container {
             display: flex;
-            align-items: center;
             justify-content: center;
-            color: white;
-            margin-top: -32px;
-            position: relative;
-            z-index: 101;
-            transition: transform 0.2s;
-            border: 6px solid #000000;
+            align-items: center;
+            flex: 1;
         }
         
-        .create-button:active {
-            transform: scale(0.95);
-        }
-        
-        .create-button-icon {
-            font-size: 28px;
-        }
-        
-        /* Аватарка в навигации */
-        .nav-avatar {
-            width: 24px;
-            height: 24px;
+        .center-button {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background-color: #1a1a1a;
-            border: 2px solid transparent;
+            border: 4px solid #000;
+            background: var(--accent-color, #007AFF);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .plus-icon {
+            width: 28px;
+            height: 28px;
+            color: #fff;
+        }
+        
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
         }
         
-        .nav-avatar img {
+        .avatar.active {
+            border-color: var(--accent-color, #007AFF);
+        }
+        
+        .avatar-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
         
-        /* Активное состояние компаса */
-        .nav-item.active.compass-item .nav-icon {
-            color: var(--accent-color, #2f8bc3);
-            opacity: 1;
-        }
-        
-        /* Активное состояние профиля */
-        .nav-item.active.profile-item .nav-avatar {
-            border-color: var(--accent-color, #2f8bc3);
-        }
-        
-        h1 {
-            margin-top: 15px;
-            margin-bottom: 25px;
-            font-size: 28px;
-            color: #ffffff;
-        }
-        
-        p {
-            opacity: 0.8;
-            line-height: 1.5;
-            margin-bottom: 20px;
-            color: #aaaaaa;
-            max-width: 320px;
-            font-size: 16px;
-        }
-        
-        /* Анимации */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .container {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        
-        /* Адаптация под разные устройства */
-        @media (max-width: 320px) {
-            .nav-text {
-                font-size: 10px;
-            }
-            
-            .app-title {
-                font-size: 24px;
-            }
-            
-            .create-button {
-                width: 60px;
-                height: 60px;
-            }
-            
-            .nav-icon {
-                font-size: 22px;
-            }
-        }
-        
-        /* Кастомный скроллбар */
-        .container::-webkit-scrollbar {
-            width: 4px;
-        }
-        
-        .container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .container::-webkit-scrollbar-thumb {
-            background: var(--accent-color, #2f8bc3);
-            border-radius: 2px;
-        }
-        
-        /* Состояния активной навигации */
-        .nav-item.active .nav-text {
-            opacity: 1;
+        .avatar-initial {
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="header-content">
-            <div class="avatar-container">
-                <div class="user-avatar" id="user-avatar">
-                    <i class="ti ti-user"></i>
-                </div>
-                <div class="gif-badge" id="gif-badge">
-                    <img src="https://stickers.fullyst.com/346c3ff9-7c44-5d7c-8129-9e46417a3198/full/AgADUGsAAuqAWUs.webp" alt="Special badge">
-                </div>
-            </div>
-            <div class="app-title" id="app-title">Trends</div>
+        <div class="logo">
+            <div class="logo-circle"></div>
+            <span class="logo-text">Trends</span>
         </div>
     </div>
     
-    <div class="container">
-        <div class="content">
-            <h1 id="main-title">Trends</h1>
-            <p id="welcome-text">Добро пожаловать в Trends! Создавайте короткие видео и делитесь ими в Stories.</p>
+    <div class="main-content">
+        <div class="content-placeholder">
+            Выберите раздел в нижней панели для просмотра контента
         </div>
     </div>
     
     <div class="footer">
-        <a href="#" class="nav-item active compass-item">
-            <i class="ti ti-compass nav-icon"></i>
-            <div class="nav-text">Trends</div>
-        </a>
+        <div class="nav-item" onclick="selectTab('trends')">
+            <svg class="nav-icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                <path d="M12 6a1 1 0 0 0-1 1v4a1 1 0 0 0 .29.71l2 2a1 1 0 0 0 1.42-1.42L13 10.59V7a1 1 0 0 0-1-1z"/>
+            </svg>
+            <span class="nav-label active">Тренды</span>
+        </div>
         
-        <div class="nav-item">
-            <div class="create-button">
-                <i class="ti ti-plus create-button-icon"></i>
+        <div class="center-button-container">
+            <div class="center-button">
+                <svg class="plus-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2z"/>
+                </svg>
             </div>
         </div>
         
-        <a href="#" class="nav-item profile-item">
-            <div class="nav-avatar" id="nav-avatar">
-                <i class="ti ti-user" style="font-size: 12px; color: #fff;"></i>
+        <div class="nav-item" onclick="selectTab('profile')">
+            <div class="avatar active" id="profile-avatar">
+                <div class="avatar-initial">U</div>
             </div>
-            <div class="nav-text">Profile</div>
-        </a>
+            <span class="nav-label">Профиль</span>
+        </div>
     </div>
 
     <script>
         // Инициализация Telegram WebApp
         let tg = window.Telegram.WebApp;
         
-        // Расширяем на весь экран
-        tg.expand();
-        
-        // Устанавливаем акцентный цвет из Telegram
-        function setupAccentColor() {
-            const accentColor = tg.themeParams.accent_color ? `#${tg.themeParams.accent_color.toString(16).padStart(6, '0')}` : '#2f8bc3';
-            document.documentElement.style.setProperty('--accent-color', accentColor);
+        // Установка акцентного цвета из Telegram, если доступен
+        if (tg && tg.themeParams && tg.themeParams.button_color) {
+            document.documentElement.style.setProperty('--accent-color', tg.themeParams.button_color);
         }
         
-        // Установка данных пользователя
-        function setupUserData() {
-            if (tg.initDataUnsafe.user) {
-                const user = tg.initDataUnsafe.user;
-                
-                // Устанавливаем аватар пользователя
-                if (user.photo_url) {
-                    document.getElementById('user-avatar').innerHTML = 
-                        `<img src="${user.photo_url}" alt="User Avatar">`;
-                    
-                    // Также устанавливаем аватар в навигации
-                    document.getElementById('nav-avatar').innerHTML = 
-                        `<img src="${user.photo_url}" alt="Profile">`;
-                }
-                
-                // Проверяем username и показываем гифку только для @temkazavr
-                if (user.username && user.username.toLowerCase() === 'temkazavr') {
-                    document.getElementById('gif-badge').style.display = 'block';
-                }
-                
-                // Устанавливаем язык
-                const userLanguage = user.language_code || navigator.language;
-                setLanguage(userLanguage);
-            }
-        }
-        
-        // Определение языка и установка соответствующих текстов
-        function setLanguage(langCode) {
-            const lang = langCode ? langCode.split('-')[0] : 'en';
+        // Получение информации о пользователе
+        let user = null;
+        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            user = tg.initDataUnsafe.user;
             
-            if (lang === 'ru') {
-                document.querySelector('.nav-text').textContent = 'Тренды';
-                document.querySelectorAll('.nav-text')[1].textContent = 'Профиль';
-                document.getElementById('main-title').textContent = 'Trends';
-                document.getElementById('welcome-text').textContent = 'Добро пожаловать в Trends! Создавайте короткие видео и делитесь ими в Stories.';
-            } else {
-                document.querySelector('.nav-text').textContent = 'Trends';
-                document.querySelectorAll('.nav-text')[1].textContent = 'Profile';
-                document.getElementById('main-title').textContent = 'Trends';
-                document.getElementById('welcome-text').textContent = 'Welcome to Trends! Create short videos and share them in Stories.';
+            // Обновление аватара пользователя
+            const avatarElement = document.getElementById('profile-avatar');
+            if (user.photo_url) {
+                avatarElement.innerHTML = `<img src="${user.photo_url}" class="avatar-img" alt="Profile">`;
+            } else if (user.first_name) {
+                avatarElement.querySelector('.avatar-initial').textContent = user.first_name[0];
             }
         }
         
-        // Инициализация
+        // Функция выбора вкладки
+        function selectTab(tabName) {
+            const trendsIcon = document.querySelector('.nav-item:nth-child(1) .nav-icon');
+            const trendsLabel = document.querySelector('.nav-item:nth-child(1) .nav-label');
+            const profileAvatar = document.getElementById('profile-avatar');
+            const profileLabel = document.querySelector('.nav-item:nth-child(3) .nav-label');
+            
+            if (tabName === 'trends') {
+                trendsIcon.classList.add('active');
+                trendsLabel.classList.add('active');
+                profileAvatar.classList.remove('active');
+                profileLabel.classList.remove('active');
+                
+                document.querySelector('.content-placeholder').textContent = 'Раздел "Тренды" в разработке';
+            } else if (tabName === 'profile') {
+                trendsIcon.classList.remove('active');
+                trendsLabel.classList.remove('active');
+                profileAvatar.classList.add('active');
+                profileLabel.classList.add('active');
+                
+                if (user) {
+                    document.querySelector('.content-placeholder').innerHTML = 
+                        `Привет, ${user.first_name || 'Пользователь'}!<br>Профиль в разработке`;
+                } else {
+                    document.querySelector('.content-placeholder').textContent = 'Профиль в разработке';
+                }
+            }
+        }
+        
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            // Настройка акцентного цвета
-            setupAccentColor();
-            
-            // Настройка данных пользователя
-            setupUserData();
-            
-            // Базовая навигация
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    tg.HapticFeedback.impactOccurred('light');
-                    
-                    // Убираем активный класс у всех элементов
-                    navItems.forEach(el => {
-                        el.classList.remove('active');
-                    });
-                    
-                    // Добавляем активный класс к текущему элементу
-                    this.classList.add('active');
-                });
-            });
+            // Можно добавить дополнительную логику инициализации
         });
     </script>
 </body>
