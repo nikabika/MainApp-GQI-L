@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Модификации - Telegram Mini App</title>
+    <title>Telegram Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -16,27 +16,108 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            -webkit-touch-callout: none;
         }
 
         body {
             background-color: #121212;
             color: #FFFFFF;
-            padding: 16px;
             min-height: 100vh;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Контейнер для всех экранов */
+        .app-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Основной экран */
+        #main-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            touch-action: manipulation;
+            padding: 85px 20px 15px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 1;
         }
 
-        .header {
+        #main-screen.hidden {
+            transform: translateX(-100%);
+        }
+
+        /* Экран профиля */
+        #profile-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 70px 20px 20px;
+            background-color: #121212;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 2;
+        }
+
+        #profile-screen.active {
+            transform: translateX(0);
+        }
+
+        /* Экран магазина */
+        #shop-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 70px 20px 20px;
+            background-color: #121212;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 2;
+        }
+
+        #shop-screen.active {
+            transform: translateX(0);
+        }
+
+        /* Экран модификаций */
+        #modifications-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 70px 16px 16px;
+            background-color: #121212;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 2;
+        }
+
+        #modifications-screen.active {
+            transform: translateX(0);
+        }
+
+        /* Общие стили для заголовков экранов */
+        .screen-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             width: 100%;
             max-width: 400px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
         }
 
         .back-button {
@@ -48,7 +129,12 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            flex-shrink: 0;
+            z-index: 10;
+            transition: transform 0.1s ease;
+        }
+
+        .back-button:active {
+            transform: scale(0.95);
         }
 
         .back-icon {
@@ -58,13 +144,772 @@
         }
 
         .page-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            text-align: center;
-            flex-grow: 1;
-            padding: 0 12px;
+            pointer-events: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
+        /* Стили для основного экрана */
+        .blur-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: grayscale(100%) blur(5px);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .blur-background.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 30px;
+            z-index: 2;
+        }
+
+        .avatar-container {
+            width: 56px;
+            height: 56px;
+            border-radius: 15px;
+            background-color: #8E8E93;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .avatar-placeholder {
+            width: 30px;
+            height: 30px;
+            background-color: #C7C7CC;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .user-info {
+            flex: 1;
+            height: 60px;
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            margin-left: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .username {
+            font-size: 18px;
+            font-weight: 600;
+            color: #FFFFFF;
+            line-height: 1.2;
+        }
+
+        .user-tag {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.2;
+        }
+
+        .user-info-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            opacity: 0.4;
+            width: 16px;
+            height: 16px;
+        }
+
+        .balance {
+            margin-top: 15px;
+            font-size: 46px;
+            font-weight: 700;
+            color: #FFFFFF;
+            text-align: center;
+            margin-bottom: 25px;
+            z-index: 2;
+        }
+
+        .gif-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 35px;
+        }
+
+        .gif-container {
+            width: 240px;
+            height: 240px;
+            border-radius: 24px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            z-index: 2;
+            position: relative;
+        }
+
+        .gif-container:active {
+            transform: scale(0.97);
+        }
+
+        .gif-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .talisman-button {
+            position: absolute;
+            bottom: -15px;
+            right: -15px;
+            width: 72px;
+            height: 72px;
+            background-color: #121212;
+            border: 1.5px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+            transition: transform 0.1s ease;
+        }
+
+        .talisman-button:active {
+            transform: scale(0.9);
+        }
+
+        .talisman-image {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            display: none;
+        }
+
+        .plus-icon {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 32px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 35px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 70px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .energy-box {
+            cursor: pointer;
+        }
+
+        .stat-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0.4;
+            width: 16px;
+            height: 16px;
+        }
+
+        .stat-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .stat-emoji {
+            font-size: 28px;
+            margin-right: 12px;
+        }
+
+        .animated-emoji {
+            width: 28px;
+            height: 28px;
+            margin-right: 12px;
+            display: none;
+        }
+
+        .stat-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .stat-description {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .second-row {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .modifiers-box {
+            flex: 1;
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 70px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tasks-box {
+            width: 70px;
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 70px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .tasks-box:active {
+            transform: scale(0.97);
+        }
+
+        .tasks-emoji {
+            font-size: 32px;
+        }
+
+        .tasks-animated {
+            width: 32px;
+            height: 32px;
+            display: none;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            position: relative;
+            width: 100%;
+            background-color: #2C2C2E;
+            border-top-left-radius: 17px;
+            border-top-right-radius: 17px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateY(100%);
+            max-width: 500px;
+        }
+
+        .modal.active {
+            animation: modalSlideIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+        }
+
+        .modal.closing {
+            animation: modalSlideOut 0.3s ease forwards;
+        }
+
+        @keyframes modalSlideIn {
+            0% {
+                transform: translateY(100%);
+            }
+            70% {
+                transform: translateY(-5%);
+            }
+            85% {
+                transform: translateY(1%);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes modalSlideOut {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 100px;
+            margin-bottom: 15px;
+        }
+
+        .modal-gif {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .modal-description {
+            font-size: 14px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+        }
+
+        .modal-button {
+            width: 85%;
+            padding: 16px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+            border: none;
+            color: white;
+        }
+
+        .modal-button:active {
+            transform: scale(0.97);
+        }
+
+        /* Алерт */
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .alert-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .alert {
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 25px;
+            width: 85%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .alert-overlay.active .alert {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .alert-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .alert-description {
+            font-size: 14px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .alert-button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            border: none;
+            background-color: #40a7e3;
+            color: white;
+        }
+
+        .alert-button:active {
+            transform: scale(0.97);
+        }
+
+        /* Стили для экрана профиля */
+        .profile-avatar-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 17px;
+            background-color: #2C2C2E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .profile-avatar-placeholder {
+            width: 60px;
+            height: 60px;
+            background-color: #8E8E93;
+            border-radius: 50%;
+        }
+
+        .profile-user-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .profile-username {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .profile-user-tag {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .setting-item {
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .setting-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .setting-emoji {
+            font-size: 28px;
+            margin-right: 15px;
+        }
+
+        .setting-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setting-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .setting-description {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.3;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 51px;
+            height: 31px;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #40a7e3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .promo-section {
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .promo-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .promo-input {
+            width: 100%;
+            background-color: #3A3A3C;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .promo-button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background-color: #40a7e3;
+            color: white;
+        }
+
+        .promo-button:active {
+            opacity: 0.8;
+        }
+
+        /* Стили для экрана магазина */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #40a7e3;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: #FFFFFF;
+        }
+
+        .crystals-indicator {
+            background-color: #2C2C2E;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .product-card {
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: center;
+            height: 34px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .buy-button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background-color: #40a7e3;
+            color: white;
+            transition: opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .buy-button:active {
+            opacity: 0.8;
+        }
+
+        .buy-button.purchased {
+            background-color: #3A3A3C;
+            color: #8E8E93;
+            cursor: default;
+        }
+
+        /* Стили для экрана модификаций */
         .money-indicator {
             background-color: #2C2C2E;
             padding: 8px 12px;
@@ -184,92 +1029,435 @@
             transform: none;
         }
 
+        /* Модальное окно выбора талисмана */
+        .talisman-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .talisman-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .talisman-modal-content {
+            background-color: #2C2C2E;
+            border-radius: 17px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .talisman-modal.active .talisman-modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .talisman-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .talisman-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .talisman-item {
+            background-color: #3A3A3C;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .talisman-item:active {
+            transform: scale(0.95);
+        }
+
+        .talisman-item.selected {
+            background-color: rgba(64, 167, 227, 0.2);
+            border: 1px solid #40a7e3;
+        }
+
+        .talisman-item-image {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .talisman-item-name {
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .talisman-item-status {
+            font-size: 10px;
+            color: #8E8E93;
+        }
+
+        .talisman-modal-button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            border: none;
+            background-color: #40a7e3;
+            color: white;
+        }
+
+        .talisman-modal-button:active {
+            transform: scale(0.97);
+        }
+
         /* Адаптивность */
-        @media (max-width: 360px) {
-            .upgrade-content {
+        @media (max-width: 400px) {
+            .stats-container, .second-row {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
             }
             
-            .upgrade-button {
-                align-self: stretch;
-                text-align: center;
+            .stat-box, .modifiers-box {
+                width: 100%;
             }
             
-            .page-title {
-                font-size: 16px;
+            .tasks-box {
+                width: 100%;
+                height: 60px;
             }
             
-            .money-indicator {
-                font-size: 13px;
-                padding: 6px 10px;
+            .gif-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .talisman-button {
+                width: 60px;
+                height: 60px;
+                bottom: -10px;
+                right: -10px;
+            }
+            
+            .plus-icon {
+                font-size: 28px;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .talisman-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="back-button" id="back-button">
-            <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M15 6l-6 6l6 6" />
-            </svg>
+    <div class="app-container">
+        <!-- Основной экран -->
+        <div id="main-screen">
+            <div class="blur-background" id="blur-background"></div>
+
+            <div class="header">
+                <div class="avatar-container" id="avatar-container">
+                    <div class="avatar-placeholder"></div>
+                    <img class="user-avatar" id="user-avatar" src="" alt="Аватар">
+                </div>
+                <div class="user-info" id="user-info">
+                    <svg class="user-info-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M17 7l-10 10" />
+                        <path d="M8 7l9 0l0 9" />
+                    </svg>
+                    <div class="username" id="username">Имя</div>
+                    <div class="user-tag" id="user-tag">@username</div>
+                </div>
+            </div>
+
+            <div class="balance" id="balance">$0</div>
+
+            <div class="gif-wrapper">
+                <div class="gif-container" id="gif-container">
+                    <img class="gif-image" src="https://stickers.fullyst.com/c5f15c6c-edd6-5e36-acc6-93c1be19a895/full/AgADOAsAAk7kmUs.webp" alt="Анимированный стикер">
+                </div>
+                <div class="talisman-button" id="talisman-button">
+                    <img class="talisman-image" id="talisman-image" src="" alt="Талисман">
+                    <div class="plus-icon" id="plus-icon">+</div>
+                </div>
+            </div>
+
+            <div class="content-container">
+                <div class="stats-container">
+                    <div class="stat-box energy-box" id="energy-box">
+                        <div class="stat-content">
+                            <div class="stat-emoji">⚡️</div>
+                            <img class="animated-emoji" src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADAwkAAuN4BAAB.webp" alt="Энергия">
+                            <div class="stat-text">
+                                <div class="stat-value" id="energy-value">500</div>
+                                <div class="stat-description" id="energy-description">доступно</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-box" id="shop-box">
+                        <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M17 7l-10 10" />
+                            <path d="M8 7l9 0l0 9" />
+                        </svg>
+                        <div class="stat-content">
+                            <div class="stat-emoji">🛒</div>
+                            <img class="animated-emoji" src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADhAMAAsSUMUQ.webp" alt="Магазин">
+                            <div class="stat-text">
+                                <div class="stat-value">Магазин</div>
+                                <div class="stat-description">открыть</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="second-row">
+                    <div class="modifiers-box" id="modifiers-box">
+                        <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M17 7l-10 10" />
+                            <path d="M8 7l9 0l0 9" />
+                        </svg>
+                        <div class="stat-content">
+                            <div class="stat-emoji">💪</div>
+                            <img class="animated-emoji" src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADNAIAAgeG6Uc.webp" alt="Модификации">
+                            <div class="stat-text">
+                                <div class="stat-value">Модификации</div>
+                                <div class="stat-description">открыть</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tasks-box" id="tasks-box">
+                        <div class="tasks-emoji">🎯</div>
+                        <img class="tasks-animated" src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADtAIAArQKGUQ.webp" alt="Задания">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Модальное окно -->
+            <div class="modal-overlay" id="modal-overlay">
+                <div class="modal" id="modal">
+                    <div class="modal-handle"></div>
+                    <div class="modal-gif">
+                        <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgADxwIAAnDiIEQ.webp" alt="Энергия" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="modal-title">Хочешь больше энергии?</div>
+                    <div class="modal-description">Энергию можно восстановить за кристаллы</div>
+                    <button class="modal-button" id="buy-button">Купить за 💎15</button>
+                </div>
+            </div>
+
+            <!-- Алерт для заданий -->
+            <div class="alert-overlay" id="tasks-alert-overlay">
+                <div class="alert" id="tasks-alert">
+                    <div class="alert-title">В разработке</div>
+                    <div class="alert-description">Задания будут доступны в следующей версии. Наверно.</div>
+                    <button class="alert-button" id="tasks-alert-button">Понятно</button>
+                </div>
+            </div>
+
+            <!-- Модальное окно выбора талисмана -->
+            <div class="talisman-modal" id="talisman-modal">
+                <div class="talisman-modal-content">
+                    <div class="talisman-modal-title">Выбери талисман</div>
+                    <div class="talisman-grid" id="talisman-grid">
+                        <!-- Талисманы будут добавлены через JavaScript -->
+                    </div>
+                    <button class="talisman-modal-button" id="talisman-modal-button">Выбрать</button>
+                </div>
+            </div>
         </div>
-        <div class="page-title">Модификации</div>
-        <div class="money-indicator">
-            <span>$</span>
-            <span id="money-count">0</span>
+
+        <!-- Экран профиля -->
+        <div id="profile-screen">
+            <div class="screen-header">
+                <div class="back-button" id="profile-back-button">
+                    <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M15 6l-6 6l6 6" />
+                    </svg>
+                </div>
+                <div class="page-title">Профиль</div>
+            </div>
+
+            <div class="profile-avatar-container">
+                <div class="profile-avatar-placeholder" id="profile-avatar-placeholder"></div>
+                <img class="profile-user-avatar" id="profile-user-avatar" src="" alt="Аватар">
+            </div>
+
+            <div class="profile-username" id="profile-username">Имя</div>
+            <div class="profile-user-tag" id="profile-user-tag">@username</div>
+
+            <div class="settings-container">
+                <div class="setting-item">
+                    <div class="setting-content">
+                        <div class="setting-emoji">🐊</div>
+                        <div class="setting-text">
+                            <div class="setting-title">Анимированные иконки</div>
+                            <div class="setting-description">Иконки баннеров станут анимированными. Не рекомендуется слабым устройствам</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="animated-icons">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-content">
+                        <div class="setting-emoji">🎁</div>
+                        <div class="setting-text">
+                            <div class="setting-title">Баннеры розыгрышей</div>
+                            <div class="setting-description">Автоматические уведомления о действующих розыгрышах</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="giveaway-banners">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="promo-section">
+                    <div class="promo-title">Промокод</div>
+                    <input type="text" class="promo-input" id="promo-input" placeholder="Введите промокод">
+                    <button class="promo-button" id="promo-button">Активировать</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран магазина -->
+        <div id="shop-screen">
+            <div class="loading-screen" id="shop-loading-screen">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Загрузка магазина...</div>
+            </div>
+
+            <div class="screen-header">
+                <div class="back-button" id="shop-back-button">
+                    <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M15 6l-6 6l6 6" />
+                    </svg>
+                </div>
+                <div class="page-title">Магазин</div>
+                <div class="crystals-indicator">
+                    <span>💎</span>
+                    <span id="crystals-count">0</span>
+                </div>
+            </div>
+
+            <div class="products-grid" id="products-grid">
+                <!-- Товары будут добавлены через JavaScript -->
+            </div>
+        </div>
+
+        <!-- Экран модификаций -->
+        <div id="modifications-screen">
+            <div class="screen-header">
+                <div class="back-button" id="modifications-back-button">
+                    <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M15 6l-6 6l6 6" />
+                    </svg>
+                </div>
+                <div class="page-title">Модификации</div>
+                <div class="money-indicator">
+                    <span>$</span>
+                    <span id="money-count">0</span>
+                </div>
+            </div>
+
+            <div class="upgrade-container">
+                <div class="upgrade-banner" id="energy-upgrade">
+                    <div class="upgrade-header">
+                        <span class="upgrade-emoji">⚡️</span>
+                        <span>Лимит энергии</span>
+                    </div>
+                    <div class="upgrade-content">
+                        <div class="upgrade-info">
+                            <div class="energy-bars" id="energy-bars">
+                                <!-- Energy bars will be generated by JavaScript -->
+                            </div>
+                            <div class="level-text">Уровень: <span id="energy-level">1</span>/10</div>
+                        </div>
+                        <button class="upgrade-button" id="energy-upgrade-btn">$2500</button>
+                    </div>
+                </div>
+
+                <div class="upgrade-banner" id="autofarm-upgrade">
+                    <div class="upgrade-header">
+                        <span class="upgrade-emoji">💪</span>
+                        <span>Авто-фарм</span>
+                    </div>
+                    <div class="upgrade-content">
+                        <div class="upgrade-info">
+                            <div class="energy-bars" id="autofarm-bars">
+                                <!-- Autofarm bars will be generated by JavaScript -->
+                            </div>
+                            <div class="level-text">Уровень: <span id="autofarm-level">0</span>/10</div>
+                        </div>
+                        <button class="upgrade-button" id="autofarm-upgrade-btn">$1000</button>
+                    </div>
+                </div>
+
+                <div class="upgrade-banner" id="income-upgrade">
+                    <div class="upgrade-header">
+                        <span class="upgrade-emoji">💲</span>
+                        <span>Доход</span>
+                    </div>
+                    <div class="upgrade-content">
+                        <div class="upgrade-info">
+                            <div class="energy-bars" id="income-bars">
+                                <!-- Income bars will be generated by JavaScript -->
+                            </div>
+                            <div class="level-text">Уровень: <span id="income-level">1</span>/10</div>
+                        </div>
+                        <button class="upgrade-button" id="income-upgrade-btn">$1500</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="upgrade-container">
-        <div class="upgrade-banner" id="energy-upgrade">
-            <div class="upgrade-header">
-                <span class="upgrade-emoji">⚡️</span>
-                <span>Лимит энергии</span>
-            </div>
-            <div class="upgrade-content">
-                <div class="upgrade-info">
-                    <div class="energy-bars" id="energy-bars">
-                        <!-- Energy bars will be generated by JavaScript -->
-                    </div>
-                    <div class="level-text">Уровень: <span id="energy-level">1</span>/10</div>
-                </div>
-                <button class="upgrade-button" id="energy-upgrade-btn">$2500</button>
-            </div>
-        </div>
-
-        <div class="upgrade-banner" id="autofarm-upgrade">
-            <div class="upgrade-header">
-                <span class="upgrade-emoji">💪</span>
-                <span>Авто-фарм</span>
-            </div>
-            <div class="upgrade-content">
-                <div class="upgrade-info">
-                    <div class="energy-bars" id="autofarm-bars">
-                        <!-- Autofarm bars will be generated by JavaScript -->
-                    </div>
-                    <div class="level-text">Уровень: <span id="autofarm-level">0</span>/10</div>
-                </div>
-                <button class="upgrade-button" id="autofarm-upgrade-btn">$1000</button>
-            </div>
-        </div>
-
-        <div class="upgrade-banner" id="income-upgrade">
-            <div class="upgrade-header">
-                <span class="upgrade-emoji">💲</span>
-                <span>Доход</span>
-            </div>
-            <div class="upgrade-content">
-                <div class="upgrade-info">
-                    <div class="energy-bars" id="income-bars">
-                        <!-- Income bars will be generated by JavaScript -->
-                    </div>
-                    <div class="level-text">Уровень: <span id="income-level">1</span>/10</div>
-                </div>
-                <button class="upgrade-button" id="income-upgrade-btn">$1500</button>
-            </div>
+    <!-- Алерт для талисманов -->
+    <div class="alert-overlay" id="alert-overlay">
+        <div class="alert" id="alert">
+            <div class="alert-title" id="alert-title">У тебя пока нет талисманов</div>
+            <div class="alert-description" id="alert-description">Их можно выиграть в розыгрышах, или приобрести в магазине</div>
+            <button class="alert-button" id="alert-button">Хорошо</button>
         </div>
     </div>
 
@@ -277,67 +1465,231 @@
         // Инициализация Telegram WebApp
         let tg = window.Telegram?.WebApp;
         
-        // Элементы DOM
-        const backButton = document.getElementById('back-button');
-        const moneyCount = document.getElementById('money-count');
-        const energyBars = document.getElementById('energy-bars');
-        const autofarmBars = document.getElementById('autofarm-bars');
-        const incomeBars = document.getElementById('income-bars');
-        const energyLevel = document.getElementById('energy-level');
-        const autofarmLevel = document.getElementById('autofarm-level');
-        const incomeLevel = document.getElementById('income-level');
-        const energyUpgradeBtn = document.getElementById('energy-upgrade-btn');
-        const autofarmUpgradeBtn = document.getElementById('autofarm-upgrade-btn');
-        const incomeUpgradeBtn = document.getElementById('income-upgrade-btn');
-        
-        // Состояние модификаций
-        const modifications = {
-            energy: {
-                level: 1,
-                basePrice: 2500,
-                priceIncrement: 1200,
-                currentPrice: 2500,
-                maxLevel: 10
+        // Состояние приложения
+        let appState = {
+            balance: 0,
+            crystals: 0,
+            energy: 500,
+            energyLimit: 500,
+            lastClickTime: 0,
+            cooldownTimer: null,
+            energyCooldown: 180,
+            animatedIcons: false,
+            giveawayBanners: true,
+            modifications: {
+                energy: { level: 1, basePrice: 2500, priceIncrement: 1200, currentPrice: 2500, maxLevel: 10 },
+                autofarm: { level: 0, basePrice: 1000, priceIncrement: 1000, currentPrice: 1000, maxLevel: 10 },
+                income: { level: 1, basePrice: 1500, priceIncrement: 1100, currentPrice: 1500, maxLevel: 10 }
             },
-            autofarm: {
-                level: 0,
-                basePrice: 1000,
-                priceIncrement: 1000,
-                currentPrice: 1000,
-                maxLevel: 10
-            },
-            income: {
-                level: 1,
-                basePrice: 1500,
-                priceIncrement: 1100,
-                currentPrice: 1500,
-                maxLevel: 10
-            }
+            purchasedTalismans: [],
+            selectedTalisman: null,
+            usedPromocodes: [],
+            shopLoaded: false
         };
         
-        // Функция для легкой вибрации
-        function vibrate() {
-            if (navigator.vibrate) {
-                navigator.vibrate(10);
-            } else if (window.Telegram?.WebApp?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
+        // Данные товаров
+        const products = [
+            { id: 1, name: "Pearl", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADBAADC9xoTw.webp", price: 350, isTalisman: true },
+            { id: 2, name: "Rocket", image: "https://stickers.fullyst.com/346c3ff9-7c44-5d7c-8129-9e46417a3198/full/AgADpWsAAsSc0Us.webp", price: 450, isTalisman: true },
+            { id: 3, name: "Flamingo", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADCQADre1xTw.webp", price: 420, isTalisman: true },
+            { id: 4, name: "Spooky Chest", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADDQAD_k7gTA.webp", price: 380, isTalisman: true },
+            { id: 5, name: "Dollar Gun", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADEAADSSyZTw.webp", price: 290, isTalisman: true },
+            { id: 6, name: "Di the King", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADFAADE-KoTA.webp", price: 480, isTalisman: true },
+            { id: 7, name: "Piñata", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADCgAD5J4pTg.webp", price: 270, isTalisman: true },
+            { id: 8, name: "Red Star", image: "https://stickers.fullyst.com/37131b6f-fb23-5ee1-a418-212b31fb73f7/full/AgADfXkAAot56Eg.webp", price: 310, isTalisman: true },
+            { id: 9, name: "Brick", image: "https://stickers.fullyst.com/346c3ff9-7c44-5d7c-8129-9e46417a3198/full/AgAD8XQAAuxnWUs.webp", price: 210, isTalisman: true },
+            { id: 10, name: "The Monkey", image: "https://stickers.fullyst.com/346c3ff9-7c44-5d7c-8129-9e46417a3198/full/AgADUGsAAuqAWUs.webp", price: 460, isTalisman: true },
+            { id: 11, name: "Cauldron", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADBAADHj_xTA.webp", price: 330, isTalisman: true },
+            { id: 12, name: "Golden Toad", image: "https://stickers.fullyst.com/fae78ef9-7e5c-56b6-9389-5e9d4a754a29/full/AgADCgADgyaRTA.webp", price: 500, isTalisman: true }
+        ];
+        
+        // Элементы DOM
+        const balanceElement = document.getElementById('balance');
+        const energyValueElement = document.getElementById('energy-value');
+        const energyDescriptionElement = document.getElementById('energy-description');
+        const energyBoxElement = document.getElementById('energy-box');
+        const gifContainerElement = document.getElementById('gif-container');
+        const modalOverlayElement = document.getElementById('modal-overlay');
+        const modalElement = document.getElementById('modal');
+        const blurBackgroundElement = document.getElementById('blur-background');
+        const buyButtonElement = document.getElementById('buy-button');
+        const usernameElement = document.getElementById('username');
+        const userTagElement = document.getElementById('user-tag');
+        const alertOverlayElement = document.getElementById('alert-overlay');
+        const alertElement = document.getElementById('alert');
+        const alertTitleElement = document.getElementById('alert-title');
+        const alertDescriptionElement = document.getElementById('alert-description');
+        const alertButtonElement = document.getElementById('alert-button');
+        const tasksBoxElement = document.getElementById('tasks-box');
+        const tasksAlertOverlayElement = document.getElementById('tasks-alert-overlay');
+        const tasksAlertButtonElement = document.getElementById('tasks-alert-button');
+        const talismanButtonElement = document.getElementById('talisman-button');
+        const talismanImageElement = document.getElementById('talisman-image');
+        const plusIconElement = document.getElementById('plus-icon');
+        const talismanModalElement = document.getElementById('talisman-modal');
+        const talismanGridElement = document.getElementById('talisman-grid');
+        const talismanModalButtonElement = document.getElementById('talisman-modal-button');
+        const mainScreenElement = document.getElementById('main-screen');
+        const profileScreenElement = document.getElementById('profile-screen');
+        const profileBackButtonElement = document.getElementById('profile-back-button');
+        const avatarContainerElement = document.getElementById('avatar-container');
+        const userInfoElement = document.getElementById('user-info');
+        const profileUsernameElement = document.getElementById('profile-username');
+        const profileUserTagElement = document.getElementById('profile-user-tag');
+        const profileUserAvatarElement = document.getElementById('profile-user-avatar');
+        const profileAvatarPlaceholderElement = document.getElementById('profile-avatar-placeholder');
+        const animatedIconsSwitch = document.getElementById('animated-icons');
+        const giveawayBannersSwitch = document.getElementById('giveaway-banners');
+        const promoInputElement = document.getElementById('promo-input');
+        const promoButtonElement = document.getElementById('promo-button');
+        const shopScreenElement = document.getElementById('shop-screen');
+        const shopBackButtonElement = document.getElementById('shop-back-button');
+        const shopLoadingScreenElement = document.getElementById('shop-loading-screen');
+        const productsGridElement = document.getElementById('products-grid');
+        const crystalsCountElement = document.getElementById('crystals-count');
+        const shopBoxElement = document.getElementById('shop-box');
+        const modificationsScreenElement = document.getElementById('modifications-screen');
+        const modificationsBackButtonElement = document.getElementById('modifications-back-button');
+        const moneyCountElement = document.getElementById('money-count');
+        const energyBarsElement = document.getElementById('energy-bars');
+        const autofarmBarsElement = document.getElementById('autofarm-bars');
+        const incomeBarsElement = document.getElementById('income-bars');
+        const energyLevelElement = document.getElementById('energy-level');
+        const autofarmLevelElement = document.getElementById('autofarm-level');
+        const incomeLevelElement = document.getElementById('income-level');
+        const energyUpgradeBtnElement = document.getElementById('energy-upgrade-btn');
+        const autofarmUpgradeBtnElement = document.getElementById('autofarm-upgrade-btn');
+        const incomeUpgradeBtnElement = document.getElementById('income-upgrade-btn');
+        const modifiersBoxElement = document.getElementById('modifiers-box');
+        const animatedEmojis = document.querySelectorAll('.animated-emoji');
+        const tasksAnimatedElement = document.querySelector('.tasks-animated');
+        
+        // Загрузка состояния из localStorage
+        function loadState() {
+            const savedState = localStorage.getItem('appState');
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                appState = { ...appState, ...parsedState };
+                
+                // Обновляем интерфейс на основе загруженного состояния
+                updateUI();
             }
         }
         
-        // Функция для установки акцентного цвета
-        function setAccentColor() {
-            if (tg && tg.themeParams.button_color) {
-                const accentColor = tg.themeParams.button_color;
+        // Сохранение состояния в localStorage
+        function saveState() {
+            localStorage.setItem('appState', JSON.stringify(appState));
+        }
+        
+        // Обновление интерфейса на основе состояния
+        function updateUI() {
+            // Обновляем баланс
+            balanceElement.textContent = `$${appState.balance}`;
+            moneyCountElement.textContent = appState.balance;
+            crystalsCountElement.textContent = appState.crystals;
+            
+            // Обновляем энергию
+            updateEnergyDisplay();
+            
+            // Обновляем переключатели
+            animatedIconsSwitch.checked = appState.animatedIcons;
+            giveawayBannersSwitch.checked = appState.giveawayBanners;
+            
+            // Обновляем анимированные иконки
+            updateAnimatedIcons();
+            
+            // Обновляем модификации
+            updateModificationsDisplay();
+            
+            // Обновляем талисман
+            updateTalismanDisplay();
+        }
+        
+        // Функция для обновления отображения энергии
+        function updateEnergyDisplay() {
+            if (appState.energy > 0) {
+                energyValueElement.textContent = appState.energy;
+                energyDescriptionElement.textContent = 'доступно';
+            } else {
+                energyValueElement.textContent = formatTime(appState.energyCooldown);
+                energyDescriptionElement.textContent = 'перезагрузка';
                 
-                // Устанавливаем цвет для всех кнопок апгрейда
-                document.querySelectorAll('.upgrade-button:not(:disabled)').forEach(button => {
-                    button.style.backgroundColor = accentColor;
-                });
-                
-                // Устанавливаем цвет для заполненных баров
-                document.querySelectorAll('.energy-bar.filled').forEach(bar => {
-                    bar.style.backgroundColor = accentColor;
-                });
+                if (!appState.cooldownTimer) {
+                    startEnergyCooldown();
+                }
+            }
+        }
+        
+        // Функция для обновления анимированных иконок
+        function updateAnimatedIcons() {
+            if (appState.animatedIcons) {
+                document.querySelectorAll('.stat-emoji').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.animated-emoji').forEach(el => el.style.display = 'block');
+                document.querySelector('.tasks-emoji').style.display = 'none';
+                tasksAnimatedElement.style.display = 'block';
+            } else {
+                document.querySelectorAll('.stat-emoji').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.animated-emoji').forEach(el => el.style.display = 'none');
+                document.querySelector('.tasks-emoji').style.display = 'block';
+                tasksAnimatedElement.style.display = 'none';
+            }
+        }
+        
+        // Функция для обновления отображения модификаций
+        function updateModificationsDisplay() {
+            // Обновляем шкалы
+            createBars(energyBarsElement, appState.modifications.energy.level, appState.modifications.energy.maxLevel);
+            createBars(autofarmBarsElement, appState.modifications.autofarm.level, appState.modifications.autofarm.maxLevel);
+            createBars(incomeBarsElement, appState.modifications.income.level, appState.modifications.income.maxLevel);
+            
+            // Обновляем уровни
+            energyLevelElement.textContent = appState.modifications.energy.level;
+            autofarmLevelElement.textContent = appState.modifications.autofarm.level;
+            incomeLevelElement.textContent = appState.modifications.income.level;
+            
+            // Обновляем цены на кнопках
+            energyUpgradeBtnElement.textContent = `$${appState.modifications.energy.currentPrice}`;
+            autofarmUpgradeBtnElement.textContent = `$${appState.modifications.autofarm.currentPrice}`;
+            incomeUpgradeBtnElement.textContent = `$${appState.modifications.income.currentPrice}`;
+            
+            // Отключаем кнопки, если достигнут максимальный уровень
+            if (appState.modifications.energy.level >= appState.modifications.energy.maxLevel) {
+                energyUpgradeBtnElement.disabled = true;
+                energyUpgradeBtnElement.textContent = 'Макс. ур.';
+            } else {
+                energyUpgradeBtnElement.disabled = false;
+            }
+            
+            if (appState.modifications.autofarm.level >= appState.modifications.autofarm.maxLevel) {
+                autofarmUpgradeBtnElement.disabled = true;
+                autofarmUpgradeBtnElement.textContent = 'Макс. ур.';
+            } else {
+                autofarmUpgradeBtnElement.disabled = false;
+            }
+            
+            if (appState.modifications.income.level >= appState.modifications.income.maxLevel) {
+                incomeUpgradeBtnElement.disabled = true;
+                incomeUpgradeBtnElement.textContent = 'Макс. ур.';
+            } else {
+                incomeUpgradeBtnElement.disabled = false;
+            }
+            
+            // Устанавливаем акцентный цвет
+            setAccentColor();
+        }
+        
+        // Функция для обновления отображения талисмана
+        function updateTalismanDisplay() {
+            if (appState.selectedTalisman) {
+                const selectedProduct = products.find(p => p.id === appState.selectedTalisman);
+                if (selectedProduct) {
+                    talismanImageElement.src = selectedProduct.image;
+                    talismanImageElement.style.display = 'block';
+                    plusIconElement.style.display = 'none';
+                }
+            } else {
+                talismanImageElement.style.display = 'none';
+                plusIconElement.style.display = 'block';
             }
         }
         
@@ -350,115 +1702,699 @@
                 bar.className = `energy-bar bar-${i} ${i <= filledCount ? 'filled' : ''}`;
                 container.appendChild(bar);
             }
-        }
-        
-        // Функция для обновления отображения модификаций
-        function updateModifications() {
-            // Обновляем шкалы
-            createBars(energyBars, modifications.energy.level, modifications.energy.maxLevel);
-            createBars(autofarmBars, modifications.autofarm.level, modifications.autofarm.maxLevel);
-            createBars(incomeBars, modifications.income.level, modifications.income.maxLevel);
-            
-            // Обновляем уровни
-            energyLevel.textContent = modifications.energy.level;
-            autofarmLevel.textContent = modifications.autofarm.level;
-            incomeLevel.textContent = modifications.income.level;
-            
-            // Обновляем цены на кнопках
-            energyUpgradeBtn.textContent = `$${modifications.energy.currentPrice}`;
-            autofarmUpgradeBtn.textContent = `$${modifications.autofarm.currentPrice}`;
-            incomeUpgradeBtn.textContent = `$${modifications.income.currentPrice}`;
-            
-            // Отключаем кнопки, если достигнут максимальный уровень
-            if (modifications.energy.level >= modifications.energy.maxLevel) {
-                energyUpgradeBtn.disabled = true;
-                energyUpgradeBtn.textContent = 'Макс. ур.';
-            } else {
-                energyUpgradeBtn.disabled = false;
-            }
-            
-            if (modifications.autofarm.level >= modifications.autofarm.maxLevel) {
-                autofarmUpgradeBtn.disabled = true;
-                autofarmUpgradeBtn.textContent = 'Макс. ур.';
-            } else {
-                autofarmUpgradeBtn.disabled = false;
-            }
-            
-            if (modifications.income.level >= modifications.income.maxLevel) {
-                incomeUpgradeBtn.disabled = true;
-                incomeUpgradeBtn.textContent = 'Макс. ур.';
-            } else {
-                incomeUpgradeBtn.disabled = false;
-            }
             
             // Устанавливаем акцентный цвет
             setAccentColor();
+        }
+        
+        // Функция для легкой вибрации
+        function vibrate() {
+            if (navigator.vibrate) {
+                navigator.vibrate(1);
+            } else if (window.Telegram?.WebApp?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+        
+        // Функция для обработки клика по гифке
+        function handleGifClick() {
+            // Проверка энергии
+            if (appState.energy <= 0) {
+                openEnergyModal();
+                return;
+            }
+            
+            // Уменьшаем энергию
+            appState.energy -= 1;
+            updateEnergyDisplay();
+            
+            // Увеличиваем баланс
+            appState.balance += 1;
+            balanceElement.textContent = `$${appState.balance}`;
+            moneyCountElement.textContent = appState.balance;
+            
+            // Сохраняем состояние
+            saveState();
+            
+            // Запускаем вибрацию
+            vibrate();
+        }
+        
+        // Функция для форматирования времени (мм:сс)
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Функция для запуска таймера перезарядки энергии
+        function startEnergyCooldown() {
+            let timeLeft = appState.energyCooldown;
+            
+            if (appState.cooldownTimer) {
+                clearInterval(appState.cooldownTimer);
+            }
+            
+            appState.cooldownTimer = setInterval(() => {
+                timeLeft -= 1;
+                energyValueElement.textContent = formatTime(timeLeft);
+                
+                if (timeLeft <= 0) {
+                    clearInterval(appState.cooldownTimer);
+                    appState.cooldownTimer = null;
+                    appState.energy = appState.energyLimit;
+                    updateEnergyDisplay();
+                    saveState();
+                }
+            }, 1000);
+        }
+        
+        // Функция для открытия модального окна энергии
+        function openEnergyModal() {
+            blurBackgroundElement.classList.add('active');
+            modalOverlayElement.classList.add('active');
+            
+            setTimeout(() => {
+                modalElement.classList.add('active');
+            }, 10);
+            
+            // Блокируем прокрутку фона
+            document.body.style.overflow = 'hidden';
+            
+            vibrate();
+        }
+        
+        // Функция для закрытия модального окна
+        function closeModal() {
+            // Сразу убираем размытие
+            blurBackgroundElement.classList.remove('active');
+            
+            // Анимируем закрытие модалки
+            modalElement.classList.remove('active');
+            modalElement.classList.add('closing');
+            
+            setTimeout(() => {
+                modalOverlayElement.classList.remove('active');
+                modalElement.classList.remove('closing');
+            }, 300);
+            
+            // Разблокируем прокрутку фона
+            document.body.style.overflow = '';
+        }
+        
+        // Функция для открытия алерта
+        function openAlert(title, description) {
+            alertTitleElement.textContent = title;
+            alertDescriptionElement.textContent = description;
+            blurBackgroundElement.classList.add('active');
+            alertOverlayElement.classList.add('active');
+            
+            // Блокируем прокрутку фона
+            document.body.style.overflow = 'hidden';
+            
+            vibrate();
+        }
+        
+        // Функция для закрытия алерта
+        function closeAlert() {
+            // Сразу убираем размытие
+            blurBackgroundElement.classList.remove('active');
+            alertOverlayElement.classList.remove('active');
+            
+            // Разблокируем прокрутку фона
+            document.body.style.overflow = '';
+        }
+        
+        // Функция для открытия алерта заданий
+        function openTasksAlert() {
+            blurBackgroundElement.classList.add('active');
+            tasksAlertOverlayElement.classList.add('active');
+            
+            // Блокируем прокрутку фона
+            document.body.style.overflow = 'hidden';
+            
+            vibrate();
+        }
+        
+        // Функция для закрытия алерта заданий
+        function closeTasksAlert() {
+            // Сразу убираем размытие
+            blurBackgroundElement.classList.remove('active');
+            tasksAlertOverlayElement.classList.remove('active');
+            
+            // Разблокируем прокрутку фона
+            document.body.style.overflow = '';
+        }
+        
+        // Функция для открытия модального окна выбора талисмана
+        function openTalismanModal() {
+            renderTalismanGrid();
+            blurBackgroundElement.classList.add('active');
+            talismanModalElement.classList.add('active');
+            
+            // Блокируем прокрутку фона
+            document.body.style.overflow = 'hidden';
+            
+            vibrate();
+        }
+        
+        // Функция для закрытия модального окна выбора талисмана
+        function closeTalismanModal() {
+            // Сразу убираем размытие
+            blurBackgroundElement.classList.remove('active');
+            talismanModalElement.classList.remove('active');
+            
+            // Разблокируем прокрутку фона
+            document.body.style.overflow = '';
+        }
+        
+        // Функция для отображения сетки талисманов
+        function renderTalismanGrid() {
+            talismanGridElement.innerHTML = '';
+            
+            // Добавляем купленные талисманы
+            appState.purchasedTalismans.forEach(talismanId => {
+                const product = products.find(p => p.id === talismanId);
+                if (product) {
+                    const talismanItem = document.createElement('div');
+                    talismanItem.className = `talisman-item ${appState.selectedTalisman === talismanId ? 'selected' : ''}`;
+                    talismanItem.dataset.id = product.id;
+                    
+                    talismanItem.innerHTML = `
+                        <img class="talisman-item-image" src="${product.image}" alt="${product.name}">
+                        <div class="talisman-item-name">${product.name}</div>
+                        <div class="talisman-item-status">Куплено</div>
+                    `;
+                    
+                    talismanItem.addEventListener('click', () => {
+                        document.querySelectorAll('.talisman-item').forEach(item => item.classList.remove('selected'));
+                        talismanItem.classList.add('selected');
+                        appState.selectedTalisman = product.id;
+                        saveState();
+                    });
+                    
+                    talismanGridElement.appendChild(talismanItem);
+                }
+            });
+            
+            // Если нет купленных талисманов
+            if (appState.purchasedTalismans.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'talisman-empty';
+                emptyMessage.textContent = 'У вас пока нет талисманов';
+                emptyMessage.style.gridColumn = '1 / -1';
+                emptyMessage.style.textAlign = 'center';
+                emptyMessage.style.padding = '20px';
+                emptyMessage.style.color = '#8E8E93';
+                talismanGridElement.appendChild(emptyMessage);
+            }
+        }
+        
+        // Функция для открытия экрана профиля
+        function openProfileScreen() {
+            mainScreenElement.classList.add('hidden');
+            profileScreenElement.classList.add('active');
+            
+            // Обновляем данные профиля
+            profileUsernameElement.textContent = usernameElement.textContent;
+            profileUserTagElement.textContent = userTagElement.textContent;
+            
+            if (userTagElement.style.display === 'none') {
+                profileUserTagElement.style.display = 'none';
+            }
+            
+            // Обновляем аватар
+            const avatarElement = document.getElementById('user-avatar');
+            if (avatarElement.style.display === 'block') {
+                profileUserAvatarElement.src = avatarElement.src;
+                profileUserAvatarElement.style.display = 'block';
+                profileAvatarPlaceholderElement.style.display = 'none';
+            }
+            
+            vibrate();
+        }
+        
+        // Функция для закрытия экрана профиля
+        function closeProfileScreen() {
+            profileScreenElement.classList.remove('active');
+            setTimeout(() => {
+                mainScreenElement.classList.remove('hidden');
+            }, 400);
+            
+            vibrate();
+        }
+        
+        // Функция для открытия экрана магазина
+        function openShopScreen() {
+            mainScreenElement.classList.add('hidden');
+            shopScreenElement.classList.add('active');
+            
+            // Если магазин еще не загружен, загружаем его
+            if (!appState.shopLoaded) {
+                loadShop();
+            } else {
+                shopLoadingScreenElement.style.display = 'none';
+            }
+            
+            vibrate();
+        }
+        
+        // Функция для закрытия экрана магазина
+        function closeShopScreen() {
+            shopScreenElement.classList.remove('active');
+            setTimeout(() => {
+                mainScreenElement.classList.remove('hidden');
+            }, 400);
+            
+            vibrate();
+        }
+        
+        // Функция для загрузки магазина
+        function loadShop() {
+            const loadingTime = 8000; // 8 секунд
+            
+            // Предзагружаем изображения
+            preloadImages().then(() => {
+                // После загрузки изображений ждем оставшееся время
+                const elapsed = Date.now() - startTime;
+                const remainingTime = Math.max(loadingTime - elapsed, 1000);
+                
+                setTimeout(() => {
+                    renderProducts();
+                    shopLoadingScreenElement.style.display = 'none';
+                    appState.shopLoaded = true;
+                    saveState();
+                }, remainingTime);
+            });
+            
+            const startTime = Date.now();
+        }
+        
+        // Функция для предзагрузки изображений
+        function preloadImages() {
+            return new Promise((resolve) => {
+                let loaded = 0;
+                const total = products.length;
+                
+                if (total === 0) {
+                    resolve();
+                    return;
+                }
+                
+                products.forEach(product => {
+                    const img = new Image();
+                    img.onload = img.onerror = () => {
+                        loaded++;
+                        if (loaded === total) {
+                            resolve();
+                        }
+                    };
+                    img.src = product.image;
+                });
+            });
+        }
+        
+        // Функция для отображения товаров
+        function renderProducts() {
+            productsGridElement.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                
+                const isPurchased = appState.purchasedTalismans.includes(product.id);
+                
+                productCard.innerHTML = `
+                    <img class="product-image" src="${product.image}" alt="${product.name}">
+                    <div class="product-name">${product.name}</div>
+                    <button class="buy-button ${isPurchased ? 'purchased' : ''}" data-id="${product.id}" ${isPurchased ? 'disabled' : ''}>
+                        ${isPurchased ? 'Куплено' : `💎${product.price}`}
+                    </button>
+                `;
+                
+                productsGridElement.appendChild(productCard);
+            });
+            
+            // Добавляем обработчики для кнопок покупки
+            document.querySelectorAll('.buy-button:not(.purchased)').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    buyProduct(productId);
+                });
+            });
+            
+            // Устанавливаем акцентный цвет
+            setAccentColor();
+        }
+        
+        // Функция для покупки товара
+        function buyProduct(productId) {
+            vibrate();
+            
+            const product = products.find(p => p.id === productId);
+            
+            // Проверяем, хватает ли кристаллов
+            if (appState.crystals < product.price) {
+                openAlert('Недостаточно кристаллов', `Тебе не хватает 💎${product.price - appState.crystals} для покупки этого товара`);
+                return;
+            }
+            
+            // Списание кристаллов
+            appState.crystals -= product.price;
+            crystalsCountElement.textContent = appState.crystals;
+            
+            // Добавление товара в купленные
+            if (product.isTalisman && !appState.purchasedTalismans.includes(productId)) {
+                appState.purchasedTalismans.push(productId);
+            }
+            
+            // Обновляем отображение товаров
+            renderProducts();
+            
+            // Сохраняем состояние
+            saveState();
+            
+            // Показываем сообщение об успешной покупке
+            openAlert('Покупка совершена', `Ты успешно приобрел "${product.name}" за 💎${product.price}`);
+        }
+        
+        // Функция для открытия экрана модификаций
+        function openModificationsScreen() {
+            mainScreenElement.classList.add('hidden');
+            modificationsScreenElement.classList.add('active');
+            
+            vibrate();
+        }
+        
+        // Функция для закрытия экрана модификаций
+        function closeModificationsScreen() {
+            modificationsScreenElement.classList.remove('active');
+            setTimeout(() => {
+                mainScreenElement.classList.remove('hidden');
+            }, 400);
+            
+            vibrate();
         }
         
         // Функция для апгрейда модификации
         function upgradeModification(type) {
             vibrate();
             
-            const mod = modifications[type];
+            const mod = appState.modifications[type];
             
             // Проверяем, можно ли улучшить (не максимальный уровень)
             if (mod.level < mod.maxLevel) {
+                // Проверяем, хватает ли денег
+                if (appState.balance < mod.currentPrice) {
+                    openAlert('Недостаточно средств', `Тебе не хватает $${mod.currentPrice - appState.balance} для улучшения`);
+                    return;
+                }
+                
+                // Списание денег
+                appState.balance -= mod.currentPrice;
+                balanceElement.textContent = `$${appState.balance}`;
+                moneyCountElement.textContent = appState.balance;
+                
                 // Увеличиваем уровень
                 mod.level++;
                 
                 // Увеличиваем цену
                 mod.currentPrice = mod.basePrice + (mod.level * mod.priceIncrement);
                 
+                // Если это улучшение энергии, увеличиваем лимит
+                if (type === 'energy') {
+                    appState.energyLimit = 500 + (mod.level * 100);
+                    appState.energy = appState.energyLimit;
+                    updateEnergyDisplay();
+                }
+                
                 // Обновляем отображение
-                updateModifications();
+                updateModificationsDisplay();
+                
+                // Сохраняем состояние
+                saveState();
                 
                 console.log(`Улучшено: ${type} до уровня ${mod.level}. Новая цена: $${mod.currentPrice}`);
             }
         }
         
-        // Обработчики кликов по кнопкам апгрейда
-        energyUpgradeBtn.addEventListener('click', () => upgradeModification('energy'));
-        autofarmUpgradeBtn.addEventListener('click', () => upgradeModification('autofarm'));
-        incomeUpgradeBtn.addEventListener('click', () => upgradeModification('income'));
-        
-        // Обработчик клика по кнопке "Назад"
-        backButton.addEventListener('click', () => {
-            vibrate();
-            // Закрываем текущее окно (возвращаемся назад)
-            if (tg && tg.close) {
-                tg.close();
-            } else {
-                // Для тестирования вне Telegram
-                window.history.back();
-            }
-        });
-        
-        // Запрет масштабирования и выделения
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('selectstart', e => e.preventDefault());
-        document.addEventListener('dragstart', e => e.preventDefault());
-        
-        // Отключаем масштабирование жестом двойного тапа
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function (event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-        
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            updateModifications();
+        // Функция для активации промокода
+        function activatePromoCode() {
+            const promoCode = promoInputElement.value.trim();
             
+            if (!promoCode) {
+                openAlert('Ошибка', 'Введите промокод');
+                return;
+            }
+            
+            // Проверяем, использовался ли уже промокод
+            if (appState.usedPromocodes.includes(promoCode)) {
+                openAlert('Уже использован', 'Этот промокод уже был активирован');
+                return;
+            }
+            
+            // Обработка специальных промокодов
+            if (promoCode === 'delete10pqw879') {
+                appState.balance = 0;
+                balanceElement.textContent = '$0';
+                moneyCountElement.textContent = '0';
+                openAlert('Баланс очищен', 'Все деньги были удалены');
+                appState.usedPromocodes.push(promoCode);
+                saveState();
+                return;
+            }
+            
+            if (promoCode === 'delete11pwerf') {
+                appState.crystals = 0;
+                crystalsCountElement.textContent = '0';
+                openAlert('Кристаллы очищены', 'Все кристаллы были удалены');
+                appState.usedPromocodes.push(promoCode);
+                saveState();
+                return;
+            }
+            
+            // Обработка обычных промокодов
+            if (promoCode === 'CryPPQ57h7Gq') {
+                appState.crystals += 50;
+                crystalsCountElement.textContent = appState.crystals;
+                openAlert('Промокод активирован', 'Ты получил 💎50 кристаллов');
+                appState.usedPromocodes.push(promoCode);
+            } else if (promoCode === 'QSV45TYp09') {
+                // Проверяем, может ли пользователь использовать этот промокод
+                const user = tg?.initDataUnsafe?.user;
+                if (user && user.username === 'temkazavr') {
+                    appState.crystals += 100;
+                    crystalsCountElement.textContent = appState.crystals;
+                    openAlert('Промокод активирован', 'Ты получил 💎100 кристаллов');
+                } else {
+                    openAlert('Недоступно', 'Этот промокод доступен только для @temkazavr');
+                    return;
+                }
+                appState.usedPromocodes.push(promoCode);
+            } else {
+                openAlert('Неверный промокод', 'Проверь правильность ввода промокода');
+                return;
+            }
+            
+            // Очищаем поле ввода
+            promoInputElement.value = '';
+            
+            // Сохраняем состояние
+            saveState();
+        }
+        
+        // Функция для установки цвета кнопки
+        function setButtonColor() {
+            if (tg && tg.themeParams.button_color) {
+                const accentColor = tg.themeParams.button_color;
+                
+                // Устанавливаем цвет для всех кнопок
+                buyButtonElement.style.backgroundColor = accentColor;
+                alertButtonElement.style.backgroundColor = accentColor;
+                tasksAlertButtonElement.style.backgroundColor = accentColor;
+                document.querySelectorAll('.buy-button:not(.purchased)').forEach(button => {
+                    button.style.backgroundColor = accentColor;
+                });
+                document.querySelectorAll('.upgrade-button:not(:disabled)').forEach(button => {
+                    button.style.backgroundColor = accentColor;
+                });
+                promoButtonElement.style.backgroundColor = accentColor;
+                talismanModalButtonElement.style.backgroundColor = accentColor;
+                
+                // Устанавливаем цвет для заполненных баров
+                document.querySelectorAll('.energy-bar.filled').forEach(bar => {
+                    bar.style.backgroundColor = accentColor;
+                });
+                
+                // Устанавливаем цвет для переключателей
+                const style = document.createElement('style');
+                style.textContent = `
+                    input:checked + .slider {
+                        background-color: ${accentColor} !important;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Устанавливаем цвет для спиннера загрузки
+                document.querySelector('.loading-spinner').style.borderTopColor = accentColor;
+            } else {
+                // Цвет по умолчанию, если не удалось определить акцентный цвет
+                buyButtonElement.style.backgroundColor = '#40a7e3';
+                alertButtonElement.style.backgroundColor = '#40a7e3';
+                tasksAlertButtonElement.style.backgroundColor = '#40a7e3';
+                promoButtonElement.style.backgroundColor = '#40a7e3';
+                talismanModalButtonElement.style.backgroundColor = '#40a7e3';
+            }
+        }
+        
+        // Инициализация приложения
+        function initApp() {
+            // Загружаем состояние
+            loadState();
+            
+            // Устанавливаем цвет кнопок
+            setButtonColor();
+            
+            // Обработчики событий для основного экрана
+            gifContainerElement.addEventListener('click', handleGifClick);
+            energyBoxElement.addEventListener('click', () => {
+                if (appState.energy <= 0) {
+                    openEnergyModal();
+                } else {
+                    vibrate();
+                }
+            });
+            talismanButtonElement.addEventListener('click', () => {
+                if (appState.purchasedTalismans.length > 0) {
+                    openTalismanModal();
+                } else {
+                    openAlert('У тебя пока нет талисманов', 'Их можно выиграть в розыгрышах, или приобрести в магазине');
+                }
+            });
+            tasksBoxElement.addEventListener('click', openTasksAlert);
+            shopBoxElement.addEventListener('click', openShopScreen);
+            modifiersBoxElement.addEventListener('click', openModificationsScreen);
+            avatarContainerElement.addEventListener('click', openProfileScreen);
+            userInfoElement.addEventListener('click', openProfileScreen);
+            
+            // Обработчики для модальных окон
+            modalOverlayElement.addEventListener('click', (e) => {
+                if (e.target === modalOverlayElement) {
+                    closeModal();
+                }
+            });
+            buyButtonElement.addEventListener('click', () => {
+                if (appState.crystals >= 15) {
+                    appState.crystals -= 15;
+                    appState.energy = appState.energyLimit;
+                    updateEnergyDisplay();
+                    crystalsCountElement.textContent = appState.crystals;
+                    
+                    if (appState.cooldownTimer) {
+                        clearInterval(appState.cooldownTimer);
+                        appState.cooldownTimer = null;
+                    }
+                    
+                    closeModal();
+                    saveState();
+                } else {
+                    openAlert('Недостаточно кристаллов', 'Тебе нужно еще 💎' + (15 - appState.crystals));
+                }
+                vibrate();
+            });
+            alertButtonElement.addEventListener('click', closeAlert);
+            tasksAlertButtonElement.addEventListener('click', closeTasksAlert);
+            talismanModalButtonElement.addEventListener('click', closeTalismanModal);
+            
+            // Обработчики для экрана профиля
+            profileBackButtonElement.addEventListener('click', closeProfileScreen);
+            animatedIconsSwitch.addEventListener('change', () => {
+                appState.animatedIcons = animatedIconsSwitch.checked;
+                updateAnimatedIcons();
+                saveState();
+                vibrate();
+            });
+            giveawayBannersSwitch.addEventListener('change', () => {
+                appState.giveawayBanners = giveawayBannersSwitch.checked;
+                saveState();
+                vibrate();
+            });
+            promoButtonElement.addEventListener('click', activatePromoCode);
+            
+            // Обработчики для экрана магазина
+            shopBackButtonElement.addEventListener('click', closeShopScreen);
+            
+            // Обработчики для экрана модификаций
+            modificationsBackButtonElement.addEventListener('click', closeModificationsScreen);
+            energyUpgradeBtnElement.addEventListener('click', () => upgradeModification('energy'));
+            autofarmUpgradeBtnElement.addEventListener('click', () => upgradeModification('autofarm'));
+            incomeUpgradeBtnElement.addEventListener('click', () => upgradeModification('income'));
+            
+            // Обработчик клика на всю страницу (кроме гифки)
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#gif-container') && !e.target.closest('.modal') && !e.target.closest('.alert')) {
+                    vibrate();
+                }
+            });
+            
+            // Инициализация Telegram WebApp
             if (tg) {
-                console.log('Telegram WebApp initialized:', tg);
                 tg.expand();
+                tg.enableClosingConfirmation();
+                
+                // Получение данных пользователя
+                const user = tg.initDataUnsafe?.user;
+                
+                // Обновление интерфейса с данными пользователя
+                if (user) {
+                    if (user.first_name) {
+                        usernameElement.textContent = user.first_name;
+                    }
+                    
+                    if (user.username) {
+                        userTagElement.textContent = `@${user.username}`;
+                    } else {
+                        userTagElement.style.display = 'none';
+                    }
+                    
+                    // Загрузка аватарки, если доступна
+                    const avatarElement = document.getElementById('user-avatar');
+                    const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+                    if (user.photo_url) {
+                        avatarElement.src = user.photo_url;
+                        avatarElement.style.display = 'block';
+                        avatarPlaceholder.style.display = 'none';
+                    }
+                }
+                
+                console.log('Telegram WebApp initialized:', tg);
+                console.log('User data:', user);
             } else {
                 console.log('Not in Telegram environment - using mock data');
+                // Заглушка для тестирования вне Telegram
+                usernameElement.textContent = 'Тестовый';
+                userTagElement.textContent = '@testuser';
             }
-        });
+            
+            // Запрет масштабирования и выделения текста
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('gesturestart', function(event) {
+                event.preventDefault();
+            });
+            
+            // Запрет контекстного меню (долгое нажатие)
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+        }
+        
+        // Запуск инициализации при загрузке DOM
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
