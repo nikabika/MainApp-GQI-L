@@ -18,7 +18,7 @@
         body {
             background-color: #000;
             color: #fff;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -72,6 +72,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            padding: 15px;
         }
         
         .content-container {
@@ -81,7 +82,12 @@
             justify-content: center;
             text-align: center;
             max-width: 320px;
+            width: 100%;
             transition: opacity 0.2s ease, transform 0.2s ease;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         
         .empty-gif {
@@ -123,24 +129,32 @@
         /* Стили для страницы профиля */
         .profile-container {
             position: absolute;
-            top: 0;
+            top: 15px; /* Отступ сверху */
             left: 0;
             right: 0;
             bottom: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start; /* Выравнивание по левому краю */
             width: 100%;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s ease;
-            padding: 15px;
+            padding: 0 15px;
+            overflow-y: auto;
         }
         
         .profile-container.active {
             opacity: 1;
             pointer-events: all;
+        }
+        
+        .profile-top-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
         }
         
         .profile-avatar-large {
@@ -243,8 +257,8 @@
         }
         
         .add-story-button {
-            width: 120px; /* Увеличено с 100px */
-            height: 160px; /* Увеличено с 135px */
+            width: 120px;
+            height: 160px;
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             display: flex;
@@ -253,6 +267,7 @@
             justify-content: center;
             cursor: pointer;
             transition: background-color 0.2s ease;
+            margin-left: 15px; /* Отступ слева */
         }
         
         .add-story-button:active {
@@ -297,8 +312,8 @@
         }
         
         .nav-icon {
-            width: 30px; /* Уменьшено с 32px на 2px */
-            height: 30px; /* Уменьшено с 32px на 2px */
+            width: 30px;
+            height: 30px;
             color: rgba(255, 255, 255, 0.7);
             transition: all 0.2s ease;
         }
@@ -360,6 +375,90 @@
         .avatar.active {
             border-color: var(--accent-color, #007AFF);
         }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 375px) {
+            .logo-text {
+                font-size: 24px;
+            }
+            
+            .empty-gif {
+                width: 130px;
+                height: 130px;
+            }
+            
+            .empty-title {
+                font-size: 20px;
+            }
+            
+            .empty-description {
+                font-size: 14px;
+            }
+            
+            .profile-name {
+                font-size: 22px;
+            }
+            
+            .profile-username {
+                font-size: 14px;
+            }
+            
+            .subscribe-button {
+                width: 280px;
+            }
+            
+            .add-story-button {
+                width: 100px;
+                height: 140px;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .header {
+                padding: 16px 15px;
+            }
+            
+            .logo-text {
+                font-size: 22px;
+            }
+            
+            .empty-gif {
+                width: 110px;
+                height: 110px;
+            }
+            
+            .empty-title {
+                font-size: 18px;
+            }
+            
+            .empty-description {
+                font-size: 13px;
+            }
+            
+            .profile-name {
+                font-size: 20px;
+            }
+            
+            .subscribe-button {
+                width: 240px;
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .message-button {
+                width: 45px;
+                height: 40px;
+            }
+            
+            .add-story-button {
+                width: 90px;
+                height: 130px;
+            }
+            
+            .footer {
+                padding: 0 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -381,32 +480,34 @@
         </div>
         
         <div class="profile-container" id="profile-container">
-            <div class="profile-avatar-large" id="profile-avatar-large">
-                <div class="avatar-initial">U</div>
-            </div>
-            <div class="profile-name" id="profile-name">Имя Фамилия</div>
-            <div class="profile-username" id="profile-username">@username</div>
-            
-            <div class="profile-stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="views-count">0</div>
-                    <div class="stat-label">Просмотры</div>
+            <div class="profile-top-section">
+                <div class="profile-avatar-large" id="profile-avatar-large">
+                    <div class="avatar-initial">U</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="stories-count">0</div>
-                    <div class="stat-label">Истории</div>
+                <div class="profile-name" id="profile-name">Имя Фамилия</div>
+                <div class="profile-username" id="profile-username">@username</div>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="views-count">0</div>
+                        <div class="stat-label">Просмотры</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stories-count">0</div>
+                        <div class="stat-label">Истории</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="followers-count">0</div>
+                        <div class="stat-label">Подписчики</div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="followers-count">0</div>
-                    <div class="stat-label">Подписчики</div>
+                
+                <div class="profile-actions">
+                    <button class="subscribe-button" onclick="handleSubscribe()">Подписаться</button>
+                    <button class="message-button" onclick="handleMessage()">
+                        <i data-feather="message-circle" class="message-icon"></i>
+                    </button>
                 </div>
-            </div>
-            
-            <div class="profile-actions">
-                <button class="subscribe-button" onclick="handleSubscribe()">Подписаться</button>
-                <button class="message-button" onclick="handleMessage()">
-                    <i data-feather="message-circle" class="message-icon"></i>
-                </button>
             </div>
             
             <div class="add-story-button" onclick="handleAddStory()">
@@ -448,10 +549,16 @@
             document.documentElement.style.setProperty('--accent-color', tg.themeParams.button_color);
         }
         
-        // Функция для вибрации (если поддерживается)
+        // Функция для вибрации (исправленная)
         function vibrate() {
+            // Проверяем поддержку вибрации разными способами
             if (navigator.vibrate) {
-                navigator.vibrate(3); // Вибрация 3ms
+                navigator.vibrate(10); // Увеличиваем длительность вибрации
+            } else if (navigator.webkitVibrate) {
+                navigator.webkitVibrate(10);
+            } else if (window.Telegram && tg.HapticFeedback) {
+                // Используем тактильную обратную связь Telegram, если доступна
+                tg.HapticFeedback.impactOccurred('light');
             }
         }
         
