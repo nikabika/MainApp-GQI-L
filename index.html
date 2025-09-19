@@ -22,7 +22,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            padding-top: env(safe-area-inset-top, 0px);
         }
         
         .header {
@@ -30,7 +29,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: calc(env(safe-area-inset-top, 0px) + 80px); /* Изменено с 30px на 80px */
             transition: opacity 0.2s ease;
         }
         
@@ -73,7 +71,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
             position: relative;
         }
         
@@ -126,16 +123,19 @@
         /* Стили для страницы профиля */
         .profile-container {
             position: absolute;
-            top: 45px;
+            top: 0;
             left: 0;
             right: 0;
+            bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             width: 100%;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s ease;
+            padding: 15px;
         }
         
         .profile-container.active {
@@ -198,7 +198,7 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            max-width: 500px; /* Увеличено для размещения широкой кнопки */
+            max-width: 400px;
             margin-bottom: 25px;
         }
         
@@ -210,7 +210,7 @@
             padding: 12px 20px;
             font-size: 16px;
             font-weight: 600;
-            width: 420px; /* Фиксированная ширина 420px */
+            width: 320px; /* Фиксированная ширина 320px */
             cursor: pointer;
             transition: opacity 0.2s ease;
         }
@@ -243,8 +243,8 @@
         }
         
         .add-story-button {
-            width: 100px;
-            height: 135px;
+            width: 120px; /* Увеличено с 100px */
+            height: 160px; /* Увеличено с 135px */
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             display: flex;
@@ -253,9 +253,6 @@
             justify-content: center;
             cursor: pointer;
             transition: background-color 0.2s ease;
-            align-self: flex-start;
-            margin-left: 30px;
-            margin-top: 10px;
         }
         
         .add-story-button:active {
@@ -296,11 +293,12 @@
             align-items: center;
             gap: 6px;
             flex: 1;
+            cursor: pointer;
         }
         
         .nav-icon {
-            width: 32px;
-            height: 32px;
+            width: 30px; /* Уменьшено с 32px на 2px */
+            height: 30px; /* Уменьшено с 32px на 2px */
             color: rgba(255, 255, 255, 0.7);
             transition: all 0.2s ease;
         }
@@ -453,7 +451,7 @@
         // Функция для вибрации (если поддерживается)
         function vibrate() {
             if (navigator.vibrate) {
-                navigator.vibrate(10);
+                navigator.vibrate(3); // Вибрация 3ms
             }
         }
         
