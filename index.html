@@ -170,7 +170,7 @@
             justify-content: space-around;
             width: 100%;
             max-width: 400px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .stat-item {
@@ -191,133 +191,85 @@
             font-weight: 400;
         }
         
-        .stories-section {
+        .profile-actions {
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
+            align-items: center;
             width: 100%;
             max-width: 400px;
-            padding-left: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .subscribe-button {
+            background-color: var(--accent-color, #007AFF);
+            color: white;
+            border: none;
+            border-radius: 10px 0 0 10px;
+            padding: 12px 0;
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        
+        .subscribe-button:active {
+            opacity: 0.8;
+        }
+        
+        .message-button {
+            width: 50px;
+            height: 44px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 0 10px 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .message-button:active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .message-icon {
+            width: 20px;
+            height: 20px;
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .add-story-button {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 90px;
+            height: 90px;
+            background-color: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background 0.2s ease;
+            transition: background-color 0.2s ease;
+            align-self: flex-start;
+            margin-left: 30px;
+            margin-top: 10px;
         }
         
         .add-story-button:active {
-            background: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.2);
         }
         
         .add-story-icon {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         
         .add-story-text {
-            font-size: 12px;
+            font-size: 13px;
             color: rgba(255, 255, 255, 0.7);
-        }
-        
-        /* Модальное окно для добавления истории */
-        .story-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #000;
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .story-modal.active {
-            display: flex;
-        }
-        
-        .story-preview {
-            width: 100%;
-            height: 70%;
-            background: #222;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        
-        .story-preview-video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
-        .story-timeline {
-            width: 90%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 2px;
-            margin: 20px 0;
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .story-timeline-fill {
-            position: absolute;
-            height: 100%;
-            background: var(--accent-color, #007AFF);
-            border-radius: 2px;
-            width: 0%;
-        }
-        
-        .story-timeline-handle {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: #fff;
-            border-radius: 50%;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-        }
-        
-        .story-controls {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .story-control-button {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .story-cancel {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-        
-        .story-publish {
-            background: var(--accent-color, #007AFF);
-            color: #fff;
-        }
-        
-        .file-input {
-            display: none;
         }
         
         .footer {
@@ -425,7 +377,7 @@
             <img src="https://stickers.fullyst.com/b9f1c4ec-ff51-507f-a011-b3c035880c92/full/AgAD0gIAAlPfIUQ.webp" class="empty-gif" alt="Нет контента">
             <div class="empty-title">Контента пока нет</div>
             <div class="empty-description">Видимо, никто не выложил историй. Ты можешь стать первым!</div>
-            <button class="action-button" onclick="document.getElementById('story-file-input').click()">Выложить историю</button>
+            <button class="action-button">Выложить историю</button>
         </div>
         
         <div class="profile-container" id="profile-container">
@@ -450,33 +402,23 @@
                 </div>
             </div>
             
-            <div class="stories-section">
-                <div class="add-story-button" onclick="document.getElementById('story-file-input').click()">
-                    <svg class="add-story-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 11h-6V5a1 1 0 00-2 0v6H5a1 1 0 000 2h6v6a1 1 0 002 0v-6h6a1 1 0 000-2z"/>
+            <div class="profile-actions">
+                <button class="subscribe-button" onclick="handleSubscribe()">Подписаться</button>
+                <button class="message-button" onclick="handleMessage()">
+                    <svg class="message-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
                     </svg>
-                    <div class="add-story-text">История</div>
-                </div>
+                </button>
+            </div>
+            
+            <div class="add-story-button" onclick="handleAddStory()">
+                <svg class="add-story-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 11h-6V5a1 1 0 00-2 0v6H5a1 1 0 000 2h6v6a1 1 0 002 0v-6h6a1 1 0 000-2z"/>
+                </svg>
+                <div class="add-story-text">История</div>
             </div>
         </div>
     </div>
-    
-    <!-- Модальное окно для редактирования истории -->
-    <div class="story-modal" id="story-modal">
-        <div class="story-preview" id="story-preview">
-            <div style="color: rgba(255,255,255,0.5)">Предпросмотр видео</div>
-        </div>
-        <div class="story-timeline" id="story-timeline">
-            <div class="story-timeline-fill" id="story-timeline-fill"></div>
-            <div class="story-timeline-handle" id="story-timeline-handle"></div>
-        </div>
-        <div class="story-controls">
-            <button class="story-control-button story-cancel" onclick="closeStoryModal()">Отмена</button>
-            <button class="story-control-button story-publish" onclick="publishStory()">Опубликовать</button>
-        </div>
-    </div>
-    
-    <input type="file" id="story-file-input" class="file-input" accept="video/*,image/*" onchange="handleFileSelect(event)">
     
     <div class="footer">
         <div class="nav-item" onclick="selectTab('trends')">
@@ -515,29 +457,33 @@
             document.documentElement.style.setProperty('--accent-color', tg.themeParams.button_color);
         }
         
-        // Статистика пользователя
-        const userStats = {
-            views: 12543,    // 12.5K просмотров
-            stories: 7,      // 7 историй
-            followers: 8432  // 8.4K подписчиков
-        };
-        
-        // Функция для форматирования чисел
-        function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        // Функция для вибрации (если поддерживается)
+        function vibrate() {
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
             }
-            if (num >= 1000) {
-                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-            }
-            return num.toString();
         }
         
-        // Обновление статистики
-        function updateStats() {
-            document.getElementById('views-count').textContent = formatNumber(userStats.views);
-            document.getElementById('stories-count').textContent = formatNumber(userStats.stories);
-            document.getElementById('followers-count').textContent = formatNumber(userStats.followers);
+        // Функция для форматирования чисел (1K, 1.5M и т.д.)
+        function formatNumber(number) {
+            if (number >= 1000000) {
+                return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            }
+            if (number >= 1000) {
+                return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            }
+            return number.toString();
+        }
+        
+        // Генерация случайных данных для статистики
+        function generateStats() {
+            const views = Math.floor(Math.random() * 100000);
+            const stories = Math.floor(Math.random() * 50);
+            const followers = Math.floor(Math.random() * 5000);
+            
+            document.getElementById('views-count').textContent = formatNumber(views);
+            document.getElementById('stories-count').textContent = formatNumber(stories);
+            document.getElementById('followers-count').textContent = formatNumber(followers);
         }
         
         // Получение информации о пользователе
@@ -578,13 +524,15 @@
             } else {
                 profileUsername.style.display = 'none';
             }
+            
+            // Генерация статистики
+            generateStats();
         }
-        
-        // Обновляем статистику при загрузке
-        updateStats();
         
         // Функция выбора вкладки
         function selectTab(tabName) {
+            vibrate(); // Легкая вибрация при переключении
+            
             const trendsIcon = document.querySelector('.nav-item:nth-child(1) .nav-icon');
             const trendsLabel = document.querySelector('.nav-item:nth-child(1) .nav-label');
             const profileAvatar = document.getElementById('profile-avatar');
@@ -625,6 +573,7 @@
         
         // Обработчик клика по центральной кнопке
         function handlePlusClick() {
+            vibrate();
             tg.showPopup({
                 title: "Создание нового контента",
                 message: "Выберите тип создаваемого контента",
@@ -637,82 +586,27 @@
                 if (buttonId === 'post') {
                     tg.showAlert('Создание нового поста');
                 } else if (buttonId === 'story') {
-                    document.getElementById('story-file-input').click();
+                    tg.showAlert('Создание истории');
                 }
             });
         }
         
-        // Обработчик выбора файла
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Проверка типа файла
-            if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) {
-                tg.showAlert('Пожалуйста, выберите видео или фото');
-                return;
-            }
-            
-            // Проверка длительности видео (если это видео)
-            if (file.type.startsWith('video/')) {
-                const video = document.createElement('video');
-                video.preload = 'metadata';
-                
-                video.onloadedmetadata = function() {
-                    window.URL.revokeObjectURL(video.src);
-                    if (video.duration > 60) {
-                        tg.showAlert('Видео должно быть не длиннее 1 минуты');
-                        return;
-                    }
-                    openStoryModal(file);
-                };
-                
-                video.src = URL.createObjectURL(file);
-            } else {
-                openStoryModal(file);
-            }
+        // Обработчик клика по кнопке добавления истории
+        function handleAddStory() {
+            vibrate();
+            tg.showAlert('Добавление новой истории');
         }
         
-        // Открытие модального окна для редактирования истории
-        function openStoryModal(file) {
-            const modal = document.getElementById('story-modal');
-            const preview = document.getElementById('story-preview');
-            
-            // Очищаем превью
-            preview.innerHTML = '';
-            
-            if (file.type.startsWith('video/')) {
-                const video = document.createElement('video');
-                video.src = URL.createObjectURL(file);
-                video.controls = true;
-                video.classList.add('story-preview-video');
-                preview.appendChild(video);
-            } else {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '100%';
-                preview.appendChild(img);
-            }
-            
-            modal.classList.add('active');
+        // Обработчик клика по кнопке подписки
+        function handleSubscribe() {
+            vibrate();
+            tg.showAlert('Подписка на пользователя');
         }
         
-        // Закрытие модального окна
-        function closeStoryModal() {
-            const modal = document.getElementById('story-modal');
-            modal.classList.remove('active');
-            
-            // Очищаем input file
-            document.getElementById('story-file-input').value = '';
-        }
-        
-        // Публикация истории
-        function publishStory() {
-            tg.showAlert('История опубликована!');
-            userStats.stories += 1;
-            updateStats();
-            closeStoryModal();
+        // Обработчик клика по кнопке сообщения
+        function handleMessage() {
+            vibrate();
+            tg.showAlert('Открытие личной переписки');
         }
         
         // Инициализация при загрузке
