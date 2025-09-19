@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Users Search</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -20,7 +19,7 @@
             color: #fff;
             min-height: 100vh;
             padding: 20px;
-            padding-top: 60px;
+            padding-top: 70px;
         }
         
         .search-container {
@@ -34,20 +33,21 @@
         .search-bar {
             width: 100%;
             height: 50px;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.12);
             border-radius: 15px;
             display: flex;
             align-items: center;
             padding: 0 20px;
             gap: 12px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
         
         .search-icon {
             width: 22px;
             height: 22px;
             color: rgba(255, 255, 255, 0.7);
+            flex-shrink: 0;
         }
         
         .search-input {
@@ -69,7 +69,7 @@
             top: 100%;
             left: 0;
             right: 0;
-            background-color: rgba(20, 20, 20, 0.95);
+            background-color: rgba(25, 25, 25, 0.98);
             backdrop-filter: blur(20px);
             border-radius: 15px;
             margin-top: 10px;
@@ -77,8 +77,8 @@
             z-index: 1000;
             max-height: 300px;
             overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             display: none;
         }
         
@@ -148,17 +148,19 @@
         }
         
         .user-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .user-card:active {
             transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.12);
         }
         
         .user-avatar {
@@ -172,6 +174,12 @@
             justify-content: center;
             align-items: center;
             flex-shrink: 0;
+        }
+        
+        .user-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .user-info {
@@ -194,12 +202,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 8px;
         }
         
         .user-stats {
             display: flex;
             gap: 15px;
-            margin-top: 8px;
         }
         
         .stat {
@@ -212,7 +220,7 @@
         
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 60px 20px;
             color: rgba(255, 255, 255, 0.5);
             font-size: 16px;
         }
@@ -230,6 +238,24 @@
             color: rgba(255, 255, 255, 0.5);
             font-size: 16px;
         }
+        
+        .clear-search {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .clear-search:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -239,7 +265,7 @@
                 <circle cx="11" cy="11" r="8"></circle>
                 <path d="M21 21l-4.35-4.35"></path>
             </svg>
-            <input type="text" class="search-input" placeholder="Search users by name or @username" id="search-input">
+            <input type="text" class="search-input" placeholder="Search users by name or @username" id="search-input" autocomplete="off">
         </div>
         
         <div class="search-suggestions" id="search-suggestions">
@@ -248,105 +274,103 @@
     </div>
     
     <div class="users-list" id="users-list">
-        <div class="initial-message">Start typing to search users</div>
+        <div class="initial-message">Type to search users</div>
     </div>
 
     <script>
         // Инициализация Supabase
         const SUPABASE_URL = 'https://uiscbfpjivggzfyorpja.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpc2NiZnBqaXZnZ3pmeW9ycGphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjc3NjksImV4cCI6MjA3Mzg0Mzc2OX0.xVNIIAwqBGZCkxI_a66-8Tqj_Rw5GpjKC4zOBCKe-R4';
+        
+        // Инициализируем Supabase клиент
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // Переменные для управления поиском
         let searchTimeout = null;
         let currentSearchQuery = '';
-        
-        // Функция для форматирования чисел (1K, 1.5M и т.д.)
+
+        // Функция для форматирования чисел
         function formatNumber(number) {
-            if (number >= 1000000) {
-                return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-            }
-            if (number >= 1000) {
-                return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-            }
+            if (number >= 1000000) return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            if (number >= 1000) return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
             return number.toString();
         }
-        
-        // Поиск пользователей в Supabase
+
+        // Поиск пользователей
         async function searchUsers(query) {
-            if (!query || query.trim().length < 2) {
-                hideSuggestions();
-                showInitialMessage();
+            const searchContainer = document.getElementById('search-suggestions');
+            const usersContainer = document.getElementById('users-list');
+            
+            if (!query || query.trim().length < 1) {
+                searchContainer.style.display = 'none';
+                usersContainer.innerHTML = '<div class="initial-message">Type to search users</div>';
                 return;
             }
-            
+
             showLoading();
-            
+
             try {
-                // Ищем пользователей по username или имени
+                // Ищем пользователей
                 const { data, error } = await supabase
                     .from('users')
                     .select('*')
                     .or(`username.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
                     .order('created_at', { ascending: false })
                     .limit(20);
-                    
+
                 if (error) {
                     console.error('Search error:', error);
                     showNoResults();
                     return;
                 }
-                
+
                 if (data && data.length > 0) {
                     displayUsers(data);
-                    displaySuggestions(data.slice(0, 5)); // Показываем только 5 подсказок
+                    displaySuggestions(data.slice(0, 5));
                 } else {
                     showNoResults();
-                    hideSuggestions();
+                    searchContainer.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Search failed:', error);
                 showNoResults();
-                hideSuggestions();
+                searchContainer.style.display = 'none';
             }
         }
-        
+
         // Отображение подсказок
         function displaySuggestions(users) {
             const suggestionsContainer = document.getElementById('suggestion-list');
             const searchContainer = document.getElementById('search-suggestions');
             
-            if (users.length === 0) {
-                hideSuggestions();
+            if (!users || users.length === 0) {
+                searchContainer.style.display = 'none';
                 return;
             }
-            
+
             suggestionsContainer.innerHTML = '';
             
             users.forEach(user => {
                 const suggestionItem = document.createElement('div');
                 suggestionItem.className = 'suggestion-item';
                 suggestionItem.onclick = () => {
-                    document.getElementById('search-input').value = `@${user.username}`;
-                    hideSuggestions();
-                    searchUsers(user.username);
+                    document.getElementById('search-input').value = user.username ? `@${user.username}` : user.first_name || '';
+                    searchUsers(user.username || user.first_name || '');
+                    searchContainer.style.display = 'none';
                 };
                 
-                let avatarContent = '';
-                if (user.avatar_url) {
-                    avatarContent = `<img src="${user.avatar_url}" class="suggestion-avatar-img" alt="${user.username}">`;
-                } else {
-                    const initial = user.first_name ? user.first_name[0] : (user.username ? user.username[0] : 'U');
-                    avatarContent = `<div class="avatar-initial">${initial}</div>`;
-                }
+                const avatarContent = user.avatar_url 
+                    ? `<img src="${user.avatar_url}" class="suggestion-avatar-img" alt="${user.username || 'user'}">`
+                    : `<div class="avatar-initial">${(user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase()}</div>`;
                 
                 const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
-                
+                const displayName = fullName || user.username || 'Unknown User';
+                const username = user.username ? `@${user.username}` : '';
+
                 suggestionItem.innerHTML = `
                     <div class="suggestion-avatar">${avatarContent}</div>
                     <div class="suggestion-info">
-                        <div class="suggestion-name">${fullName || user.username || 'Unknown User'}</div>
-                        <div class="suggestion-username">@${user.username || 'unknown'}</div>
+                        <div class="suggestion-name">${displayName}</div>
+                        <div class="suggestion-username">${username}</div>
                     </div>
                 `;
                 
@@ -355,8 +379,8 @@
             
             searchContainer.style.display = 'block';
         }
-        
-        // Отображение пользователей в списке
+
+        // Отображение пользователей
         function displayUsers(users) {
             const usersContainer = document.getElementById('users-list');
             
@@ -366,23 +390,19 @@
                 const userCard = document.createElement('div');
                 userCard.className = 'user-card';
                 
-                let avatarContent = '';
-                if (user.avatar_url) {
-                    avatarContent = `<img src="${user.avatar_url}" class="suggestion-avatar-img" alt="${user.username}">`;
-                } else {
-                    const initial = user.first_name ? user.first_name[0] : (user.username ? user.username[0] : 'U');
-                    avatarContent = `<div class="avatar-initial">${initial}</div>`;
-                }
+                const avatarContent = user.avatar_url 
+                    ? `<img src="${user.avatar_url}" class="user-avatar-img" alt="${user.username || 'user'}">`
+                    : `<div class="avatar-initial">${(user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase()}</div>`;
                 
                 const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
                 const displayName = fullName || user.username || 'Unknown User';
-                const username = user.username || 'unknown';
-                
+                const username = user.username ? `@${user.username}` : '';
+
                 userCard.innerHTML = `
                     <div class="user-avatar">${avatarContent}</div>
                     <div class="user-info">
                         <div class="user-name">${displayName}</div>
-                        <div class="user-username">@${username}</div>
+                        <div class="user-username">${username}</div>
                         <div class="user-stats">
                             <div class="stat">👁️ ${formatNumber(user.views_count || 0)}</div>
                             <div class="stat">📚 ${formatNumber(user.stories_count || 0)}</div>
@@ -394,63 +414,61 @@
                 usersContainer.appendChild(userCard);
             });
         }
-        
-        // Скрытие подсказок
+
+        function showLoading() {
+            document.getElementById('users-list').innerHTML = '<div class="loading">Searching...</div>';
+        }
+
+        function showNoResults() {
+            const usersContainer = document.getElementById('users-list');
+            usersContainer.innerHTML = `
+                <div class="no-results">No users found</div>
+                <button class="clear-search" onclick="clearSearch()">Clear search</button>
+            `;
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-suggestions').style.display = 'none';
+            document.getElementById('users-list').innerHTML = '<div class="initial-message">Type to search users</div>';
+        }
+
         function hideSuggestions() {
             document.getElementById('search-suggestions').style.display = 'none';
         }
-        
-        // Показать сообщение о загрузке
-        function showLoading() {
-            const usersContainer = document.getElementById('users-list');
-            usersContainer.innerHTML = '<div class="loading">Searching...</div>';
-        }
-        
-        // Показать сообщение об отсутствии результатов
-        function showNoResults() {
-            const usersContainer = document.getElementById('users-list');
-            usersContainer.innerHTML = '<div class="no-results">No users found</div>';
-        }
-        
-        // Показать начальное сообщение
-        function showInitialMessage() {
-            const usersContainer = document.getElementById('users-list');
-            usersContainer.innerHTML = '<div class="initial-message">Start typing to search users</div>';
-        }
-        
-        // Инициализация при загрузке
+
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('search-input');
             
-            // Фокус на поле поиска при загрузке
             searchInput.focus();
             
-            // Обработчик ввода в поисковую строку
             searchInput.addEventListener('input', function(e) {
                 const query = e.target.value.trim();
                 currentSearchQuery = query;
                 
-                // Дебаунсинг запросов (300ms)
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     searchUsers(query);
                 }, 300);
             });
             
-            // Скрываем подсказки при клике вне области поиска
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.search-container')) {
                     hideSuggestions();
                 }
             });
             
-            // Обработчик нажатия клавиш в поисковой строке
             searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     hideSuggestions();
-                    searchInput.blur();
                 }
             });
+
+            // Тестовый поиск при загрузке
+            setTimeout(() => {
+                searchUsers('a');
+            }, 1000);
         });
     </script>
 </body>
