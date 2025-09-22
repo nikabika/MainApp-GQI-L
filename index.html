@@ -28,20 +28,13 @@
             display: flex;
             flex-direction: column;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            transition: transform 0.3s ease-in-out;
-        }
-
-        body.chat-open {
-            transform: translateX(-85%);
         }
 
         .header {
             position: sticky;
             top: 0;
             height: 50px;
-            background: rgba(44, 44, 46, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -63,6 +56,7 @@
             justify-content: center;
             cursor: pointer;
             color: #fff;
+            font-size: 24px;
         }
 
         .content {
@@ -149,26 +143,26 @@
         .chat-screen {
             position: fixed;
             top: 0;
+            left: 0;
             right: 0;
-            width: 85%;
-            height: 100%;
+            bottom: 0;
             background-color: #000;
-            z-index: 900;
+            z-index: 1000;
             display: flex;
             flex-direction: column;
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
         }
 
         .chat-screen.active {
-            transform: translateX(0);
+            opacity: 1;
+            pointer-events: all;
         }
 
         .chat-header {
             height: 50px;
-            background: rgba(44, 44, 46, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -205,22 +199,8 @@
             display: none;
         }
 
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 800;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        .overlay.active {
-            opacity: 1;
-            visibility: visible;
+        .highlight {
+            color: var(--accent-color);
         }
     </style>
 </head>
@@ -259,8 +239,6 @@
         </div>
     </div>
 
-    <div class="overlay" id="overlay"></div>
-
     <script>
         // Инициализация Telegram WebApp
         let tg = window.Telegram.WebApp;
@@ -276,18 +254,31 @@
             btn.style.background = accentColor;
         });
         
-        // Эмулируем последние сообщения
+        // Пример последних сообщений
         const lastMessages = [
-            "Привет! Как могу по...",
-            "Спасибо за обращение...",
-            "Ваша проблема уже пер...",
-            "Ожидайте ответа спец...",
-            "Скоро с вами свяжется..."
+            "Привет! Как могу помочь?",
+            "Спасибо за обращение!",
+            "Ваша проблема уже передана специалисту",
+            "Ожидайте ответа в течение 10 минут",
+            "Скоро с вами свяжется наш менеджер",
+            "Мы уже решаем вашу проблему",
+            "Благодарим за ожидание",
+            "Ваш запрос в обработке",
+            "Для ускорения решения пришлите скриншот",
+            "Специалист уже на линии"
         ];
         
-        // Устанавливаем случайное последнее сообщение
+        // Функция для обрезки сообщения до 12 символов
+        function truncateMessage(message, maxLength = 12) {
+            if (message.length > maxLength) {
+                return message.substring(0, maxLength) + '...';
+            }
+            return message;
+        }
+        
+        // Устанавливаем случайное последнее сообщение (обрезанное)
         const randomMessage = lastMessages[Math.floor(Math.random() * lastMessages.length)];
-        document.getElementById('last-message').textContent = randomMessage;
+        document.getElementById('last-message').textContent = truncateMessage(randomMessage);
         
         // Проверяем, является ли пользователь админом (temkazavr)
         const isAdmin = tg.initDataUnsafe.user?.username === 'temkazavr';
@@ -297,26 +288,18 @@
 
         // Навигация между экранами
         document.getElementById('support-chat').addEventListener('click', function() {
+            // Вибрация
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(3);
+            }
+            
+            // Быстрое открытие чата без анимации
             document.getElementById('support-screen').classList.add('active');
-            document.body.classList.add('chat-open');
-            document.getElementById('overlay').classList.add('active');
-            document.querySelector('.header .back-button').style.display = 'flex';
-            document.querySelector('.header h1').textContent = 'Поддержка';
         });
 
-        document.getElementById('back-from-chat').addEventListener('click', closeChat);
-        
-        document.querySelector('.header .back-button').addEventListener('click', closeChat);
-        
-        document.getElementById('overlay').addEventListener('click', closeChat);
-
-        function closeChat() {
+        document.getElementById('back-from-chat').addEventListener('click', function() {
             document.getElementById('support-screen').classList.remove('active');
-            document.body.classList.remove('chat-open');
-            document.getElementById('overlay').classList.remove('active');
-            document.querySelector('.header .back-button').style.display = 'none';
-            document.querySelector('.header h1').textContent = 'Chats';
-        }
+        });
 
         // Обработчик для кнопки добавления
         document.getElementById('add-button').addEventListener('click', function() {
