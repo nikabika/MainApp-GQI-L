@@ -183,20 +183,22 @@
 
         .message {
             background-color: rgba(44, 44, 46, 0.6);
-            border-radius: 12px;
+            border-radius: 15px;
             padding: 12px;
             margin-bottom: 16px;
-            max-width: 85%;
+            width: 100%;
         }
 
         .admin-button {
             background-color: rgba(44, 44, 46, 0.8);
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 12px 16px;
             margin-top: 16px;
             text-align: center;
             font-weight: 500;
             display: none;
+            width: 100%;
+            cursor: pointer;
         }
 
         .highlight {
@@ -215,7 +217,7 @@
             <div class="emoji">🤖</div>
             <div class="text-content">
                 <div class="title">Поддержка</div>
-                <div class="subtitle" id="last-message">Загрузка...</div>
+                <div class="subtitle" id="last-message">Привет! Я - бот под…</div>
             </div>
         </div>
     </main>
@@ -254,32 +256,6 @@
             btn.style.background = accentColor;
         });
         
-        // Пример последних сообщений
-        const lastMessages = [
-            "Привет! Как могу помочь?",
-            "Спасибо за обращение!",
-            "Ваша проблема уже передана специалисту",
-            "Ожидайте ответа в течение 10 минут",
-            "Скоро с вами свяжется наш менеджер",
-            "Мы уже решаем вашу проблему",
-            "Благодарим за ожидание",
-            "Ваш запрос в обработке",
-            "Для ускорения решения пришлите скриншот",
-            "Специалист уже на линии"
-        ];
-        
-        // Функция для обрезки сообщения до 12 символов
-        function truncateMessage(message, maxLength = 12) {
-            if (message.length > maxLength) {
-                return message.substring(0, maxLength) + '...';
-            }
-            return message;
-        }
-        
-        // Устанавливаем случайное последнее сообщение (обрезанное)
-        const randomMessage = lastMessages[Math.floor(Math.random() * lastMessages.length)];
-        document.getElementById('last-message').textContent = truncateMessage(randomMessage);
-        
         // Проверяем, является ли пользователь админом (temkazavr)
         const isAdmin = tg.initDataUnsafe.user?.username === 'temkazavr';
         if (isAdmin) {
@@ -298,16 +274,22 @@
         });
 
         document.getElementById('back-from-chat').addEventListener('click', function() {
+            // Вибрация при выходе
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(3);
+            }
+            
             document.getElementById('support-screen').classList.remove('active');
         });
 
         // Обработчик для кнопки добавления
         document.getElementById('add-button').addEventListener('click', function() {
-            tg.showPopup({
-                title: 'Новый чат',
-                message: 'Функция добавления нового чата будет доступна в следующем обновлении',
-                buttons: [{type: 'ok'}]
-            });
+            // Вибрация при нажатии на плюс
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(3);
+            }
+            
+            // Ничего не делает
         });
 
         // Обработчик для кнопки консоли
