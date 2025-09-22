@@ -3,620 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Поддержка</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
+    <title>GreenChat</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Futura:wght@600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
         }
 
         body {
-            background-color: #000;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background-color: #000000;
+            font-family: 'Futura', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            font-weight: 600;
             height: 100vh;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            color: #ffffff;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         .header {
-            position: sticky;
-            top: 0;
-            height: 50px;
-            background: #2C2C2E;
+            background-color: #000000;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 100;
-            border: none;
             flex-shrink: 0;
         }
 
-        .header h1 {
+        .header-text {
             font-size: 18px;
-            font-weight: 600;
-        }
-
-        .back-button {
-            position: absolute;
-            left: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: #fff;
-            font-size: 24px;
+            letter-spacing: -0.5px;
+            color: #ffffff;
         }
 
         .content {
             flex: 1;
+            padding: 20px;
             overflow-y: auto;
-            padding: 16px;
-            padding-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .card {
-            background-color: #2C2C2E;
-            border-radius: 12px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            width: 95%;
-            min-height: 60px;
-            cursor: pointer;
-        }
-
-        .emoji {
-            font-size: 28px;
-            margin-right: 12px;
+        .footer {
+            background-color: #000000;
+            padding: 15px 20px;
             flex-shrink: 0;
         }
 
-        .text-content {
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .subtitle {
-            font-size: 13px;
-            opacity: 0.7;
-            font-weight: 400;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .add-button {
-            position: fixed;
-            bottom: 25px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 13px;
+        .input-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            z-index: 1000;
-            border: none;
-            cursor: pointer;
-        }
-
-        .add-button i {
-            font-size: 24px;
-            color: white;
-        }
-
-        /* Предотвращение масштабирования */
-        html, body {
-            touch-action: manipulation;
-            overscroll-behavior: none;
-        }
-
-        /* Стили для экрана чата */
-        .chat-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #000;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-        }
-
-        .chat-screen.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .chat-header {
-            height: 50px;
-            background: #2C2C2E;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-end;
+            background-color: #1c1c1e;
+            border-radius: 15px;
+            padding: 12px 16px;
+            max-width: 100%;
+            margin: 0 auto;
+            transition: all 0.3s ease;
             position: relative;
-            padding: 0 16px;
+            min-height: 54px;
         }
 
-        .chat-title {
-            font-size: 18px;
-            font-weight: 600;
+        .input-container.has-text {
+            padding-right: 55px;
         }
 
-        .chat-content {
-            flex: 1;
+        .input-container.expanded {
+            min-height: 54px;
+            max-height: 120px;
             overflow-y: auto;
-            padding: 16px;
         }
 
-        .message {
-            background-color: #2C2C2E;
-            border-radius: 15px;
-            padding: 12px;
-            margin-bottom: 16px;
-            max-width: 85%;
-            align-self: flex-start;
+        .input-icon {
+            color: #8e8e93;
+            margin-right: 12px;
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-bottom: 2px;
         }
 
-        .message.user {
-            background-color: var(--accent-color);
-            align-self: flex-end;
-        }
-
-        .admin-button {
-            background-color: #2C2C2E;
-            border-radius: 15px;
-            padding: 12px 16px;
-            margin-top: 16px;
-            text-align: center;
-            font-weight: 500;
-            display: none;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .highlight {
-            color: var(--accent-color);
-        }
-
-        /* Стили для плашки входа */
-        .join-notification {
-            background-color: #2C2C2E;
-            border-radius: 17px;
-            padding: 8px 16px;
-            margin: 10px auto;
-            text-align: center;
-            font-size: 13px;
-            max-width: 80%;
-            display: none;
-        }
-
-        .join-notification .highlight {
-            color: var(--accent-color);
-        }
-
-        /* Стили для подвала чата */
-        .chat-footer {
-            background-color: #2C2C2E;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            display: none;
-        }
-
-        .message-input {
+        .chat-input {
             flex: 1;
-            background-color: #000;
+            background: none;
             border: none;
-            border-radius: 20px;
-            padding: 12px 16px;
-            color: #fff;
-            font-size: 16px;
             outline: none;
+            color: #ffffff;
+            font-size: 16px;
+            font-family: 'Futura', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 8px;
+            resize: none;
+            min-height: 24px;
+            max-height: 90px;
+            overflow-y: auto;
+            line-height: 1.4;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .message-input::placeholder {
-            color: #888;
+        .chat-input.has-text {
+            margin-right: 45px;
+        }
+
+        .chat-input::placeholder {
+            color: #8e8e93;
+        }
+
+        /* Стили для скроллбара */
+        .chat-input::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-input::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-input::-webkit-scrollbar-thumb {
+            background: #8e8e93;
+            border-radius: 2px;
+        }
+
+        .chat-input::-webkit-scrollbar-thumb:hover {
+            background: #BBFE26;
+        }
+
+        .input-container.expanded::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .input-container.expanded::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .input-container.expanded::-webkit-scrollbar-thumb {
+            background: #8e8e93;
+            border-radius: 2px;
         }
 
         .send-button {
-            width: 0;
-            height: 40px;
-            background-color: var(--accent-color);
+            position: absolute;
+            right: 7px;
+            bottom: 8px;
+            background-color: #BBFE26;
             border: none;
-            border-radius: 20px;
+            border-radius: 13px;
+            width: 38px;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: all 0.3s ease;
             cursor: pointer;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
-        .send-button.active {
-            width: 40px;
+        .send-button.visible {
             opacity: 1;
+            transform: scale(1);
         }
 
-        .send-button i {
-            color: white;
-            font-size: 20px;
+        .send-button:hover {
+            background-color: #a8e520;
+            transform: scale(1.05);
         }
 
-        .messages-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .send-icon {
+            color: #000000;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="back-button" style="display: none;"><i data-feather="chevron-left"></i></div>
-        <h1>Chats</h1>
-    </header>
-
-    <main class="content" id="chats-container">
-        <div class="card" id="support-chat">
-            <div class="emoji">🤖</div>
-            <div class="text-content">
-                <div class="title">Поддержка</div>
-                <div class="subtitle" id="last-message">Привет! Я - бот под…</div>
-            </div>
-        </div>
-    </main>
-
-    <button class="add-button" id="add-button">
-        <i data-feather="plus"></i>
-    </button>
-
-    <!-- Экран чата поддержки -->
-    <div class="chat-screen" id="support-screen">
-        <div class="chat-header">
-            <div class="back-button" id="back-from-support"><i data-feather="chevron-left"></i></div>
-            <div class="chat-title">Поддержка</div>
-        </div>
-        <div class="chat-content">
-            <div class="message">
-                <p>🤖 Привет!</p>
-                <p>Я — бот поддержки <span class="highlight">DeepChat</span>. Обращайтесь с жалобами, и поддержка ответит вам в скором времени!</p>
-            </div>
-            <div class="admin-button" id="console-button">Консоль</div>
-        </div>
+    <div class="header">
+        <div class="header-text">GreenChat</div>
     </div>
 
-    <!-- Экран пользовательского чата -->
-    <div class="chat-screen" id="user-chat-screen">
-        <div class="chat-header">
-            <div class="back-button" id="back-from-user-chat"><i data-feather="chevron-left"></i></div>
-            <div class="chat-title" id="user-chat-title">Чат</div>
-        </div>
-        <div class="chat-content">
-            <div class="join-notification" id="join-notification">
-                <span class="highlight">DeepAI</span> вступил(а) в чат
-            </div>
-            <div class="messages-container" id="messages-container"></div>
-        </div>
-        <div class="chat-footer" id="chat-footer">
-            <input type="text" class="message-input" placeholder="Сообщение" id="message-input">
-            <button class="send-button" id="send-button">
-                <i data-feather="send"></i>
+    <div class="content">
+        <!-- Контент пустой -->
+    </div>
+
+    <div class="footer">
+        <div class="input-container" id="inputContainer">
+            <i class="ti ti-brand-line input-icon"></i>
+            <textarea class="chat-input" id="chatInput" placeholder="Спросить GreenChat" rows="1"></textarea>
+            <button class="send-button" id="sendButton">
+                <i class="ti ti-arrow-up send-icon"></i>
             </button>
         </div>
     </div>
 
     <script>
-        // Инициализация Telegram WebApp
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
-        
-        // Инициализация feather icons
-        feather.replace();
-        
-        // Получаем акцентный цвет из Telegram WebApp
-        const accentColor = tg.themeParams.button_color || '#40a7e3';
-        document.documentElement.style.setProperty('--accent-color', accentColor);
-        
-        // Применяем акцентный цвет к элементам
-        document.querySelectorAll('.add-button').forEach(btn => {
-            btn.style.background = accentColor;
-        });
-        
-        // Проверяем, является ли пользователь админом
-        const isAdmin = tg.initDataUnsafe.user?.username === 'temkazavr';
-        if (isAdmin) {
-            document.getElementById('console-button').style.display = 'block';
-        }
-
-        // Переменные состояния
-        let userChats = [];
-        let currentChatId = null;
-        let messages = {};
-
-        // Функция вибрации
-        function vibrate(pattern) {
-            if (navigator.vibrate) {
-                navigator.vibrate(pattern);
-            } else if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-                if (pattern === 3) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                } else if (Array.isArray(pattern)) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                    setTimeout(() => {
-                        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                    }, 100);
-                }
-            }
-        }
-
-        // Функция создания нового чата
-        function createNewChat() {
-            if (!isAdmin && userChats.length >= 1) {
-                tg.showPopup({
-                    title: 'Ограничение',
-                    message: 'Можно создать только один чат',
-                    buttons: [{type: 'ok'}]
-                });
-                return null;
-            }
-
-            const chatId = 'chat_' + Date.now();
-            const chatName = 'Чат ' + (userChats.length + 1);
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendButton');
+            const inputContainer = document.getElementById('inputContainer');
             
-            userChats.push({
-                id: chatId,
-                name: chatName,
-                lastMessage: 'Нет сообщений'
-            });
-            
-            messages[chatId] = [];
-            
-            return chatId;
-        }
-
-        // Функция отображения чатов в списке
-        function renderChats() {
-            const container = document.getElementById('chats-container');
-            
-            // Очищаем все чаты кроме поддержки
-            const supportChat = document.getElementById('support-chat');
-            container.innerHTML = '';
-            container.appendChild(supportChat);
-            
-            // Добавляем пользовательские чаты
-            userChats.forEach(chat => {
-                const chatElement = document.createElement('div');
-                chatElement.className = 'card';
-                chatElement.dataset.chatId = chat.id;
-                chatElement.innerHTML = `
-                    <div class="emoji">💬</div>
-                    <div class="text-content">
-                        <div class="title">${chat.name}</div>
-                        <div class="subtitle">${chat.lastMessage}</div>
-                    </div>
-                `;
-                
-                chatElement.addEventListener('click', () => openUserChat(chat.id));
-                container.appendChild(chatElement);
-            });
-        }
-
-        // Функция открытия пользовательского чата
-        function openUserChat(chatId) {
-            vibrate(3);
-            currentChatId = chatId;
-            
-            const chat = userChats.find(c => c.id === chatId);
-            document.getElementById('user-chat-title').textContent = chat.name;
-            document.getElementById('message-input').placeholder = `Сообщение в ${chat.name}`;
-            
-            // Показываем элементы только для пользовательских чатов
-            document.getElementById('join-notification').style.display = 'block';
-            document.getElementById('chat-footer').style.display = 'flex';
-            
-            // Очищаем и заполняем сообщения
-            const messagesContainer = document.getElementById('messages-container');
-            messagesContainer.innerHTML = '';
-            
-            if (messages[chatId] && messages[chatId].length > 0) {
-                messages[chatId].forEach(msg => {
-                    addMessageToChat(msg.text, msg.isUser);
-                });
-            }
-            
-            document.getElementById('user-chat-screen').classList.add('active');
-        }
-
-        // Функция добавления сообщения в чат
-        function addMessageToChat(text, isUser = true) {
-            const messagesContainer = document.getElementById('messages-container');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user' : ''}`;
-            messageDiv.textContent = text;
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // Функция открытия чата поддержки
-        function openSupportChat() {
-            vibrate(3);
-            document.getElementById('support-screen').classList.add('active');
-        }
-
-        // Навигация между экранами
-        document.getElementById('support-chat').addEventListener('click', openSupportChat);
-
-        document.getElementById('back-from-support').addEventListener('click', function() {
-            vibrate(3);
-            document.getElementById('support-screen').classList.remove('active');
-        });
-
-        document.getElementById('back-from-user-chat').addEventListener('click', function() {
-            vibrate(3);
-            document.getElementById('user-chat-screen').classList.remove('active');
-            renderChats(); // Обновляем список чатов
-        });
-
-        // Обработчик для кнопки добавления
-        document.getElementById('add-button').addEventListener('click', function() {
-            vibrate([10, 100, 10]);
-            
-            const chatId = createNewChat();
-            if (chatId) {
-                renderChats();
-                
-                // Автоматически открываем новый чат
-                setTimeout(() => openUserChat(chatId), 100);
-            }
-        });
-
-        // Обработчик для кнопки консоли
-        document.getElementById('console-button').addEventListener('click', function() {
-            tg.showPopup({
-                title: 'Консоль админа',
-                message: 'Доступ к консоли разрешён',
-                buttons: [{type: 'ok'}]
-            });
-        });
-
-        // Обработчик для поля ввода сообщения
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
-        
-        messageInput.addEventListener('input', function() {
-            if (this.value.length > 0) {
-                sendButton.classList.add('active');
-            } else {
-                sendButton.classList.remove('active');
-            }
-        });
-
-        // Обработчик для кнопки отправки
-        sendButton.addEventListener('click', function() {
-            const text = messageInput.value.trim();
-            if (text !== '' && currentChatId) {
-                // Сохраняем сообщение
-                messages[currentChatId].push({
-                    text: text,
-                    isUser: true,
-                    timestamp: Date.now()
-                });
-                
-                // Обновляем последнее сообщение в списке чатов
-                const chatIndex = userChats.findIndex(c => c.id === currentChatId);
-                if (chatIndex !== -1) {
-                    userChats[chatIndex].lastMessage = text.length > 12 ? text.substring(0, 12) + '...' : text;
-                }
-                
-                // Добавляем сообщение в чат
-                addMessageToChat(text, true);
-                
-                // Очищаем поле ввода
-                messageInput.value = '';
-                sendButton.classList.remove('active');
-                
-                // Ответ бота (заглушка)
-                setTimeout(() => {
-                    const botResponse = "Готов помочь! Чем еще могу быть полезен?";
-                    messages[currentChatId].push({
-                        text: botResponse,
-                        isUser: false,
-                        timestamp: Date.now()
-                    });
-                    addMessageToChat(botResponse, false);
-                }, 1000);
-            }
-        });
-
-        // Отправка по Enter
-        messageInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendButton.click();
-            }
-        });
-
-        // Обработчик долгого нажатия на заголовок для переименования
-        let longPressTimer;
-        const chatTitle = document.getElementById('user-chat-title');
-        
-        chatTitle.addEventListener('touchstart', function(e) {
-            longPressTimer = setTimeout(function() {
-                vibrate(3);
-                const newName = prompt('Введите новое название (до 8 символов):', chatTitle.textContent);
-                if (newName && newName.length <= 8) {
-                    chatTitle.textContent = newName;
-                    messageInput.placeholder = `Сообщение в ${newName}`;
-                    
-                    // Обновляем название в массиве чатов
-                    const chatIndex = userChats.findIndex(c => c.id === currentChatId);
-                    if (chatIndex !== -1) {
-                        userChats[chatIndex].name = newName;
-                    }
-                }
-            }, 2000);
-        });
-        
-        chatTitle.addEventListener('touchend', function() {
-            clearTimeout(longPressTimer);
-        });
-
-        // Запрет масштабирования и действий по умолчанию
-        document.addEventListener('touchstart', function(e) {
-            if (e.touches.length > 1) {
+            // Запрет масштабирования
+            document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
+            });
+            
+            document.addEventListener('touchmove', function(e) {
+                if (e.scale !== 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            function autoResize() {
+                chatInput.style.height = 'auto';
+                const newHeight = Math.min(chatInput.scrollHeight, 90);
+                chatInput.style.height = newHeight + 'px';
+                
+                if (chatInput.scrollHeight > 54) {
+                    inputContainer.classList.add('expanded');
+                    chatInput.style.overflowY = 'auto';
+                } else {
+                    inputContainer.classList.remove('expanded');
+                    chatInput.style.overflowY = 'hidden';
+                }
             }
-        }, { passive: false });
-
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
+            
+            chatInput.addEventListener('input', function() {
+                autoResize();
+                
+                if (this.value.trim().length > 0) {
+                    inputContainer.classList.add('has-text');
+                    chatInput.classList.add('has-text');
+                    sendButton.classList.add('visible');
+                } else {
+                    inputContainer.classList.remove('has-text');
+                    chatInput.classList.remove('has-text');
+                    sendButton.classList.remove('visible');
+                }
+            });
+            
+            chatInput.addEventListener('focus', function() {
+                inputContainer.style.backgroundColor = '#2c2c2e';
+            });
+            
+            chatInput.addEventListener('blur', function() {
+                inputContainer.style.backgroundColor = '#1c1c1e';
+            });
+            
+            function sendMessage() {
+                const question = chatInput.value.trim();
+                if (question) {
+                    console.log('Отправка вопроса:', question);
+                    chatInput.value = '';
+                    chatInput.style.height = 'auto';
+                    inputContainer.classList.remove('has-text');
+                    chatInput.classList.remove('has-text');
+                    sendButton.classList.remove('visible');
+                    inputContainer.classList.remove('expanded');
+                    chatInput.style.overflowY = 'hidden';
+                    // Здесь можно добавить обработку вопроса
+                }
+            }
+            
+            sendButton.addEventListener('click', sendMessage);
         });
-
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        // Предотвращение выделения текста
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-        });
-
-        // Обновляем иконки при изменении DOM
-        const observer = new MutationObserver(() => {
-            feather.replace();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
