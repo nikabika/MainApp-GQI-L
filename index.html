@@ -1,474 +1,359 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Users Search</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Поддержка</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
-        
+
         body {
             background-color: #000;
             color: #fff;
-            min-height: 100vh;
-            padding: 20px;
-            padding-top: 70px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            transition: transform 0.3s ease-in-out;
         }
-        
-        .search-container {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            z-index: 100;
+
+        body.chat-open {
+            transform: translateX(-85%);
         }
-        
-        .search-bar {
-            width: 100%;
+
+        .header {
+            position: sticky;
+            top: 0;
             height: 50px;
-            background-color: rgba(255, 255, 255, 0.12);
-            border-radius: 15px;
+            background: rgba(44, 44, 46, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            gap: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        
-        .search-icon {
-            width: 22px;
-            height: 22px;
-            color: rgba(255, 255, 255, 0.7);
+            justify-content: center;
+            z-index: 100;
+            border: none;
             flex-shrink: 0;
         }
-        
-        .search-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 17px;
-            outline: none;
-            font-weight: 500;
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
         }
-        
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .search-suggestions {
+
+        .back-button {
             position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background-color: rgba(25, 25, 25, 0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            margin-top: 10px;
-            padding: 8px;
-            z-index: 1000;
-            max-height: 300px;
+            left: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .content {
+            flex: 1;
             overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 16px;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            background-color: rgba(44, 44, 46, 0.6);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            width: 95%;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-height: 60px;
+            cursor: pointer;
+        }
+
+        .emoji {
+            font-size: 28px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .text-content {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            opacity: 0.7;
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .add-button {
+            position: fixed;
+            bottom: 25px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            border: none;
+            cursor: pointer;
+        }
+
+        .add-button i {
+            font-size: 24px;
+            color: white;
+        }
+
+        /* Предотвращение масштабирования */
+        html, body {
+            touch-action: manipulation;
+            overscroll-behavior: none;
+        }
+
+        /* Стили для экрана чата */
+        .chat-screen {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 85%;
+            height: 100%;
+            background-color: #000;
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .chat-screen.active {
+            transform: translateX(0);
+        }
+
+        .chat-header {
+            height: 50px;
+            background: rgba(44, 44, 46, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 0 16px;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .message {
+            background-color: rgba(44, 44, 46, 0.6);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            max-width: 85%;
+        }
+
+        .admin-button {
+            background-color: rgba(44, 44, 46, 0.8);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            text-align: center;
+            font-weight: 500;
             display: none;
         }
-        
-        .suggestion-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 800;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
         }
-        
-        .suggestion-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .suggestion-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-right: 15px;
-            background: linear-gradient(135deg, #FF2D78 0%, #9C1DE7 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        
-        .suggestion-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .avatar-initial {
-            color: #fff;
-            font-weight: bold;
-            font-size: 20px;
-        }
-        
-        .suggestion-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .suggestion-name {
-            font-weight: 600;
-            font-size: 17px;
-            margin-bottom: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .suggestion-username {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.7);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .users-list {
-            margin-top: 70px;
-            padding: 5px;
-        }
-        
-        .user-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .user-card:active {
-            transform: scale(0.98);
-            background: rgba(255, 255, 255, 0.12);
-        }
-        
-        .user-avatar {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-right: 15px;
-            background: linear-gradient(135deg, #FF2D78 0%, #9C1DE7 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        
-        .user-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .user-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 18px;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .user-username {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.7);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 8px;
-        }
-        
-        .user-stats {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 16px;
-        }
-        
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 16px;
-        }
-        
-        .initial-message {
-            text-align: center;
-            padding: 100px 20px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 16px;
-        }
-        
-        .clear-search {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: rgba(255, 255, 255, 0.7);
-            padding: 8px 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 20px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .clear-search:active {
-            background: rgba(255, 255, 255, 0.2);
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
     </style>
 </head>
 <body>
-    <div class="search-container">
-        <div class="search-bar">
-            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="M21 21l-4.35-4.35"></path>
-            </svg>
-            <input type="text" class="search-input" placeholder="Search users by name or @username" id="search-input" autocomplete="off">
+    <header class="header">
+        <div class="back-button" style="display: none;"><i class="ti ti-chevron-left"></i></div>
+        <h1>Chats</h1>
+    </header>
+
+    <main class="content">
+        <div class="card" id="support-chat">
+            <div class="emoji">🤖</div>
+            <div class="text-content">
+                <div class="title">Поддержка</div>
+                <div class="subtitle" id="last-message">Загрузка...</div>
+            </div>
         </div>
-        
-        <div class="search-suggestions" id="search-suggestions">
-            <div class="suggestion-list" id="suggestion-list"></div>
+    </main>
+
+    <button class="add-button" id="add-button">
+        <i class="ti ti-plus"></i>
+    </button>
+
+    <!-- Экран чата поддержки -->
+    <div class="chat-screen" id="support-screen">
+        <div class="chat-header">
+            <div class="back-button" id="back-from-chat"><i class="ti ti-chevron-left"></i></div>
+            <div class="chat-title">Поддержка</div>
+        </div>
+        <div class="chat-content">
+            <div class="message">
+                <p>🤖 Привет!</p>
+                <p>Я — бот поддержки <span class="highlight">DeepChat</span>. Обращайтесь с жалобами, и поддержка ответит вам в скором времени!</p>
+            </div>
+            <div class="admin-button" id="console-button">Консоль</div>
         </div>
     </div>
-    
-    <div class="users-list" id="users-list">
-        <div class="initial-message">Type to search users</div>
-    </div>
+
+    <div class="overlay" id="overlay"></div>
 
     <script>
-        // Инициализация Supabase
-        const SUPABASE_URL = 'https://uiscbfpjivggzfyorpja.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpc2NiZnBqaXZnZ3pmeW9ycGphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjc3NjksImV4cCI6MjA3Mzg0Mzc2OX0.xVNIIAwqBGZCkxI_a66-8Tqj_Rw5GpjKC4zOBCKe-R4';
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
         
-        // Инициализируем Supabase клиент
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Получаем акцентный цвет из Telegram WebApp
+        const accentColor = tg.themeParams.button_color || '#40a7e3';
+        document.documentElement.style.setProperty('--accent-color', accentColor);
         
-        let searchTimeout = null;
-        let currentSearchQuery = '';
-
-        // Функция для форматирования чисел
-        function formatNumber(number) {
-            if (number >= 1000000) return (number / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-            if (number >= 1000) return (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-            return number.toString();
+        // Применяем акцентный цвет к элементам
+        document.querySelectorAll('.add-button').forEach(btn => {
+            btn.style.background = accentColor;
+        });
+        
+        // Эмулируем последние сообщения
+        const lastMessages = [
+            "Привет! Как могу по...",
+            "Спасибо за обращение...",
+            "Ваша проблема уже пер...",
+            "Ожидайте ответа спец...",
+            "Скоро с вами свяжется..."
+        ];
+        
+        // Устанавливаем случайное последнее сообщение
+        const randomMessage = lastMessages[Math.floor(Math.random() * lastMessages.length)];
+        document.getElementById('last-message').textContent = randomMessage;
+        
+        // Проверяем, является ли пользователь админом (temkazavr)
+        const isAdmin = tg.initDataUnsafe.user?.username === 'temkazavr';
+        if (isAdmin) {
+            document.getElementById('console-button').style.display = 'block';
         }
 
-        // Поиск пользователей
-        async function searchUsers(query) {
-            const searchContainer = document.getElementById('search-suggestions');
-            const usersContainer = document.getElementById('users-list');
-            
-            if (!query || query.trim().length < 1) {
-                searchContainer.style.display = 'none';
-                usersContainer.innerHTML = '<div class="initial-message">Type to search users</div>';
-                return;
+        // Навигация между экранами
+        document.getElementById('support-chat').addEventListener('click', function() {
+            document.getElementById('support-screen').classList.add('active');
+            document.body.classList.add('chat-open');
+            document.getElementById('overlay').classList.add('active');
+            document.querySelector('.header .back-button').style.display = 'flex';
+            document.querySelector('.header h1').textContent = 'Поддержка';
+        });
+
+        document.getElementById('back-from-chat').addEventListener('click', closeChat);
+        
+        document.querySelector('.header .back-button').addEventListener('click', closeChat);
+        
+        document.getElementById('overlay').addEventListener('click', closeChat);
+
+        function closeChat() {
+            document.getElementById('support-screen').classList.remove('active');
+            document.body.classList.remove('chat-open');
+            document.getElementById('overlay').classList.remove('active');
+            document.querySelector('.header .back-button').style.display = 'none';
+            document.querySelector('.header h1').textContent = 'Chats';
+        }
+
+        // Обработчик для кнопки добавления
+        document.getElementById('add-button').addEventListener('click', function() {
+            tg.showPopup({
+                title: 'Новый чат',
+                message: 'Функция добавления нового чата будет доступна в следующем обновлении',
+                buttons: [{type: 'ok'}]
+            });
+        });
+
+        // Обработчик для кнопки консоли
+        document.getElementById('console-button').addEventListener('click', function() {
+            tg.showPopup({
+                title: 'Консоль админа',
+                message: 'Доступ к консоли разрешён',
+                buttons: [{type: 'ok'}]
+            });
+        });
+
+        // Запрет масштабирования и действий по умолчанию
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
             }
+        }, { passive: false });
 
-            showLoading();
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
 
-            try {
-                // Ищем пользователей
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .or(`username.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
-                    .order('created_at', { ascending: false })
-                    .limit(20);
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
 
-                if (error) {
-                    console.error('Search error:', error);
-                    showNoResults();
-                    return;
-                }
-
-                if (data && data.length > 0) {
-                    displayUsers(data);
-                    displaySuggestions(data.slice(0, 5));
-                } else {
-                    showNoResults();
-                    searchContainer.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Search failed:', error);
-                showNoResults();
-                searchContainer.style.display = 'none';
-            }
-        }
-
-        // Отображение подсказок
-        function displaySuggestions(users) {
-            const suggestionsContainer = document.getElementById('suggestion-list');
-            const searchContainer = document.getElementById('search-suggestions');
-            
-            if (!users || users.length === 0) {
-                searchContainer.style.display = 'none';
-                return;
-            }
-
-            suggestionsContainer.innerHTML = '';
-            
-            users.forEach(user => {
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.onclick = () => {
-                    document.getElementById('search-input').value = user.username ? `@${user.username}` : user.first_name || '';
-                    searchUsers(user.username || user.first_name || '');
-                    searchContainer.style.display = 'none';
-                };
-                
-                const avatarContent = user.avatar_url 
-                    ? `<img src="${user.avatar_url}" class="suggestion-avatar-img" alt="${user.username || 'user'}">`
-                    : `<div class="avatar-initial">${(user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase()}</div>`;
-                
-                const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
-                const displayName = fullName || user.username || 'Unknown User';
-                const username = user.username ? `@${user.username}` : '';
-
-                suggestionItem.innerHTML = `
-                    <div class="suggestion-avatar">${avatarContent}</div>
-                    <div class="suggestion-info">
-                        <div class="suggestion-name">${displayName}</div>
-                        <div class="suggestion-username">${username}</div>
-                    </div>
-                `;
-                
-                suggestionsContainer.appendChild(suggestionItem);
-            });
-            
-            searchContainer.style.display = 'block';
-        }
-
-        // Отображение пользователей
-        function displayUsers(users) {
-            const usersContainer = document.getElementById('users-list');
-            
-            usersContainer.innerHTML = '';
-            
-            users.forEach(user => {
-                const userCard = document.createElement('div');
-                userCard.className = 'user-card';
-                
-                const avatarContent = user.avatar_url 
-                    ? `<img src="${user.avatar_url}" class="user-avatar-img" alt="${user.username || 'user'}">`
-                    : `<div class="avatar-initial">${(user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase()}</div>`;
-                
-                const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
-                const displayName = fullName || user.username || 'Unknown User';
-                const username = user.username ? `@${user.username}` : '';
-
-                userCard.innerHTML = `
-                    <div class="user-avatar">${avatarContent}</div>
-                    <div class="user-info">
-                        <div class="user-name">${displayName}</div>
-                        <div class="user-username">${username}</div>
-                        <div class="user-stats">
-                            <div class="stat">👁️ ${formatNumber(user.views_count || 0)}</div>
-                            <div class="stat">📚 ${formatNumber(user.stories_count || 0)}</div>
-                            <div class="stat">👥 ${formatNumber(user.followers_count || 0)}</div>
-                        </div>
-                    </div>
-                `;
-                
-                usersContainer.appendChild(userCard);
-            });
-        }
-
-        function showLoading() {
-            document.getElementById('users-list').innerHTML = '<div class="loading">Searching...</div>';
-        }
-
-        function showNoResults() {
-            const usersContainer = document.getElementById('users-list');
-            usersContainer.innerHTML = `
-                <div class="no-results">No users found</div>
-                <button class="clear-search" onclick="clearSearch()">Clear search</button>
-            `;
-        }
-
-        function clearSearch() {
-            document.getElementById('search-input').value = '';
-            document.getElementById('search-suggestions').style.display = 'none';
-            document.getElementById('users-list').innerHTML = '<div class="initial-message">Type to search users</div>';
-        }
-
-        function hideSuggestions() {
-            document.getElementById('search-suggestions').style.display = 'none';
-        }
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('search-input');
-            
-            searchInput.focus();
-            
-            searchInput.addEventListener('input', function(e) {
-                const query = e.target.value.trim();
-                currentSearchQuery = query;
-                
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    searchUsers(query);
-                }, 300);
-            });
-            
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.search-container')) {
-                    hideSuggestions();
-                }
-            });
-            
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    hideSuggestions();
-                }
-            });
-
-            // Тестовый поиск при загрузке
-            setTimeout(() => {
-                searchUsers('a');
-            }, 1000);
+        // Предотвращение выделения текста
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>
