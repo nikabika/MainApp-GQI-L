@@ -2,10 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GreenChat</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Futura:wght@600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Apple Style Switch</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,821 +18,320 @@
             -webkit-touch-callout: none;
         }
 
+        html, body {
+            touch-action: manipulation;
+            overflow: hidden;
+            height: 100%;
+        }
+
         body {
-            background-color: #000000;
-            font-family: 'Futura', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
-            font-weight: 600;
-            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            color: #ffffff;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
-
-        .header {
-            background-color: #000000;
-            height: 60px;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 10;
-            cursor: pointer;
+            align-items: center;
+            padding: 20px;
         }
 
-        .header-text {
-            font-size: 18px;
-            letter-spacing: -0.5px;
-            color: #ffffff;
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px 20px;
+        }
+
+        .switch-container {
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin-bottom: 50px;
+            padding: 25px 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .header-text:hover {
-            transform: scale(1.05);
+        .switch-container:last-child {
+            margin-bottom: 0;
         }
 
-        .header-text i {
-            font-size: 16px;
-            opacity: 0.7;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .switch {
+            position: relative;
+            width: 80px;
+            height: 44px;
+            margin-right: 30px;
         }
 
-        .header-text.active i {
-            transform: rotate(180deg);
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
 
-        .model-selector {
+        .slider {
             position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%) scale(0.8);
-            background-color: #1c1c1e;
-            border-radius: 12px;
-            padding: 8px 0;
-            min-width: 200px;
-            max-height: 280px; /* 4 модели + токен поле */
-            opacity: 0;
-            visibility: hidden;
-            z-index: 1000;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            transform-origin: top center;
-            overflow-y: auto;
-        }
-
-        .model-selector::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .model-selector::-webkit-scrollbar-track {
-            background: transparent;
-            border-radius: 3px;
-        }
-
-        .model-selector::-webkit-scrollbar-thumb {
-            background: #BBFE26;
-            border-radius: 3px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .model-selector::-webkit-scrollbar-thumb:hover {
-            background: #a8e520;
-            transform: scale(1.1);
-        }
-
-        .model-selector.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) scale(1);
-        }
-
-        .model-option {
-            padding: 12px 16px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-size: 14px;
-            transform: translateX(-10px);
-            opacity: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.25);
+            transition: .4s;
+            border-radius: 34px;
         }
 
-        .model-selector.show .model-option {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .model-selector.show .model-option:nth-child(2) { transition-delay: 0.05s; }
-        .model-selector.show .model-option:nth-child(3) { transition-delay: 0.1s; }
-        .model-selector.show .model-option:nth-child(4) { transition-delay: 0.15s; }
-        .model-selector.show .model-option:nth-child(5) { transition-delay: 0.2s; }
-        .model-selector.show .model-option:nth-child(6) { transition-delay: 0.25s; }
-        .model-selector.show .model-option:nth-child(7) { transition-delay: 0.3s; }
-
-        .model-option:hover {
-            background-color: #2c2c2e;
-            transform: translateX(5px);
-        }
-
-        .model-option.active {
-            background-color: #BBFE26;
-            color: #000000;
-        }
-
-        .token-input-container {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transform: translateY(-10px);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            pointer-events: none;
-            opacity: 0.5;
-        }
-
-        .model-selector.show .token-input-container {
-            transform: translateY(0);
-            opacity: 0.5;
-        }
-
-        .token-input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 8px 12px;
-            color: #ffffff;
-            font-size: 12px;
-            font-family: inherit;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            pointer-events: none;
-        }
-
-        .token-input:focus {
-            transform: scale(1.02);
-            border-color: #BBFE26;
-        }
-
-        .token-input::placeholder {
-            color: #8e8e93;
-        }
-
-        .content {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            padding: 10px 20px;
-        }
-
-        .messages-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            height: 100%;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .messages-container::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .messages-container::-webkit-scrollbar-track {
-            background: transparent;
-            border-radius: 3px;
-            margin: 5px 0;
-        }
-
-        .messages-container::-webkit-scrollbar-thumb {
-            background: #BBFE26;
-            border-radius: 3px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .messages-container::-webkit-scrollbar-thumb:hover {
-            background: #a8e520;
-            transform: scale(1.1);
-        }
-
-        .message {
-            background-color: #2c2c2e;
-            border-radius: 15px;
-            padding: 12px 16px;
-            max-width: 85%;
-            font-size: 16px;
-            line-height: 1.4;
-            position: relative;
-            animation: messageAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            overflow-y: auto;
-            max-height: 300px;
-            transform-origin: bottom;
-        }
-
-        .message.user {
-            background-color: #BBFE26;
-            color: #000000;
-            align-self: flex-end;
-            border-radius: 15px 15px 5px 15px;
-            transform-origin: bottom right;
-        }
-
-        .message.assistant {
-            background-color: #2c2c2e;
-            color: #ffffff;
-            align-self: flex-start;
-            border-radius: 15px 15px 15px 5px;
-            transform-origin: bottom left;
-        }
-
-        .message.thinking {
-            opacity: 0.7;
-            font-style: italic;
-        }
-
-        .message::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .message::-webkit-scrollbar-track {
-            background: transparent;
-            margin: 2px 0;
-        }
-
-        .message::-webkit-scrollbar-thumb {
-            background: #8e8e93;
-            border-radius: 2px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .message::-webkit-scrollbar-thumb:hover {
-            background: #BBFE26;
-            transform: scale(1.2);
-        }
-
-        @keyframes messageAppear {
-            0% {
-                opacity: 0;
-                transform: scale(0.7) translateY(20px);
-            }
-            70% {
-                transform: scale(1.05) translateY(-5px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .footer {
-            background-color: #000000;
-            padding: 0px 20px 15px 20px;
-            flex-shrink: 0;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .input-container {
-            display: flex;
-            align-items: flex-end;
-            background-color: #1c1c1e;
-            border-radius: 15px;
-            padding: 12px 16px;
-            max-width: 100%;
-            margin: 0 auto;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            min-height: 54px;
-        }
-
-        .input-container:focus-within {
-            background-color: #2c2c2e;
-            transform: scale(1.02);
-        }
-
-        .input-container.has-text {
-            padding-right: 55px;
-        }
-
-        .input-container.expanded {
-            min-height: 54px;
-            max-height: 120px;
-            overflow-y: auto;
-        }
-
-        .chat-input {
-            flex: 1;
-            background: none;
-            border: none;
-            outline: none;
-            color: #ffffff;
-            font-size: 16px;
-            font-family: 'Futura', sans-serif;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            resize: none;
-            min-height: 24px;
-            max-height: 90px;
-            overflow-y: auto;
-            line-height: 1.4;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-            -webkit-overflow-scrolling: touch;
-            width: 100%;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .chat-input.has-text {
-            margin-right: 45px;
-        }
-
-        .chat-input::placeholder {
-            color: #8e8e93;
-        }
-
-        .chat-input:disabled {
-            opacity: 0.5;
-        }
-
-        .send-button {
+        .slider:before {
             position: absolute;
-            right: 7px;
-            bottom: 8px;
-            background-color: #BBFE26;
-            border: none;
-            border-radius: 13px;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transform: scale(0.5) rotate(-90deg);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            flex-shrink: 0;
+            content: "";
+            height: 36px;
+            width: 36px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .send-button.visible {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
+        input:checked + .slider {
+            background-color: var(--accent-color, #007AFF);
         }
 
-        .send-button:hover:not(:disabled) {
-            background-color: #a8e520;
-            transform: scale(1.1) rotate(5deg);
+        input:checked + .slider:before {
+            transform: translateX(36px);
         }
 
-        .send-button:active:not(:disabled) {
-            transform: scale(0.95) rotate(0deg);
+        .label {
+            font-size: 24px;
+            font-weight: 500;
+            color: #fff;
+            transition: all 0.4s ease;
         }
 
-        .send-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .send-icon {
-            color: #000000;
-            font-size: 18px;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .error-message {
-            background-color: #ff3b30;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin: 5px 0;
-            font-size: 14px;
-            align-self: center;
-            max-width: 80%;
+        h1 {
             text-align: center;
-            animation: errorAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            transform-origin: center;
+            margin-bottom: 60px;
+            font-size: 32px;
+            font-weight: 600;
+            color: #fff;
+            transition: all 0.4s ease;
         }
 
-        @keyframes errorAppear {
-            0% {
-                opacity: 0;
-                transform: scale(0.5) translateY(-20px);
-            }
-            70% {
-                transform: scale(1.1) translateY(5px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .typing-dots {
-            display: inline-block;
-        }
-
-        .typing-dots span {
-            animation: typing 1.4s infinite ease-in-out;
-            display: inline-block;
+        /* Состояние размытия */
+        .blur-mode .switch-container:not(.active) {
+            filter: grayscale(100%) blur(2px);
             opacity: 0.6;
+            transform: scale(0.95);
         }
 
-        .typing-dots span:nth-child(1) { animation-delay: 0s; }
-        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
-            30% { transform: translateY(-5px); opacity: 1; }
+        .blur-mode .switch-container:not(.active) .label {
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        .api-info {
-            padding: 8px 16px;
-            font-size: 10px;
-            color: #8e8e93;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        .blur-mode h1 {
             opacity: 0.7;
+            filter: grayscale(100%);
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .switch-container {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .switch-container:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        /* Индикатор удержания */
+        .hold-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color, #007AFF);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        }
+
+        .holding .hold-indicator {
+            opacity: 1;
+            transform: scale(1);
         }
     </style>
 </head>
 <body>
-    <div class="header" id="header">
-        <div class="header-text" id="headerText">
-            GreenChat
-            <i class="ti ti-chevron-down"></i>
+    <div class="container">
+        <h1>Выберите вариант</h1>
+        
+        <div class="switch-container" data-switch="1">
+            <div class="hold-indicator"></div>
+            <label class="switch">
+                <input type="checkbox" id="switch1">
+                <span class="slider"></span>
+            </label>
+            <span class="label">Вариант 1</span>
         </div>
-        <div class="model-selector" id="modelSelector">
-            <div class="token-input-container">
-                <input type="text" class="token-input" id="apiToken" placeholder="API токен защищен" readonly>
-            </div>
-            <div class="model-option" data-model="GreenChat">GreenChat (базовая)</div>
-            <div class="model-option" data-model="GreenChat v1">GreenChat v1</div>
-            <div class="model-option" data-model="GreenChat Turbo">GreenChat Turbo</div>
-            <div class="model-option" data-model="GreenChat v2">GreenChat v2</div>
-            <div class="model-option" data-model="GreenChat Max">GreenChat Max</div>
-            <div class="model-option" data-model="GreenChat Pro">GreenChat Pro</div>
-            <div class="api-info">API защищено • v1.0</div>
-        </div>
-    </div>
 
-    <div class="content">
-        <div class="messages-container" id="messagesContainer">
-            <!-- Сообщения будут добавляться здесь -->
-        </div>
-    </div>
-
-    <div class="footer" id="footer">
-        <div class="input-container" id="inputContainer">
-            <textarea class="chat-input" id="chatInput" placeholder="Спросить GreenChat" rows="1"></textarea>
-            <button class="send-button" id="sendButton">
-                <i class="ti ti-arrow-up send-icon"></i>
-            </button>
+        <div class="switch-container" data-switch="2">
+            <div class="hold-indicator"></div>
+            <label class="switch">
+                <input type="checkbox" id="switch2">
+                <span class="slider"></span>
+            </label>
+            <span class="label">Вариант 2</span>
         </div>
     </div>
 
     <script>
-        class GreenChat {
-            constructor() {
-                // Защищенные данные - встроены в код
-                this.apiToken = 'LCQXGGwQbGrbjhTGpGMHicaohgzcYaivIL';
-                this.apiUrl = 'https://api.hgface.ru/v1/chat/completions'; // IP/URL защищен
-                
-                this.currentModel = localStorage.getItem('greenchat_model') || 'GreenChat';
-                this.isThinking = false;
-                this.init();
-            }
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Расширяем на весь экран
+        tg.expand();
+        
+        // Устанавливаем акцентный цвет из темы Telegram
+        document.documentElement.style.setProperty('--accent-color', tg.themeParams.accent_text_color || '#007AFF');
+        
+        // Переменные для таймеров
+        let holdTimers = {};
+        let blurMode = false;
+        let activeSwitch = null;
 
-            init() {
-                this.bindEvents();
-                this.updateModelDisplay();
-                this.disableTokenInput();
-            }
-
-            bindEvents() {
-                const chatInput = document.getElementById('chatInput');
-                const sendButton = document.getElementById('sendButton');
-                const inputContainer = document.getElementById('inputContainer');
-                const footer = document.getElementById('footer');
-                const header = document.getElementById('header');
-                const headerText = document.getElementById('headerText');
-                const modelSelector = document.getElementById('modelSelector');
-
-                // Выбор модели
-                header.addEventListener('click', (e) => {
-                    this.toggleModelSelector();
-                    e.stopPropagation();
-                });
-
-                document.addEventListener('click', (e) => {
-                    if (!modelSelector.contains(e.target) && !header.contains(e.target)) {
-                        this.hideModelSelector();
-                    }
-                });
-
-                // Выбор модели из списка
-                document.querySelectorAll('.model-option').forEach(option => {
-                    option.addEventListener('click', (e) => {
-                        const model = e.target.dataset.model;
-                        this.setModel(model);
-                        this.hideModelSelector();
-                    });
-                });
-
-                // Защита от ввода в поле токена
-                const apiTokenInput = document.getElementById('apiToken');
-                apiTokenInput.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.showError('API токен защищен от изменений');
-                });
-
-                apiTokenInput.addEventListener('keydown', (e) => {
-                    e.preventDefault();
-                });
-
-                // Плавное управление клавиатурой
-                window.addEventListener('resize', this.handleKeyboard.bind(this));
-
-                // Закрытие ввода при клике мимо
-                document.addEventListener('click', (e) => {
-                    if (!inputContainer.contains(e.target) && chatInput === document.activeElement) {
-                        chatInput.blur();
-                    }
-                });
-
-                // Авторазмер текстового поля
-                chatInput.addEventListener('input', this.autoResize.bind(this));
-
-                // Фокус/блюр
-                chatInput.addEventListener('focus', () => {
-                    inputContainer.style.backgroundColor = '#2c2c2e';
-                });
-
-                chatInput.addEventListener('blur', () => {
-                    inputContainer.style.backgroundColor = '#1c1c1e';
-                });
-
-                // Отправка сообщения
-                sendButton.addEventListener('click', () => this.sendMessage());
-
-                // Enter для новой строки, Ctrl+Enter для отправки
-                chatInput.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key === 'Enter') {
-                        e.preventDefault();
-                        this.sendMessage();
-                    }
-                });
-
-                // Запрет контекстного меню для защиты
-                document.addEventListener('contextmenu', (e) => {
-                    if (e.target.classList.contains('token-input') || 
-                        e.target.classList.contains('model-selector')) {
-                        e.preventDefault();
-                    }
-                });
-            }
-
-            disableTokenInput() {
-                const apiTokenInput = document.getElementById('apiToken');
-                apiTokenInput.value = '••••••••••••••••••••••••••••••';
-                apiTokenInput.readOnly = true;
-                apiTokenInput.style.cursor = 'not-allowed';
-            }
-
-            toggleModelSelector() {
-                const modelSelector = document.getElementById('modelSelector');
-                const headerText = document.getElementById('headerText');
-                
-                if (modelSelector.classList.contains('show')) {
-                    this.hideModelSelector();
-                } else {
-                    modelSelector.classList.add('show');
-                    headerText.classList.add('active');
-                }
-            }
-
-            hideModelSelector() {
-                const modelSelector = document.getElementById('modelSelector');
-                const headerText = document.getElementById('headerText');
-                
-                modelSelector.classList.remove('show');
-                headerText.classList.remove('active');
-            }
-
-            handleKeyboard() {
-                setTimeout(() => {
-                    const visualViewport = window.visualViewport;
-                    const footer = document.getElementById('footer');
-                    
-                    if (visualViewport) {
-                        const keyboardHeight = window.innerHeight - visualViewport.height;
-                        
-                        if (keyboardHeight > 100) {
-                            footer.style.transform = `translateY(-${keyboardHeight}px)`;
-                        } else {
-                            footer.style.transform = '';
-                        }
-                    }
-                }, 100);
-            }
-
-            autoResize() {
-                const chatInput = document.getElementById('chatInput');
-                const inputContainer = document.getElementById('inputContainer');
-                const sendButton = document.getElementById('sendButton');
-
-                chatInput.style.height = 'auto';
-                const newHeight = Math.min(chatInput.scrollHeight, 90);
-                chatInput.style.height = newHeight + 'px';
-
-                if (chatInput.scrollHeight > 54) {
-                    inputContainer.classList.add('expanded');
-                    chatInput.style.overflowY = 'auto';
-                } else {
-                    inputContainer.classList.remove('expanded');
-                    chatInput.style.overflowY = 'hidden';
-                }
-
-                if (chatInput.value.trim().length > 0) {
-                    inputContainer.classList.add('has-text');
-                    chatInput.classList.add('has-text');
-                    sendButton.classList.add('visible');
-                } else {
-                    inputContainer.classList.remove('has-text');
-                    chatInput.classList.remove('has-text');
-                    sendButton.classList.remove('visible');
-                }
-            }
-
-            setModel(model) {
-                this.currentModel = model;
-                localStorage.setItem('greenchat_model', model);
-                this.updateModelDisplay();
-            }
-
-            updateModelDisplay() {
-                const headerText = document.getElementById('headerText');
-                headerText.innerHTML = `${this.currentModel} <i class="ti ti-chevron-down"></i>`;
-                
-                // Обновляем активную модель в селекторе
-                document.querySelectorAll('.model-option').forEach(option => {
-                    option.classList.remove('active');
-                    if (option.dataset.model === this.currentModel) {
-                        option.classList.add('active');
-                    }
-                });
-            }
-
-            async sendMessage() {
-                if (this.isThinking) return;
-
-                const chatInput = document.getElementById('chatInput');
-                const message = chatInput.value.trim();
-
-                if (!message) return;
-
-                this.isThinking = true;
-                this.setUIState(true);
-
-                // Добавляем сообщение пользователя
-                this.addMessage(message, 'user');
-                chatInput.value = '';
-                this.autoResize();
-
-                // Добавляем индикатор "думает" с анимированными точками
-                const thinkingId = this.addMessage('Думаю<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>', 'assistant thinking');
-
-                try {
-                    const response = await this.callHGFaceAPI(message);
-                    this.replaceMessage(thinkingId, response, 'assistant');
-                } catch (error) {
-                    console.error('API Error:', error);
-                    this.replaceMessage(thinkingId, `Ошибка соединения с API. Попробуйте позже.`, 'assistant');
-                } finally {
-                    this.isThinking = false;
-                    this.setUIState(false);
-                }
-            }
-
-            setUIState(thinking) {
-                const chatInput = document.getElementById('chatInput');
-                const sendButton = document.getElementById('sendButton');
-
-                chatInput.disabled = thinking;
-                sendButton.disabled = thinking;
-
-                if (thinking) {
-                    sendButton.innerHTML = '<i class="ti ti-loader send-icon"></i>';
-                } else {
-                    sendButton.innerHTML = '<i class="ti ti-arrow-up send-icon"></i>';
-                }
-            }
-
-            async callHGFaceAPI(message) {
-                const response = await fetch(this.apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.apiToken}`
-                    },
-                    body: JSON.stringify({
-                        model: this.getModelCode(),
-                        messages: [
-                            {
-                                role: 'user',
-                                content: message
-                            }
-                        ],
-                        max_tokens: 1000,
-                        temperature: 0.7
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                return data.choices[0].message.content;
-            }
-
-            getModelCode() {
-                const modelMap = {
-                    'GreenChat': 'greenchat-base',
-                    'GreenChat v1': 'greenchat-v1',
-                    'GreenChat Turbo': 'greenchat-turbo',
-                    'GreenChat v2': 'greenchat-v2',
-                    'GreenChat Max': 'greenchat-max',
-                    'GreenChat Pro': 'greenchat-pro'
-                };
-                return modelMap[this.currentModel] || 'greenchat-base';
-            }
-
-            addMessage(text, type = 'user') {
-                const messagesContainer = document.getElementById('messagesContainer');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${type}`;
-                messageDiv.innerHTML = text;
-                messageDiv.dataset.id = Date.now();
-
-                messagesContainer.appendChild(messageDiv);
-                // Прокрутка к новому сообщению
-                setTimeout(() => {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }, 100);
-
-                return messageDiv.dataset.id;
-            }
-
-            replaceMessage(id, newText, type) {
-                const messageDiv = document.querySelector(`.message[data-id="${id}"]`);
-                if (messageDiv) {
-                    messageDiv.innerHTML = newText;
-                    messageDiv.className = `message ${type}`;
-                    const messagesContainer = document.getElementById('messagesContainer');
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }
-            }
-
-            showError(text) {
-                const messagesContainer = document.getElementById('messagesContainer');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.textContent = text;
-
-                messagesContainer.appendChild(errorDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                setTimeout(() => {
-                    errorDiv.style.opacity = '0';
-                    errorDiv.style.transform = 'scale(0.8) translateY(-10px)';
-                    setTimeout(() => {
-                        errorDiv.remove();
-                    }, 300);
-                }, 3000);
-            }
+        // Функция включения blur mode
+        function enableBlurMode(switchId) {
+            if (blurMode) return;
+            
+            blurMode = true;
+            activeSwitch = switchId;
+            document.body.classList.add('blur-mode');
+            document.querySelector(`[data-switch="${switchId}"]`).classList.add('active');
+            
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', () => {
-            new GreenChat();
-        });
+        // Функция выключения blur mode
+        function disableBlurMode() {
+            if (!blurMode) return;
+            
+            blurMode = false;
+            document.body.classList.remove('blur-mode');
+            document.querySelectorAll('.switch-container').forEach(container => {
+                container.classList.remove('active', 'holding');
+            });
+            activeSwitch = null;
+        }
 
-        // Дополнительная защита от копирования
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
-                e.preventDefault();
+        // Обработчики для переключателей
+        document.getElementById('switch1').addEventListener('change', function(e) {
+            if (e.target.checked) {
+                document.getElementById('switch2').checked = false;
+                tg.HapticFeedback.impactOccurred('light');
+                disableBlurMode();
             }
         });
+
+        document.getElementById('switch2').addEventListener('change', function(e) {
+            if (e.target.checked) {
+                document.getElementById('switch1').checked = false;
+                tg.HapticFeedback.impactOccurred('light');
+                disableBlurMode();
+            }
+        });
+
+        // Обработчики удержания
+        document.querySelectorAll('.switch-container').forEach(container => {
+            const switchId = container.dataset.switch;
+            const checkbox = container.querySelector('input[type="checkbox"]');
+            
+            // Начало удержания
+            container.addEventListener('touchstart', function(e) {
+                if (blurMode) return;
+                
+                container.classList.add('holding');
+                holdTimers[switchId] = setTimeout(() => {
+                    enableBlurMode(switchId);
+                    container.classList.remove('holding');
+                }, 1500);
+            });
+            
+            container.addEventListener('mousedown', function(e) {
+                if (blurMode) return;
+                
+                container.classList.add('holding');
+                holdTimers[switchId] = setTimeout(() => {
+                    enableBlurMode(switchId);
+                    container.classList.remove('holding');
+                }, 1500);
+            });
+            
+            // Конец удержания
+            container.addEventListener('touchend', function(e) {
+                container.classList.remove('holding');
+                if (holdTimers[switchId]) {
+                    clearTimeout(holdTimers[switchId]);
+                    delete holdTimers[switchId];
+                }
+            });
+            
+            container.addEventListener('mouseup', function(e) {
+                container.classList.remove('holding');
+                if (holdTimers[switchId]) {
+                    clearTimeout(holdTimers[switchId]);
+                    delete holdTimers[switchId];
+                }
+            });
+            
+            // Отмена удержания при выходе за пределы
+            container.addEventListener('mouseleave', function(e) {
+                container.classList.remove('holding');
+                if (holdTimers[switchId]) {
+                    clearTimeout(holdTimers[switchId]);
+                    delete holdTimers[switchId];
+                }
+            });
+        });
+
+        // Клик по фону для отмены blur mode
+        document.addEventListener('click', function(e) {
+            if (blurMode && !e.target.closest('.switch-container')) {
+                disableBlurMode();
+            }
+        });
+
+        document.addEventListener('touchstart', function(e) {
+            if (blurMode && !e.target.closest('.switch-container')) {
+                disableBlurMode();
+            }
+        });
+
+        // Обработка смены темы
+        tg.onEvent('themeChanged', function() {
+            document.documentElement.style.setProperty('--accent-color', tg.themeParams.accent_text_color || '#007AFF');
+        });
+
+        // Запрет масштабирования и выделения
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        console.log('Telegram WebApp инициализирован');
+        console.log('Акцентный цвет:', tg.themeParams.accent_text_color);
     </script>
 </body>
 </html>
