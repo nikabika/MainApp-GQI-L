@@ -6,6 +6,8 @@
     <title>Сканирование номерка</title>
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <!-- Telegram Web App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -18,10 +20,18 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        :root {
+            --tg-theme-bg-color: #1d1d1f;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: rgba(255, 255, 255, 0.7);
+            --tg-theme-button-color: #007AFF;
+            --tg-theme-button-text-color: #ffffff;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #1d1d1f;
-            color: #ffffff;
+            background-color: var(--tg-theme-bg-color, #1d1d1f);
+            color: var(--tg-theme-text-color, #ffffff);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -63,7 +73,7 @@
             font-size: 32px;
             font-weight: 700;
             margin-bottom: 20px;
-            color: #ffffff;
+            color: var(--tg-theme-text-color, #ffffff);
             letter-spacing: -0.5px;
         }
 
@@ -71,7 +81,7 @@
             font-size: 18px;
             opacity: 0.7;
             line-height: 1.5;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--tg-theme-hint-color, rgba(255, 255, 255, 0.7));
             max-width: 400px;
             margin: 0 auto;
         }
@@ -79,7 +89,7 @@
         .scan-button {
             width: 100px;
             height: 100px;
-            background-color: #007AFF;
+            background-color: var(--tg-theme-button-color, #007AFF);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -90,11 +100,16 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
+            transition: transform 0.2s ease;
+        }
+
+        .scan-button:active {
+            transform: translateX(-50%) scale(0.95);
         }
 
         .scan-button i {
             font-size: 48px;
-            color: white;
+            color: var(--tg-theme-button-text-color, #ffffff);
         }
 
         /* Стили для модального окна камеры */
@@ -107,10 +122,13 @@
             height: 100%;
             background-color: #000;
             z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .camera-modal.active {
             display: block;
+            opacity: 1;
         }
 
         .camera-container {
@@ -124,6 +142,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transform: scale(1.1);
+            transition: transform 0.4s ease;
+        }
+
+        .camera-modal.active .video-element {
+            transform: scale(1);
         }
 
         .scan-frame {
@@ -137,6 +161,12 @@
             border-radius: 20px;
             background: transparent;
             box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        .scan-frame.detected {
+            border-color: #34C759;
+            box-shadow: 0 0 0 100vmax rgba(52, 199, 89, 0.1);
         }
 
         .scan-frame::before {
@@ -148,6 +178,18 @@
             bottom: -10px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 25px;
+        }
+
+        .scan-instruction {
+            position: absolute;
+            top: calc(50% + 160px);
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            opacity: 0.8;
+            max-width: 300px;
         }
 
         .close-button {
@@ -164,11 +206,100 @@
             cursor: pointer;
             backdrop-filter: blur(10px);
             z-index: 101;
+            transition: opacity 0.3s ease;
         }
 
         .close-button i {
             font-size: 24px;
             color: white;
+        }
+
+        .scan-action-button {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--tg-theme-button-color, #007AFF);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 101;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .scan-action-button.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Модальное окно разрешения камеры */
+        .permission-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .permission-modal.active {
+            display: flex;
+        }
+
+        .permission-content {
+            background-color: var(--tg-theme-bg-color, #1d1d1f);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 320px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .permission-text {
+            font-size: 18px;
+            margin-bottom: 24px;
+            color: var(--tg-theme-text-color, #ffffff);
+            line-height: 1.4;
+        }
+
+        .permission-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .permission-button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .permission-button:active {
+            opacity: 0.7;
+        }
+
+        .permission-allow {
+            background-color: var(--tg-theme-button-color, #007AFF);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        .permission-deny {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--tg-theme-text-color, #ffffff);
         }
 
         /* Запрет выделения и масштабирования */
@@ -209,6 +340,11 @@
                 width: 250px;
                 height: 250px;
             }
+
+            .scan-instruction {
+                top: calc(50% + 140px);
+                font-size: 14px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -246,6 +382,12 @@
                 width: 40px;
                 height: 40px;
             }
+
+            .scan-instruction {
+                top: calc(50% + 130px);
+                font-size: 13px;
+                max-width: 250px;
+            }
         }
 
         /* Запрет масштабирования на iOS */
@@ -273,16 +415,39 @@
 
     <!-- Кнопка сканирования -->
     <div class="scan-button" id="scanButton">
-        <i class="ti ti-scan"></i>
+        <i class="ti ti-text-scan-2"></i>
     </div>
 
     <!-- Модальное окно камеры -->
     <div class="camera-modal" id="cameraModal">
         <div class="camera-container">
             <video class="video-element" id="videoElement" autoplay playsinline></video>
-            <div class="scan-frame"></div>
+            <div class="scan-frame" id="scanFrame"></div>
+            <div class="scan-instruction" id="scanInstruction">
+                Наведите камеру на число номерка вашего ключа
+            </div>
             <div class="close-button" id="closeButton">
                 <i class="ti ti-x"></i>
+            </div>
+            <button class="scan-action-button" id="scanActionButton">
+                Сканировать
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно разрешения камеры -->
+    <div class="permission-modal" id="permissionModal">
+        <div class="permission-content">
+            <div class="permission-text">
+                Разрешить KeyScan использовать камеру?
+            </div>
+            <div class="permission-buttons">
+                <button class="permission-button permission-deny" id="denyButton">
+                    Не разрешать
+                </button>
+                <button class="permission-button permission-allow" id="allowButton">
+                    Разрешить
+                </button>
             </div>
         </div>
     </div>
@@ -292,11 +457,35 @@
         const cameraModal = document.getElementById('cameraModal');
         const closeButton = document.getElementById('closeButton');
         const videoElement = document.getElementById('videoElement');
+        const scanFrame = document.getElementById('scanFrame');
+        const scanInstruction = document.getElementById('scanInstruction');
+        const scanActionButton = document.getElementById('scanActionButton');
+        const permissionModal = document.getElementById('permissionModal');
+        const allowButton = document.getElementById('allowButton');
+        const denyButton = document.getElementById('denyButton');
+
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+
+        // Применяем тему Telegram
+        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#1d1d1f');
+        document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff');
+        document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || 'rgba(255, 255, 255, 0.7)');
+        document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#007AFF');
+        document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
 
         // Открытие камеры
-        scanButton.addEventListener('click', async function() {
+        scanButton.addEventListener('click', function() {
+            permissionModal.classList.add('active');
+        });
+
+        // Разрешение доступа к камере
+        allowButton.addEventListener('click', async function() {
+            permissionModal.classList.remove('active');
+            
             try {
-                // Запрос доступа к камере
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { 
                         facingMode: 'environment'
@@ -306,10 +495,15 @@
                 videoElement.srcObject = stream;
                 cameraModal.classList.add('active');
                 
+                // Имитация распознавания числа через 2 секунды
+                setTimeout(() => {
+                    scanFrame.classList.add('detected');
+                    scanActionButton.classList.add('show');
+                }, 2000);
+                
             } catch (error) {
                 console.error('Ошибка доступа к камере:', error);
                 
-                // Пробуем с основной камерой, если задняя не доступна
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         video: true 
@@ -318,30 +512,50 @@
                     videoElement.srcObject = stream;
                     cameraModal.classList.add('active');
                     
+                    // Имитация распознавания числа через 2 секунды
+                    setTimeout(() => {
+                        scanFrame.classList.add('detected');
+                        scanActionButton.classList.add('show');
+                    }, 2000);
+                    
                 } catch (fallbackError) {
                     console.error('Ошибка доступа к любой камере:', fallbackError);
-                    alert('Для сканирования разрешите доступ к камере в настройках браузера');
                 }
             }
         });
 
+        // Отказ от доступа к камере
+        denyButton.addEventListener('click', function() {
+            permissionModal.classList.remove('active');
+        });
+
+        // Действие при нажатии на кнопку сканирования
+        scanActionButton.addEventListener('click', function() {
+            // Здесь будет логика обработки сканированного числа
+            alert('Номерок успешно отсканирован! Баллы начислены.');
+            closeCamera();
+        });
+
         // Закрытие камеры
-        closeButton.addEventListener('click', function() {
+        function closeCamera() {
             cameraModal.classList.remove('active');
+            scanFrame.classList.remove('detected');
+            scanActionButton.classList.remove('show');
             
-            // Остановка потока видео
             const stream = videoElement.srcObject;
             if (stream) {
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
                 videoElement.srcObject = null;
             }
-        });
+        }
+
+        closeButton.addEventListener('click', closeCamera);
 
         // Закрытие при клике вне области сканирования
         cameraModal.addEventListener('click', function(e) {
             if (e.target === cameraModal) {
-                closeButton.click();
+                closeCamera();
             }
         });
     </script>
