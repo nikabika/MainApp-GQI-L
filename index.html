@@ -3,583 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Сканирование номерка</title>
-    <!-- Tabler Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <!-- Telegram Web App -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>StoryShare</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            --tg-theme-bg-color: #1d1d1f;
-            --tg-theme-text-color: #ffffff;
-            --tg-theme-hint-color: rgba(255, 255, 255, 0.7);
-            --tg-theme-link-color: #007AFF;
-            --tg-theme-button-color: #007AFF;
-            --tg-theme-button-text-color: #ffffff;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--tg-theme-bg-color, #1d1d1f);
-            color: var(--tg-theme-text-color, #ffffff);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
             overflow-x: hidden;
-            touch-action: manipulation;
-            position: relative;
+            height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .container {
-            text-align: center;
             max-width: 600px;
-            width: 100%;
             margin: 0 auto;
-            transform: translateY(-25px);
-            flex: 1;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
         }
 
-        .image-container {
-            margin-bottom: 40px;
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 10px 0;
         }
 
-        .scan-image {
-            width: 300px;
-            height: 300px;
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-
-        .scan-image:hover {
-            opacity: 0.7;
-        }
-
-        .main-text {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--tg-theme-text-color, #ffffff);
-            letter-spacing: -0.5px;
-        }
-
-        .sub-text {
-            font-size: 18px;
-            opacity: 0.7;
-            line-height: 1.5;
-            color: var(--tg-theme-hint-color, rgba(255, 255, 255, 0.7));
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .result-text {
-            font-size: 48px;
-            font-weight: 700;
-            color: var(--tg-theme-link-color, #007AFF);
-            margin: 20px 0;
-            min-height: 60px;
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 17px;
+            background: #333;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .scan-button {
-            width: 100px;
-            height: 100px;
-            background-color: var(--tg-theme-button-color, #007AFF);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            transition: transform 0.2s ease;
-        }
-
-        .scan-button:active {
-            transform: translateX(-50%) scale(0.95);
-        }
-
-        .scan-button i {
-            font-size: 48px;
-            color: var(--tg-theme-button-text-color, #ffffff);
-        }
-
-        /* Стили для модального окна камеры */
-        .camera-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #000;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .camera-modal.active {
-            display: block;
-            opacity: 1;
-        }
-
-        .camera-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
+            font-size: 24px;
             overflow: hidden;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
-        .video-element {
+        .avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scale(1.1);
-            transition: transform 0.4s ease;
         }
 
-        .camera-modal.active .video-element {
-            transform: scale(1);
-        }
-
-        .scan-frame {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            border: 2px solid #ffffff;
-            border-radius: 20px;
-            background: transparent;
-            box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.7);
-            opacity: 0;
-            transition: opacity 0.4s ease 0.1s;
-        }
-
-        .camera-modal.active .scan-frame {
-            opacity: 1;
-        }
-
-        .scan-hint {
-            position: absolute;
-            top: calc(50% + 160px);
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 16px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.4s ease 0.2s;
-            max-width: 300px;
-            line-height: 1.4;
-        }
-
-        .camera-modal.active .scan-hint {
-            opacity: 1;
-        }
-
-        .close-button {
-            position: absolute;
-            top: 40px;
-            right: 20px;
-            width: 44px;
-            height: 44px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+        .content-area {
+            flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            z-index: 101;
-            opacity: 0;
-            transition: opacity 0.3s ease 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
         }
 
-        .camera-modal.active .close-button {
-            opacity: 1;
+        .empty-state {
+            opacity: 0.7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
-        .close-button i {
-            font-size: 24px;
-            color: white;
+        .emoji {
+            font-size: 128px;
+            margin-bottom: 30px;
+            opacity: 1 !important;
+            line-height: 1;
         }
 
-        /* Кнопка сканирования Telegram */
-        .tg-scan-button {
-            position: absolute;
-            bottom: 30px;
-            left: 20px;
-            right: 20px;
-            height: 50px;
-            background-color: var(--tg-theme-button-color, #007AFF);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 10px;
-            font-size: 17px;
-            font-weight: 500;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s ease 0.3s;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        .empty-state h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
         }
 
-        .camera-modal.active .tg-scan-button {
-            opacity: 1;
-        }
-
-        .tg-scan-button:active {
+        .empty-state p {
+            font-size: 18px;
             opacity: 0.8;
         }
 
-        .loading {
+        .post-form {
+            width: 100%;
             display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        }
+
+        .textarea {
+            width: 100%;
+            background: rgba(44, 44, 46, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 17px;
+            padding: 20px;
+            color: #fff;
+            font-size: 16px;
+            resize: none;
+            min-height: 200px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 24px;
+            border-radius: 17px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .btn-primary {
+            background: rgba(10, 132, 255, 0.9);
             color: white;
-            font-size: 18px;
-            text-align: center;
-            z-index: 102;
         }
 
-        .loading.active {
-            display: block;
+        .btn-secondary {
+            background: rgba(44, 44, 46, 0.8);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Запрет выделения и масштабирования */
-        img {
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            user-drag: none;
+        .btn:hover {
+            transform: scale(1.02);
         }
 
-        /* Адаптивность для мобильных устройств */
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .posts-list {
+            width: 100%;
+            display: none;
+        }
+
+        .post {
+            background: rgba(44, 44, 46, 0.6);
+            border-radius: 17px;
+            padding: 20px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .post:hover {
+            transform: translateY(-2px);
+        }
+
+        .post-content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 17px;
+            background: rgba(10, 132, 255, 0.9);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(10, 132, 255, 0.3);
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .floating-btn:active {
+            transform: scale(0.95);
+        }
+
         @media (max-width: 768px) {
-            .scan-image {
-                width: 225px;
-                height: 225px;
-            }
-
-            .main-text {
-                font-size: 28px;
-            }
-
-            .sub-text {
-                font-size: 16px;
+            .container {
+                padding: 15px;
             }
             
-            .scan-button {
-                width: 90px;
-                height: 90px;
-                bottom: 30px;
+            .content-area {
+                min-height: 300px;
             }
             
-            .scan-button i {
-                font-size: 42px;
+            .emoji {
+                font-size: 96px;
             }
-
-            .scan-frame {
-                width: 250px;
-                height: 250px;
-            }
-
-            .scan-hint {
-                top: calc(50% + 150px);
-                font-size: 15px;
-                max-width: 280px;
-            }
-
-            .result-text {
-                font-size: 42px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .scan-image {
-                width: 180px;
-                height: 180px;
-            }
-
-            .main-text {
+            
+            .empty-state h2 {
                 font-size: 24px;
             }
-
-            .sub-text {
-                font-size: 14px;
-            }
             
-            .scan-button {
-                width: 80px;
-                height: 80px;
-                bottom: 25px;
-            }
-            
-            .scan-button i {
-                font-size: 36px;
+            .empty-state p {
+                font-size: 16px;
             }
 
-            .scan-frame {
-                width: 220px;
-                height: 220px;
-            }
-
-            .scan-hint {
-                top: calc(50% + 140px);
-                font-size: 14px;
-                max-width: 260px;
-            }
-
-            .close-button {
-                top: 20px;
-                right: 15px;
-                width: 40px;
-                height: 40px;
-            }
-
-            .result-text {
-                font-size: 36px;
+            .floating-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
             }
         }
 
-        /* Запрет масштабирования на iOS */
-        @supports (-webkit-touch-callout: none) {
-            body {
-                -webkit-text-size-adjust: 100%;
-            }
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Hide scrollbar */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="image-container">
-            <img src="https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/6b4a34f6-9b68-4e75-96a4-d1ea74da32ba_%D0%98%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F_%D0%B1%D0%B5%D0%B7_%D0%BDD0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI2YjRhMzRmNi05YjY4LTRlNzUtOTZhNC1kMWVhNzRkYTMyYmEiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.XbLs7PAWkQlHJJwAoWfds1Ac_MXj9D3T2EBZ6AfVHRQ&x-oss-process=image/resize,m_mfit,w_320,h_320" 
-                 alt="Иллюстрация сканирования" 
-                 class="scan-image">
-        </div>
-        
-        <h1 class="main-text">Отсканируйте номерок</h1>
-        
-        <p class="sub-text">
-            Отсканируйте номерок своего ключа, и вам будет начислено нужное количество баллов
-        </p>
-
-        <div class="result-text" id="resultText"></div>
-    </div>
-
-    <!-- Кнопка сканирования -->
-    <div class="scan-button" id="scanButton">
-        <i class="ti ti-text-scan-2"></i>
-    </div>
-
-    <!-- Модальное окно камеры -->
-    <div class="camera-modal" id="cameraModal">
-        <div class="camera-container">
-            <video class="video-element" id="videoElement" autoplay playsinline></video>
-            <div class="scan-frame"></div>
-            <div class="scan-hint">Наведите камеру на число номерка вашего ключа</div>
-            <div class="close-button" id="closeButton">
-                <i class="ti ti-x"></i>
+        <div class="header">
+            <div class="avatar" id="userAvatar">
+                <!-- Аватар будет загружен из Telegram -->
             </div>
-            <button class="tg-scan-button" id="tgScanButton">Сканировать</button>
-            <div class="loading" id="loading">Распознавание...</div>
         </div>
+
+        <div class="content-area">
+            <div class="empty-state" id="emptyState">
+                <div class="emoji">✨</div>
+                <h2>There's no content yet</h2>
+                <p>Будьте первым, кто поделится историей!</p>
+            </div>
+
+            <div class="post-form" id="postForm">
+                <textarea class="textarea" placeholder="Расскажите свою историю, поделитесь впечатлениями или попросите совета..." maxlength="1000"></textarea>
+                <div class="buttons">
+                    <button class="btn btn-secondary" onclick="cancelPost()">Отмена</button>
+                    <button class="btn btn-primary" onclick="publishPost()">Опубликовать</button>
+                </div>
+            </div>
+
+            <div class="posts-list" id="postsList">
+                <!-- Посты будут добавляться здесь -->
+            </div>
+        </div>
+
+        <button class="floating-btn" onclick="showNewPost()" id="floatingBtn">+</button>
     </div>
 
     <script>
-        // Инициализация Telegram Web App
-        const tg = window.Telegram.WebApp;
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        
+        // Раскрываем WebApp на весь экран
         tg.expand();
-        tg.enableClosingConfirmation();
-
-        // Конфигурация Hugging Face
-        const HF_API_TOKEN = 'YOUR_HUGGINGFACE_TOKEN'; // Замените на ваш токен
-        const HF_MODEL = 'microsoft/trocr-base-printed';
-
-        const scanButton = document.getElementById('scanButton');
-        const cameraModal = document.getElementById('cameraModal');
-        const closeButton = document.getElementById('closeButton');
-        const videoElement = document.getElementById('videoElement');
-        const tgScanButton = document.getElementById('tgScanButton');
-        const loading = document.getElementById('loading');
-        const resultText = document.getElementById('resultText');
-        const subText = document.querySelector('.sub-text');
-
-        let stream = null;
-
-        // Функция для создания canvas из видео
-        function captureFrame() {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
+        
+        // Получаем данные пользователя
+        const user = tg.initDataUnsafe.user;
+        
+        // Устанавливаем аватар
+        if (user) {
+            const avatar = document.getElementById('userAvatar');
             
-            // Устанавливаем размеры canvas как у области сканирования
-            canvas.width = 280;
-            canvas.height = 280;
-            
-            // Вычисляем координаты для обрезки (центр видео)
-            const videoWidth = videoElement.videoWidth;
-            const videoHeight = videoElement.videoHeight;
-            
-            // Масштабируем и обрезаем до квадрата
-            const size = Math.min(videoWidth, videoHeight);
-            const sx = (videoWidth - size) / 2;
-            const sy = (videoHeight - size) / 2;
-            
-            // Рисуем обрезанное изображение на canvas
-            context.drawImage(
-                videoElement, 
-                sx, sy, size, size, // source rectangle
-                0, 0, 280, 280      // destination rectangle
-            );
-            
-            return canvas.toDataURL('image/jpeg', 0.8);
-        }
-
-        // Функция для распознавания текста через Hugging Face
-        async function recognizeText(imageData) {
-            try {
-                loading.classList.add('active');
-                
-                // Конвертируем base64 в blob
-                const response = await fetch(imageData);
-                const blob = await response.blob();
-                
-                // Отправляем запрос к Hugging Face API
-                const hfResponse = await fetch(
-                    `https://api-inference.huggingface.co/models/${HF_MODEL}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${HF_API_TOKEN}`,
-                        },
-                        method: 'POST',
-                        body: blob,
-                    }
-                );
-                
-                const result = await hfResponse.json();
-                
-                if (result.error) {
-                    throw new Error(result.error);
-                }
-                
-                return result;
-            } catch (error) {
-                console.error('Ошибка распознавания:', error);
-                throw error;
-            } finally {
-                loading.classList.remove('active');
+            if (user.photo_url) {
+                avatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
+            } else {
+                avatar.textContent = '👤';
             }
         }
 
-        // Открытие камеры
-        scanButton.addEventListener('click', async function() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment'
-                    } 
-                });
-                
-                videoElement.srcObject = stream;
-                cameraModal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-                
-            } catch (error) {
-                console.error('Ошибка доступа к камере:', error);
-                
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: true 
-                    });
-                    
-                    videoElement.srcObject = stream;
-                    cameraModal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                    
-                } catch (fallbackError) {
-                    console.error('Ошибка доступа к любой камере:', fallbackError);
-                    alert('Для сканирования разрешите доступ к камере в настройках браузера');
-                }
-            }
-        });
+        // Хранилище постов
+        let posts = JSON.parse(localStorage.getItem('posts') || '[]');
 
-        // Кнопка сканирования Telegram
-        tgScanButton.addEventListener('click', async function() {
-            try {
-                const imageData = captureFrame();
-                const recognitionResult = await recognizeText(imageData);
-                
-                // Извлекаем распознанный текст
-                const recognizedText = recognitionResult[0]?.generated_text || '';
-                const numbers = recognizedText.replace(/\D/g, ''); // Оставляем только цифры
-                
-                if (numbers) {
-                    resultText.textContent = numbers;
-                    subText.style.display = 'none'; // Скрываем исходный текст
-                    
-                    // Закрываем камеру
-                    closeCamera();
-                } else {
-                    alert('Не удалось распознать цифры. Попробуйте еще раз.');
-                }
-                
-            } catch (error) {
-                console.error('Ошибка:', error);
-                alert('Ошибка распознавания. Проверьте подключение к интернету.');
-            }
-        });
-
-        // Функция закрытия камеры
-        function closeCamera() {
-            cameraModal.classList.remove('active');
-            document.body.style.overflow = '';
+        // Обновление отображения контента
+        function updateContent() {
+            const emptyState = document.getElementById('emptyState');
+            const postsList = document.getElementById('postsList');
+            const floatingBtn = document.getElementById('floatingBtn');
             
+            if (posts.length === 0) {
+                emptyState.style.display = 'flex';
+                postsList.style.display = 'none';
+                floatingBtn.style.display = 'flex';
+            } else {
+                emptyState.style.display = 'none';
+                postsList.style.display = 'block';
+                floatingBtn.style.display = 'flex';
+                renderPosts();
+            }
+        }
+
+        // Отображение постов
+        function renderPosts() {
+            const postsList = document.getElementById('postsList');
+            postsList.innerHTML = '';
+            
+            posts.reverse().forEach((post, index) => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post';
+                postElement.innerHTML = `
+                    <div class="post-content">${post.content}</div>
+                    <div class="post-meta">
+                        <span>${post.author}</span>
+                        <span>${new Date(post.timestamp).toLocaleDateString()}</span>
+                    </div>
+                `;
+                postsList.appendChild(postElement);
+            });
+        }
+
+        // Показать ленту
+        function showFeed() {
+            document.getElementById('emptyState').style.display = posts.length === 0 ? 'flex' : 'none';
+            document.getElementById('postForm').style.display = 'none';
+            document.getElementById('postsList').style.display = posts.length > 0 ? 'block' : 'none';
+            document.getElementById('floatingBtn').style.display = 'flex';
+        }
+
+        // Показать форму нового поста
+        function showNewPost() {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('postForm').style.display = 'flex';
+            document.getElementById('postsList').style.display = 'none';
+            document.getElementById('floatingBtn').style.display = 'none';
+            
+            // Фокус на текстовое поле
+            document.querySelector('.textarea').focus();
+        }
+
+        // Отмена создания поста
+        function cancelPost() {
+            document.querySelector('.textarea').value = '';
+            showFeed();
+        }
+
+        // Публикация поста
+        function publishPost() {
+            const textarea = document.querySelector('.textarea');
+            const content = textarea.value.trim();
+            
+            if (content === '') {
+                alert('Пожалуйста, напишите что-нибудь');
+                return;
+            }
+            
+            const newPost = {
+                content: content,
+                author: user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : 'Аноним',
+                timestamp: new Date().toISOString()
+            };
+            
+            posts.push(newPost);
+            localStorage.setItem('posts', JSON.stringify(posts));
+            
+            textarea.value = '';
+            updateContent();
+            showFeed();
+            
+            // Плавная прокрутка к новому посту
             setTimeout(() => {
-                if (stream) {
-                    const tracks = stream.getTracks();
-                    tracks.forEach(track => track.stop());
-                    videoElement.srcObject = null;
-                    stream = null;
-                }
-            }, 300);
+                document.querySelector('.post')?.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
         }
 
-        // Закрытие камеры
-        closeButton.addEventListener('click', closeCamera);
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            updateContent();
+            
+            // Добавляем плавные переходы после загрузки
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 50);
+        });
 
-        cameraModal.addEventListener('click', function(e) {
-            if (e.target === cameraModal) {
-                closeCamera();
+        // Предотвращение масштабирования
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
             }
         });
 
-        // Обработка изменения темы Telegram
-        tg.onEvent('themeChanged', function() {
-            document.body.style.backgroundColor = tg.themeParams.bg_color || '#1d1d1f';
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Предотвращение выделения текста
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>
