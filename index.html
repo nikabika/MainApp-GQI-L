@@ -118,6 +118,12 @@
             display: none;
             align-items: center;
             gap: 8px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading.hide {
+            opacity: 0;
         }
 
         .loading-dot {
@@ -162,6 +168,10 @@
 
         .hide-fade {
             opacity: 0;
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         @media (max-width: 768px) {
@@ -339,10 +349,30 @@
             avatar.classList.add('hide-fade');
             swipeHint.classList.add('hide-fade');
             
-            // Показываем загрузку
+            // Показываем загрузку после исчезновения всех элементов
             setTimeout(() => {
                 loading.style.display = 'flex';
-            }, 400);
+                
+                // Случайная длительность загрузки от 0.2 до 1 секунды
+                const randomDuration = 200 + Math.random() * 800;
+                
+                setTimeout(() => {
+                    // Плавно скрываем загрузку
+                    loading.classList.add('hide');
+                    
+                    setTimeout(() => {
+                        // Полностью скрываем все элементы
+                        loading.classList.add('hidden');
+                        mainContent.classList.add('hidden');
+                        avatar.classList.add('hidden');
+                        swipeHint.classList.add('hidden');
+                        
+                        // Остается только темный экран
+                    }, 300);
+                    
+                }, randomDuration);
+                
+            }, 500);
             
             // Блокируем повторные свайпы
             swipeArea.style.pointerEvents = 'none';
