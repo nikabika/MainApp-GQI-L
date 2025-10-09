@@ -2,453 +2,367 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StoryShare</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Style Design</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #000;
+            background-color: #000;
             color: #fff;
-            line-height: 1.6;
-            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             height: 100vh;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 10px 0;
+            justify-content: center;
+            align-items: flex-start;
+            padding-left: 10%;
+            position: relative;
+            overflow: hidden;
+            touch-action: pan-y;
         }
 
         .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 17px;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
             overflow: hidden;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .avatar img {
+        .avatar-placeholder {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            background-color: #fff;
+            border-radius: 50%;
         }
 
-        .content-area {
-            flex: 1;
+        .content {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-title {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 400;
+            opacity: 0.5;
+            line-height: 1.1;
+        }
+
+        .swipe-container {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.5;
+            white-space: nowrap;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chevron {
+            width: 20px;
+            height: 10px;
+            margin-bottom: 5px;
+            position: relative;
+        }
+
+        .chevron::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: #fff;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .swipe-hint {
+            font-size: 0.875rem;
             text-align: center;
-        }
-
-        .empty-state {
-            opacity: 0.7;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             width: 100%;
         }
 
-        .emoji {
-            font-size: 128px;
-            margin-bottom: 30px;
-            opacity: 1 !important;
-            line-height: 1;
-        }
-
-        .empty-state h2 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .empty-state p {
-            font-size: 18px;
-            opacity: 0.8;
-        }
-
-        .post-form {
-            width: 100%;
+        /* Loading animation */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: none;
-        }
-
-        .textarea {
-            width: 100%;
-            background: rgba(44, 44, 46, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 17px;
-            padding: 20px;
-            color: #fff;
-            font-size: 16px;
-            resize: none;
-            min-height: 200px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            margin-bottom: 20px;
-            font-family: inherit;
-        }
-
-        .textarea:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px 24px;
-            border-radius: 17px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-
-        .btn-primary {
-            background: rgba(10, 132, 255, 0.9);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: rgba(44, 44, 46, 0.8);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn:hover {
-            transform: scale(1.02);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .posts-list {
-            width: 100%;
-            display: none;
-        }
-
-        .post {
-            background: rgba(44, 44, 46, 0.6);
-            border-radius: 17px;
-            padding: 20px;
-            margin-bottom: 15px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .post:hover {
-            transform: translateY(-2px);
-        }
-
-        .post-content {
-            font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-
-        .post-meta {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 14px;
-            opacity: 0.7;
+            gap: 8px;
         }
 
-        .floating-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 17px;
-            background: rgba(10, 132, 255, 0.9);
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 25px rgba(10, 132, 255, 0.3);
+        .loading-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            animation: loadingWave 1.4s ease-in-out infinite both;
         }
 
-        .floating-btn:hover {
-            transform: scale(1.1);
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: 0s; }
+        .loading-dot:nth-child(4) { animation-delay: 0.16s; }
+
+        @keyframes loadingWave {
+            0%, 80%, 100% {
+                transform: scale(0.5);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
-        .floating-btn:active {
-            transform: scale(0.95);
+        /* Swipe area */
+        .swipe-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            z-index: 10;
+        }
+
+        /* Hide elements when swiped */
+        .hide-up {
+            transform: translateY(-100vh) scale(0.8);
+            opacity: 0;
+        }
+
+        .hide-fade {
+            opacity: 0;
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 15px;
+            body {
+                padding-left: 5%;
             }
             
-            .content-area {
-                min-height: 300px;
-            }
-            
-            .emoji {
-                font-size: 96px;
-            }
-            
-            .empty-state h2 {
-                font-size: 24px;
-            }
-            
-            .empty-state p {
-                font-size: 16px;
-            }
-
-            .floating-btn {
-                bottom: 20px;
-                right: 20px;
-                width: 56px;
-                height: 56px;
+            .avatar {
+                top: 15px;
+                left: 15px;
+                width: 35px;
+                height: 35px;
             }
         }
 
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
+        @media (max-width: 480px) {
+            body {
+                padding-left: 5%;
+            }
+            
+            .main-title, .subtitle {
+                font-size: 2rem;
+            }
+            
+            .avatar {
+                top: 12px;
+                left: 12px;
+                width: 32px;
+                height: 32px;
+            }
+            
+            .swipe-hint {
+                font-size: 0.8rem;
+            }
         }
 
-        /* Hide scrollbar */
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
-        * {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        /* Landscape orientation support */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .content {
+                transform: scale(0.8);
+                transform-origin: left center;
+            }
+            
+            .swipe-container {
+                bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="avatar" id="userAvatar">
-                <!-- Аватар будет загружен из Telegram -->
-            </div>
-        </div>
-
-        <div class="content-area">
-            <div class="empty-state" id="emptyState">
-                <div class="emoji">✨</div>
-                <h2>There's no content yet</h2>
-                <p>Будьте первым, кто поделится историей!</p>
-            </div>
-
-            <div class="post-form" id="postForm">
-                <textarea class="textarea" placeholder="Расскажите свою историю, поделитесь впечатлениями или попросите совета..." maxlength="1000"></textarea>
-                <div class="buttons">
-                    <button class="btn btn-secondary" onclick="cancelPost()">Отмена</button>
-                    <button class="btn btn-primary" onclick="publishPost()">Опубликовать</button>
-                </div>
-            </div>
-
-            <div class="posts-list" id="postsList">
-                <!-- Посты будут добавляться здесь -->
-            </div>
-        </div>
-
-        <button class="floating-btn" onclick="showNewPost()" id="floatingBtn">+</button>
+    <div class="avatar" id="userAvatar">
+        <div class="avatar-placeholder"></div>
+    </div>
+    
+    <div class="content" id="mainContent">
+        <h1 class="main-title">Что у тебя на уме?</h1>
+        <p class="subtitle">Поделись с обществом</p>
+    </div>
+    
+    <div class="swipe-container" id="swipeHint">
+        <div class="chevron"></div>
+        <div class="swipe-hint">Свайпни, чтобы смотреть посты</div>
     </div>
 
+    <div class="loading" id="loading">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+    </div>
+
+    <div class="swipe-area" id="swipeArea"></div>
+
     <script>
-        // Инициализация Telegram WebApp
-        let tg = window.Telegram.WebApp;
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
         
-        // Раскрываем WebApp на весь экран
+        // Инициализируем приложение
         tg.expand();
+        tg.enableClosingConfirmation();
         
         // Получаем данные пользователя
-        const user = tg.initDataUnsafe.user;
+        const user = tg.initDataUnsafe?.user;
         
-        // Устанавливаем аватар
-        if (user) {
-            const avatar = document.getElementById('userAvatar');
+        // Устанавливаем аватар пользователя
+        const avatarElement = document.getElementById('userAvatar');
+        
+        if (user && user.photo_url) {
+            avatarElement.style.backgroundImage = `url(${user.photo_url})`;
+            avatarElement.innerHTML = '';
+        } else if (user && user.first_name) {
+            const initials = user.first_name.charAt(0).toUpperCase();
+            avatarElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-color:#007AFF;color:white;font-weight:bold;border-radius:50%;font-size:14px;">${initials}</div>`;
+        } else {
+            avatarElement.style.backgroundColor = '#fff';
+        }
+
+        // Smart swipe functionality
+        const swipeArea = document.getElementById('swipeArea');
+        const mainContent = document.getElementById('mainContent');
+        const swipeHint = document.getElementById('swipeHint');
+        const loading = document.getElementById('loading');
+        const avatar = document.getElementById('userAvatar');
+
+        let startY = 0;
+        let currentY = 0;
+        let isSwiping = false;
+        let isAnimating = false;
+        const threshold = window.innerHeight * 0.4; // 40% высоты экрана
+
+        swipeArea.addEventListener('touchstart', (e) => {
+            if (isAnimating) return;
             
-            if (user.photo_url) {
-                avatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
+            startY = e.touches[0].clientY;
+            currentY = startY;
+            isSwiping = true;
+            
+            // Сбрасываем трансформации для плавного начала
+            mainContent.style.transition = 'none';
+            avatar.style.transition = 'none';
+            swipeHint.style.transition = 'none';
+        });
+
+        swipeArea.addEventListener('touchmove', (e) => {
+            if (!isSwiping || isAnimating) return;
+            
+            currentY = e.touches[0].clientY;
+            const diff = startY - currentY;
+            
+            // Двигаем контент только если свайп вверх
+            if (diff > 0) {
+                const progress = Math.min(diff / threshold, 1);
+                
+                // Плавное движение контента вверх
+                const translateY = -progress * 100;
+                const scale = 1 - progress * 0.2;
+                const opacity = 1 - progress;
+                
+                mainContent.style.transform = `translateY(${translateY}px) scale(${scale})`;
+                mainContent.style.opacity = opacity;
+                
+                // Плавное исчезновение аватара и подсказки
+                avatar.style.opacity = 1 - progress * 2;
+                swipeHint.style.opacity = 0.5 - progress;
+            }
+        });
+
+        swipeArea.addEventListener('touchend', () => {
+            if (!isSwiping || isAnimating) return;
+            
+            const diff = startY - currentY;
+            const progress = diff / threshold;
+            
+            // Включаем плавные переходы обратно
+            mainContent.style.transition = '';
+            avatar.style.transition = '';
+            swipeHint.style.transition = '';
+            
+            if (progress > 0.5) {
+                // Если свайпнули больше половины - завершаем анимацию
+                completeSwipe();
             } else {
-                avatar.textContent = '👤';
-            }
-        }
-
-        // Хранилище постов
-        let posts = JSON.parse(localStorage.getItem('posts') || '[]');
-
-        // Обновление отображения контента
-        function updateContent() {
-            const emptyState = document.getElementById('emptyState');
-            const postsList = document.getElementById('postsList');
-            const floatingBtn = document.getElementById('floatingBtn');
-            
-            if (posts.length === 0) {
-                emptyState.style.display = 'flex';
-                postsList.style.display = 'none';
-                floatingBtn.style.display = 'flex';
-            } else {
-                emptyState.style.display = 'none';
-                postsList.style.display = 'block';
-                floatingBtn.style.display = 'flex';
-                renderPosts();
-            }
-        }
-
-        // Отображение постов
-        function renderPosts() {
-            const postsList = document.getElementById('postsList');
-            postsList.innerHTML = '';
-            
-            posts.reverse().forEach((post, index) => {
-                const postElement = document.createElement('div');
-                postElement.className = 'post';
-                postElement.innerHTML = `
-                    <div class="post-content">${post.content}</div>
-                    <div class="post-meta">
-                        <span>${post.author}</span>
-                        <span>${new Date(post.timestamp).toLocaleDateString()}</span>
-                    </div>
-                `;
-                postsList.appendChild(postElement);
-            });
-        }
-
-        // Показать ленту
-        function showFeed() {
-            document.getElementById('emptyState').style.display = posts.length === 0 ? 'flex' : 'none';
-            document.getElementById('postForm').style.display = 'none';
-            document.getElementById('postsList').style.display = posts.length > 0 ? 'block' : 'none';
-            document.getElementById('floatingBtn').style.display = 'flex';
-        }
-
-        // Показать форму нового поста
-        function showNewPost() {
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('postForm').style.display = 'flex';
-            document.getElementById('postsList').style.display = 'none';
-            document.getElementById('floatingBtn').style.display = 'none';
-            
-            // Фокус на текстовое поле
-            document.querySelector('.textarea').focus();
-        }
-
-        // Отмена создания поста
-        function cancelPost() {
-            document.querySelector('.textarea').value = '';
-            showFeed();
-        }
-
-        // Публикация поста
-        function publishPost() {
-            const textarea = document.querySelector('.textarea');
-            const content = textarea.value.trim();
-            
-            if (content === '') {
-                alert('Пожалуйста, напишите что-нибудь');
-                return;
+                // Если не дотянули - возвращаем обратно
+                resetSwipe();
             }
             
-            const newPost = {
-                content: content,
-                author: user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : 'Аноним',
-                timestamp: new Date().toISOString()
-            };
+            isSwiping = false;
+        });
+
+        function completeSwipe() {
+            isAnimating = true;
             
-            posts.push(newPost);
-            localStorage.setItem('posts', JSON.stringify(posts));
+            // Запускаем финальную анимацию
+            mainContent.classList.add('hide-up');
+            avatar.classList.add('hide-fade');
+            swipeHint.classList.add('hide-fade');
             
-            textarea.value = '';
-            updateContent();
-            showFeed();
-            
-            // Плавная прокрутка к новому посту
+            // Показываем загрузку
             setTimeout(() => {
-                document.querySelector('.post')?.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }, 100);
+                loading.style.display = 'flex';
+            }, 400);
+            
+            // Блокируем повторные свайпы
+            swipeArea.style.pointerEvents = 'none';
         }
 
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            updateContent();
+        function resetSwipe() {
+            isAnimating = true;
             
-            // Добавляем плавные переходы после загрузки
+            // Возвращаем все в исходное положение
+            mainContent.style.transform = '';
+            mainContent.style.opacity = '';
+            avatar.style.opacity = '';
+            swipeHint.style.opacity = '';
+            
             setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 50);
-        });
+                isAnimating = false;
+            }, 300);
+        }
 
-        // Предотвращение масштабирования
-        document.addEventListener('touchstart', function(e) {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        });
-
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(e) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                e.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-
-        // Предотвращение выделения текста
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-        });
+        console.log('Telegram User:', user);
     </script>
 </body>
 </html>
