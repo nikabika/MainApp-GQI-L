@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>main - Начать</title>
+    <title>main</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
@@ -28,290 +28,146 @@
             font-family: 'Bubblegum Sans', cursive;
         }
         
-        /* Убираем все эффекты при наведении */
-        button, input, .avatar-circle {
-            transition: all 0.3s ease;
-        }
-        button:hover, input:hover, .avatar-circle:hover {
-            transform: none !important;
-        }
-        
-        /* Плавное изменение цвета кнопки входа */
-        #loginBtn {
-            transition: background-color 0.5s ease, color 0.5s ease;
+        /* Стили для подвала */
+        .footer {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            height: 80px;
         }
 
-        /* Фоновая картинка */
-        .background-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/5cfe6123-3f94-4156-8f0d-4f770a2b7a4b_%D0%98%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F_%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI1Y2ZlNjEyMy0zZjk0LTQxNTYtOGYwZC00Zjc3MGEyYjdhNGIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.yFMFs7hKN7tqA3bnLy5Wi8Qj2AzApbL1PDMGhLYaQfU&x-oss-process=image/resize,m_mfit,w_320,h_320');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -1;
+        /* Стили для таймера с разной прозрачностью */
+        .timer-hours {
             opacity: 1;
         }
-
-        /* Затемнение для лучшей читаемости контента */
-        .content-overlay {
-            position: relative;
-            z-index: 1;
+        .timer-minutes {
+            opacity: 0.8;
+        }
+        .timer-seconds {
+            opacity: 0.6;
         }
 
-        /* Адаптация для мобил */
-        @media (max-width: 640px) {
-            .container-mobile {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            .avatar-mobile {
-                width: 120px;
-                height: 120px;
-            }
-            .background-image {
-                background-size: cover;
-                background-position: center;
-            }
-        }
-
-        /* Для очень маленьких экранов */
-        @media (max-width: 380px) {
-            .background-image {
-                background-size: cover;
-                background-position: center;
-            }
+        /* Ограничение длины строки */
+        .post-text {
+            max-width: 65ch;
+            line-height: 1.4;
         }
     </style>
 </head>
-<body class="bg-white min-h-screen flex flex-col">
-    <!-- Фоновая картинка -->
-    <div class="background-image"></div>
-
+<body class="bg-white min-h-screen">
     <!-- Шапка -->
-    <header class="bg-transparent py-6 px-4 w-full content-overlay">
-        <div class="text-center">
-            <span class="text-base opacity-50 font-normal block mb-1">Добро пожаловать в</span>
-            <span class="main-font text-apple-blue text-4xl">main</span>
+    <header class="bg-transparent py-6 px-4 w-full">
+        <div class="flex items-center justify-between">
+            <!-- Левая часть: круг и логотип -->
+            <div class="flex items-center">
+                <!-- Круг с синим контуром -->
+                <div class="w-10 h-10 rounded-full border-2 border-apple-blue mr-3"></div>
+                <!-- Логотип main -->
+                <span class="main-font text-apple-blue text-4xl">main</span>
+            </div>
+
+            <!-- Правая часть: таймер -->
+            <div class="opacity-70">
+                <span id="timer" class="main-font text-apple-blue text-xl">
+                    <span class="timer-hours">24</span>:<span class="timer-minutes">00</span>:<span class="timer-seconds">00</span>
+                </span>
+            </div>
         </div>
     </header>
 
-    <!-- Основной контент -->
-    <div class="flex-1 flex items-center justify-center container-mobile p-4 content-overlay">
-        <div class="w-full max-w-sm">
-            <!-- Круг для аватарки -->
-            <div class="relative mb-8 flex justify-center">
-                <div class="w-32 h-32 avatar-mobile rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer avatar-circle bg-white/80 backdrop-blur-sm"
-                     onclick="document.getElementById('avatarInput').click()">
-                    <i class="fas fa-plus text-3xl text-gray-400" id="plusIcon"></i>
-                    <img id="avatarPreview" class="w-full h-full rounded-full object-cover hidden" alt="Аватар">
+    <!-- Прямоугольник с постом -->
+    <div class="flex justify-center px-4 mb-6">
+        <div class="w-full max-w-md">
+            <!-- Серый прямоугольник -->
+            <div class="bg-gray-100 rounded-2xl p-1">
+                <!-- Белая шапка профиля (на 5px уже) -->
+                <div class="bg-white rounded-2xl p-3 mx-0.5 mt-0.5">
+                    <div class="flex items-center">
+                        <!-- Круг с синим контуром -->
+                        <div class="w-8 h-8 rounded-full border-2 border-apple-blue mr-3"></div>
+                        
+                        <!-- Имя и статус -->
+                        <div class="flex-1">
+                            <div class="flex items-center">
+                                <span class="text-black font-medium text-lg mr-2">Main</span>
+                                <i class="fas fa-circle-check text-green-500 text-sm"></i>
+                            </div>
+                            <div class="opacity-50 text-xs mt-0.5">admin</div>
+                        </div>
+                    </div>
                 </div>
-                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarSelect(event)">
-            </div>
 
-            <!-- Поле ввода имени -->
-            <div class="relative mb-6">
-                <input 
-                    type="text" 
-                    id="username"
-                    maxlength="12"
-                    placeholder="Имя"
-                    class="w-full bg-white/80 backdrop-blur-sm border-0 border-b border-gray-300 px-0 py-3 text-lg focus:outline-none focus:border-apple-blue placeholder-gray-400 rounded-t-lg"
-                    autocomplete="off"
-                >
-                <!-- Счетчик символов -->
-                <div class="absolute right-0 top-3 text-sm text-gray-400">
-                    <span id="charCount">0</span>/12
+                <!-- Текст поста -->
+                <div class="p-4 text-gray-700 post-text">
+                    Привет! Готовы к новому челленджу? 🎨 Сегодня пишем про <span class="text-apple-blue font-medium">неловкие ситуации!</span> Напомним, что объем поста - минимум 200 символов, пишем на русском языке и как можно более красочно! Здесь мы делимся историями и опытом, а не коллективно грустим. За работу!
                 </div>
-                <!-- Сообщение об ошибке -->
-                <div id="nameError" class="absolute -bottom-6 left-0 text-red-500 text-sm hidden"></div>
             </div>
-
-            <!-- Две кнопки в ряд -->
-            <div class="flex gap-3 mb-4">
-                <!-- Кнопка анонима -->
-                <button class="flex-1 bg-white/80 backdrop-blur-sm rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
-                    <i class="fas fa-masks-theater text-apple-blue mr-2 text-lg"></i>
-                    <span class="text-base font-normal">Аноним</span>
-                </button>
-
-                <!-- Кнопка входа -->
-                <button id="loginBtn" class="flex-1 bg-white/80 backdrop-blur-sm rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
-                    <i class="fas fa-sign-in-alt text-gray-400 mr-2 text-lg"></i>
-                    <span class="text-base font-normal">Войти</span>
-                </button>
-            </div>
-
-            <!-- Кнопка Telegram -->
-            <button class="w-full bg-apple-blue rounded-2xl py-4 px-6 border-0 flex items-center justify-center text-white">
-                <i class="fab fa-telegram mr-3 text-lg"></i>
-                <span class="text-base font-normal">Войти через Telegram</span>
-            </button>
-
-            <!-- Подсказка -->
-            <p class="text-center text-gray-700 text-sm mt-8 px-4 bg-white/60 backdrop-blur-sm rounded-lg py-2">
-                Присоединяйтесь к сообществу 
-                <span class="main-font opacity-70 text-base">main</span>. 
-                Расскажите свою историю.
-            </p>
         </div>
     </div>
 
+    <!-- Основной контент (пустой) -->
+    <div class="flex-1"></div>
+
+    <!-- Подвал -->
+    <footer class="footer w-full fixed bottom-0 left-0">
+        <div class="flex justify-around items-center h-full px-4">
+            <!-- Иконка Мейн -->
+            <div class="flex flex-col items-center">
+                <i class="fas fa-house text-white opacity-70 text-xl mb-1"></i>
+                <span class="text-white opacity-70 text-xs">Мейн</span>
+            </div>
+
+            <!-- Иконка Лента -->
+            <div class="flex flex-col items-center">
+                <i class="fas fa-compass text-white opacity-70 text-xl mb-1"></i>
+                <span class="text-white opacity-70 text-xs">Лента</span>
+            </div>
+
+            <!-- Иконка Друзья -->
+            <div class="flex flex-col items-center">
+                <i class="fas fa-comments text-white opacity-70 text-xl mb-1"></i>
+                <span class="text-white opacity-70 text-xs">Друзья</span>
+            </div>
+
+            <!-- Круг для Профиля -->
+            <div class="flex flex-col items-center">
+                <div class="w-8 h-8 rounded-full border border-apple-blue mb-1"></div>
+                <span class="text-white opacity-70 text-xs">Профиль</span>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        const usernameInput = document.getElementById('username');
-        const charCount = document.getElementById('charCount');
-        const nameError = document.getElementById('nameError');
-        const loginBtn = document.getElementById('loginBtn');
-        const plusIcon = document.getElementById('plusIcon');
-        const avatarPreview = document.getElementById('avatarPreview');
-        const avatarCircle = document.querySelector('.avatar-circle');
-
-        let isUsernameValid = false;
-
-        // Расширенный список матов с вариациями
-        const badWordsPatterns = [
-            // Русские маты с заменой букв
-            /п[іiі1l|]зд/gi, /п[іiі1l|]зд/gi, /p[i1l|]zd/gi,
-            /х[уyу3]й/gi, /h[uy3]y/gi,
-            /е[б6b]л/gi, /e[b6]l/gi,
-            /[б6b][лl][яяaа@]д/gi, /b[l1][ya@]d/gi,
-            /[шshщ]л[яяaа@]х/gi, /shl[ya@]h/gi,
-            /[мm][уyуu]д/gi, /m[uy]d/gi,
-            /[гgг][оo0о][вvb][нnh]/gi, /g[o0]v[nm]/gi,
-            /[сcs][уyуu][кkкc]/gi, /s[uy]k/gi,
-            /[жzj][оo0о][пpn][уyуu]/gi, /zh[o0]p[uy]/gi,
-            /[ч4ch][лl][еeе3][нnh][ьb]/gi,
-            /[пp][иi1][дd][[еeе3][рr]/gi,
-            /[мm][аaа@][нnh][дd][аaа@]/gi,
+        function updateMoscowTimer() {
+            const now = new Date();
             
-            // Прямые маты
-            /^хуй$/gi, /^пизда$/gi, /^ебал$/gi, /^блядь$/gi,
-            /^мудак$/gi, /^говно$/gi, /^сука$/gi, /^жопа$/gi,
-            /^член$/gi, /^пидор$/gi, /^манда$/gi,
+            // Получаем текущее время в Москве (UTC+3)
+            const moscowTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
             
-            // Английские аналоги
-            /fuck/gi, /shit/gi, /asshole/gi, /bitch/gi, /dick/gi, /pussy/gi, /cunt/gi
-        ];
-
-        // Функция проверки на маты
-        function hasBadWords(text) {
-            // Проверяем все паттерны
-            for (let pattern of badWordsPatterns) {
-                if (pattern.test(text)) {
-                    return true;
-                }
-            }
-            return false;
+            // Время начала следующего дня (00:00:00 по Москве)
+            const nextDay = new Date(moscowTime);
+            nextDay.setDate(nextDay.getDate() + 1);
+            nextDay.setHours(0, 0, 0, 0);
+            
+            // Разница во времени до следующего дня
+            const diff = nextDay - moscowTime;
+            
+            // Преобразуем в часы, минуты, секунды
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Форматируем с ведущими нулями
+            const formatTime = (time) => time.toString().padStart(2, '0');
+            
+            // Обновляем таймер с разными прозрачностями
+            document.querySelector('.timer-hours').textContent = formatTime(hours);
+            document.querySelector('.timer-minutes').textContent = formatTime(minutes);
+            document.querySelector('.timer-seconds').textContent = formatTime(seconds);
         }
 
-        // Обновление счетчика символов
-        usernameInput.addEventListener('input', function() {
-            const value = this.value;
-            charCount.textContent = value.length;
-            
-            // Проверка на пробелы
-            if (/\s/.test(value)) {
-                showError('Пробелы не допускаются');
-                isUsernameValid = false;
-                updateLoginButton();
-                return;
-            }
-            
-            // Проверка минимальной длины
-            if (value.length > 0 && value.length < 3) {
-                showError('Минимум 3 символа');
-                isUsernameValid = false;
-                updateLoginButton();
-                return;
-            }
-            
-            // Проверка на запрещенные слова
-            if (hasBadWords(value)) {
-                showError('Недопустимое имя');
-                isUsernameValid = false;
-                updateLoginButton();
-                return;
-            }
-            
-            // Если все проверки пройдены
-            if (value.length >= 3) {
-                hideError();
-                isUsernameValid = true;
-            } else {
-                isUsernameValid = false;
-            }
-            
-            updateLoginButton();
-        });
-
-        // Обновление состояния кнопки входа
-        function updateLoginButton() {
-            if (isUsernameValid) {
-                loginBtn.classList.remove('bg-white/80', 'text-gray-600');
-                loginBtn.classList.add('bg-apple-blue', 'text-white');
-                loginBtn.querySelector('i').classList.remove('text-gray-400');
-                loginBtn.querySelector('i').classList.add('text-white');
-            } else {
-                loginBtn.classList.remove('bg-apple-blue', 'text-white');
-                loginBtn.classList.add('bg-white/80', 'text-gray-600');
-                loginBtn.querySelector('i').classList.remove('text-white');
-                loginBtn.querySelector('i').classList.add('text-gray-400');
-            }
-        }
-
-        // Обработка выбора аватарки
-        function handleAvatarSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    avatarPreview.src = e.target.result;
-                    avatarPreview.classList.remove('hidden');
-                    plusIcon.classList.add('hidden');
-                    // Меняем пунктирную рамку на синюю сплошную
-                    avatarCircle.classList.remove('border-dashed', 'border-gray-300');
-                    avatarCircle.classList.add('border-solid', 'border-apple-blue', 'border-2');
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Функции для работы с ошибками
-        function showError(message) {
-            nameError.textContent = message;
-            nameError.classList.remove('hidden');
-            usernameInput.classList.add('border-red-500');
-        }
-
-        function hideError() {
-            nameError.classList.add('hidden');
-            usernameInput.classList.remove('border-red-500');
-        }
-
-        // Убираем все эффекты наведения
-        document.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('mouseenter', () => {
-                btn.style.transform = 'none';
-            });
-            btn.addEventListener('mouseleave', () => {
-                btn.style.transform = 'none';
-            });
-        });
-
-        // Адаптация для мобильных устройств
-        function handleResize() {
-            if (window.innerWidth < 640) {
-                document.body.classList.add('text-sm');
-            } else {
-                document.body.classList.remove('text-sm');
-            }
-        }
-
-        window.addEventListener('resize', handleResize);
-        handleResize(); // Инициализация
+        // Обновляем таймер сразу и каждую секунду
+        updateMoscowTimer();
+        setInterval(updateMoscowTimer, 1000);
     </script>
 </body>
 </html>
