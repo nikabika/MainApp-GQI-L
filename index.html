@@ -51,6 +51,23 @@
             max-width: 65ch;
             line-height: 1.4;
         }
+
+        /* Стили для строки ввода с кнопкой внутри */
+        .input-container {
+            position: relative;
+            flex: 1;
+        }
+        
+        .comment-input {
+            padding-right: 50px; /* Место для кнопки */
+        }
+        
+        .send-button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 <body class="bg-white min-h-screen">
@@ -77,8 +94,8 @@
     <!-- Прямоугольник с постом -->
     <div class="flex justify-center px-4 mb-6">
         <div class="w-full max-w-md">
-            <!-- Серый прямоугольник -->
-            <div class="bg-gray-100 rounded-2xl p-1">
+            <!-- Серый прямоугольник (чуть темнее) -->
+            <div class="bg-gray-200 rounded-2xl p-1">
                 <!-- Белая шапка профиля (на 5px уже) -->
                 <div class="bg-white rounded-2xl p-3 mx-0.5 mt-0.5">
                     <div class="flex items-center">
@@ -91,7 +108,7 @@
                                 <span class="text-black font-medium text-lg mr-2">Main</span>
                                 <i class="fas fa-circle-check text-green-500 text-sm"></i>
                             </div>
-                            <div class="opacity-50 text-xs mt-0.5">admin</div>
+                            <div class="opacity-50 text-xs">admin</div>
                         </div>
                     </div>
                 </div>
@@ -99,6 +116,27 @@
                 <!-- Текст поста -->
                 <div class="p-4 text-gray-700 post-text">
                     Привет! Готовы к новому челленджу? 🎨 Сегодня пишем про <span class="text-apple-blue font-medium">неловкие ситуации!</span> Напомним, что объем поста - минимум 200 символов, пишем на русском языке и как можно более красочно! Здесь мы делимся историями и опытом, а не коллективно грустим. За работу!
+                </div>
+
+                <!-- Строка ввода комментария -->
+                <div class="p-3 flex items-center gap-2">
+                    <!-- Иконка сердца -->
+                    <button id="likeBtn" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                        <i class="fas fa-heart text-xl"></i>
+                    </button>
+                    
+                    <!-- Контейнер для поля ввода с кнопкой внутри -->
+                    <div class="input-container">
+                        <input 
+                            type="text" 
+                            placeholder="Комментарий"
+                            class="w-full bg-white rounded-2xl px-4 py-2 border-0 focus:outline-none comment-input"
+                        >
+                        <!-- Кнопка отправки внутри строки ввода -->
+                        <button class="w-8 h-8 bg-apple-blue rounded-full flex items-center justify-center text-white send-button">
+                            <i class="fas fa-arrow-up text-sm"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,6 +202,23 @@
             document.querySelector('.timer-minutes').textContent = formatTime(minutes);
             document.querySelector('.timer-seconds').textContent = formatTime(seconds);
         }
+
+        // Обработчик для кнопки лайка
+        const likeBtn = document.getElementById('likeBtn');
+        let isLiked = false;
+
+        likeBtn.addEventListener('click', function() {
+            isLiked = !isLiked;
+            const heartIcon = this.querySelector('i');
+            
+            if (isLiked) {
+                heartIcon.classList.remove('text-gray-400');
+                heartIcon.classList.add('text-red-500');
+            } else {
+                heartIcon.classList.remove('text-red-500');
+                heartIcon.classList.add('text-gray-400');
+            }
+        });
 
         // Обновляем таймер сразу и каждую секунду
         updateMoscowTimer();
