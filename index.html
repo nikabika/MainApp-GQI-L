@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>main - Начать</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,6 +41,29 @@
             transition: background-color 0.5s ease, color 0.5s ease;
         }
 
+        /* Запрет выделения текста */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        /* Запрет масштабирования */
+        html {
+            touch-action: manipulation;
+        }
+
+        /* Запрет выделения для инпута (но разрешаем ввод) */
+        input {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
         /* Мобильная адаптация */
         @media (max-width: 380px) {
             .mobile-container {
@@ -51,18 +74,21 @@
                 font-size: 0.875rem;
             }
         }
+
+        /* Фиксируем размеры и запрещаем zoom */
+        @media (max-width: 768px) {
+            body {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+        }
     </style>
 </head>
 <body class="bg-white min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-sm mobile-container">
         
-        <!-- Приветствие -->
-        <div class="text-center mb-4">
-            <div id="welcomeText" class="opacity-50 mobile-text hidden">
-                Хей, <span id="userName"></span>!
-            </div>
-        </div>
-
         <!-- Заголовок в одну строку -->
         <div class="text-center mb-12 flex items-baseline justify-center space-x-2">
             <span class="text-base opacity-50 font-normal mobile-text">Добро пожаловать в</span>
@@ -135,8 +161,6 @@
         const plusIcon = document.getElementById('plusIcon');
         const avatarPreview = document.getElementById('avatarPreview');
         const avatarCircle = document.getElementById('avatarCircle');
-        const welcomeText = document.getElementById('welcomeText');
-        const userNameSpan = document.getElementById('userName');
 
         let isUsernameValid = false;
         let hasAvatar = false;
@@ -197,9 +221,18 @@
             'майка', 'майор', 'майя',
             'укор', 'укроп', 'уклон',
             'фасад', 'фасоль', 'фаска',
-            'нация', 'нацист', // только полное совпадение
-            'раса', 'расист' // только полное совпадение
+            'нация', 'нацист',
+            'раса', 'расист'
         ];
+
+        // Запрет масштабирования и выделения
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
 
         // Обновление счетчика символов
         usernameInput.addEventListener('input', function() {
@@ -211,7 +244,6 @@
                 showError('Пробелы не допускаются');
                 isUsernameValid = false;
                 updateLoginButton();
-                updateWelcomeText('');
                 return;
             }
             
@@ -220,7 +252,6 @@
                 showError('Минимум 3 символа');
                 isUsernameValid = false;
                 updateLoginButton();
-                updateWelcomeText('');
                 return;
             }
             
@@ -230,7 +261,6 @@
                 showError(checkResult.reason);
                 isUsernameValid = false;
                 updateLoginButton();
-                updateWelcomeText('');
                 return;
             }
             
@@ -238,10 +268,8 @@
             if (value.length >= 3) {
                 hideError();
                 isUsernameValid = true;
-                updateWelcomeText(value);
             } else {
                 isUsernameValid = false;
-                updateWelcomeText('');
             }
             
             updateLoginButton();
@@ -272,16 +300,6 @@
             }
             
             return { allowed: true };
-        }
-
-        // Обновление приветственного текста
-        function updateWelcomeText(name) {
-            if (name && name.length >= 3) {
-                userNameSpan.textContent = name;
-                welcomeText.classList.remove('hidden');
-            } else {
-                welcomeText.classList.add('hidden');
-            }
         }
 
         // Обновление состояния кнопки входа
@@ -354,6 +372,13 @@
         // Проверяем размер при загрузке и изменении
         window.addEventListener('load', checkScreenSize);
         window.addEventListener('resize', checkScreenSize);
+
+        // Дополнительная защита от масштабирования
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
