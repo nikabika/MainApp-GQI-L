@@ -68,6 +68,11 @@
             top: 50%;
             transform: translateY(-50%);
         }
+
+        /* Предотвращение поднятия подвала при фокусе на input */
+        input:focus {
+            transform: none !important;
+        }
     </style>
 </head>
 <body class="bg-white min-h-screen">
@@ -98,18 +103,26 @@
             <div class="bg-gray-200 rounded-2xl p-1">
                 <!-- Белая шапка профиля (на 5px уже) -->
                 <div class="bg-white rounded-2xl p-3 mx-0.5 mt-0.5">
-                    <div class="flex items-center">
-                        <!-- Круг с синим контуром -->
-                        <div class="w-8 h-8 rounded-full border-2 border-apple-blue mr-3"></div>
-                        
-                        <!-- Имя и статус -->
-                        <div class="flex-1">
-                            <div class="flex items-center">
-                                <span class="text-black font-medium text-lg mr-2">Main</span>
-                                <i class="fas fa-circle-check text-green-500 text-sm"></i>
+                    <div class="flex items-center justify-between">
+                        <!-- Левая часть: аватар и имя -->
+                        <div class="flex items-center">
+                            <!-- Круг с синим контуром -->
+                            <div class="w-8 h-8 rounded-full border-2 border-apple-blue mr-3"></div>
+                            
+                            <!-- Имя и статус -->
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <span class="text-black font-medium text-lg mr-2">Main</span>
+                                    <i class="fas fa-circle-check text-green-500 text-sm"></i>
+                                </div>
+                                <div class="opacity-50 text-xs -mt-1">admin</div>
                             </div>
-                            <div class="opacity-50 text-xs">admin</div>
                         </div>
+
+                        <!-- Правая часть: кнопка Join -->
+                        <button class="bg-apple-blue text-white rounded-2xl px-4 py-1 text-sm">
+                            Join
+                        </button>
                     </div>
                 </div>
 
