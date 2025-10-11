@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>main - Начать</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,145 +41,87 @@
             transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* Запрет выделения текста */
-        body {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-        }
-
-        /* Запрет масштабирования */
-        html {
-            touch-action: manipulation;
-        }
-
-        /* Запрет выделения для инпута (но разрешаем ввод) */
-        input {
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
-
-        /* Фиксированный заголовок */
-        .fixed-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            z-index: 50;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        /* Контент с отступом под фиксированный заголовок */
-        .content-with-header {
-            margin-top: 80px;
-        }
-
-        /* Мобильная адаптация */
-        @media (max-width: 380px) {
-            .mobile-container {
+        /* Адаптация для мобил */
+        @media (max-width: 640px) {
+            .container-mobile {
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
-            .mobile-text {
-                font-size: 0.875rem;
-            }
-            .fixed-header {
-                padding: 0.75rem 0;
-            }
-            .content-with-header {
-                margin-top: 70px;
-            }
-        }
-
-        /* Фиксируем размеры и запрещаем zoom */
-        @media (max-width: 768px) {
-            body {
-                position: fixed;
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
+            .avatar-mobile {
+                width: 120px;
+                height: 120px;
             }
         }
     </style>
 </head>
-<body class="bg-white min-h-screen flex items-center justify-center p-4">
-    
-    <!-- Фиксированный заголовок -->
-    <div class="fixed-header">
-        <div class="w-full max-w-sm mx-auto mobile-container">
-            <div class="text-center flex items-baseline justify-center space-x-2">
-                <span class="text-base opacity-50 font-normal mobile-text">Добро пожаловать в</span>
-                <span class="main-font text-apple-blue text-4xl">main</span>
-            </div>
+<body class="bg-white min-h-screen flex flex-col">
+    <!-- Шапка -->
+    <header class="bg-transparent py-6 px-4 w-full">
+        <div class="text-center">
+            <span class="text-base opacity-50 font-normal block mb-1">Добро пожаловать в</span>
+            <span class="main-font text-apple-blue text-4xl">main</span>
         </div>
-    </div>
+    </header>
 
     <!-- Основной контент -->
-    <div class="w-full max-w-sm mobile-container content-with-header">
-        
-        <!-- Круг для аватарки -->
-        <div class="relative mb-8 flex justify-center">
-            <div class="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer avatar-circle"
-                 onclick="document.getElementById('avatarInput').click()"
-                 id="avatarCircle">
-                <i class="fas fa-plus text-3xl text-gray-400" id="plusIcon"></i>
-                <img id="avatarPreview" class="w-full h-full rounded-full object-cover hidden" alt="Аватар">
+    <div class="flex-1 flex items-center justify-center container-mobile p-4">
+        <div class="w-full max-w-sm">
+            <!-- Круг для аватарки -->
+            <div class="relative mb-8 flex justify-center">
+                <div class="w-32 h-32 avatar-mobile rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer avatar-circle"
+                     onclick="document.getElementById('avatarInput').click()">
+                    <i class="fas fa-plus text-3xl text-gray-400" id="plusIcon"></i>
+                    <img id="avatarPreview" class="w-full h-full rounded-full object-cover hidden" alt="Аватар">
+                </div>
+                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarSelect(event)">
             </div>
-            <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarSelect(event)">
-        </div>
 
-        <!-- Поле ввода имени -->
-        <div class="relative mb-6">
-            <input 
-                type="text" 
-                id="username"
-                maxlength="12"
-                placeholder="Имя"
-                class="w-full bg-transparent border-0 border-b border-gray-300 px-0 py-3 text-lg focus:outline-none focus:border-apple-blue placeholder-gray-400 mobile-text"
-                autocomplete="off"
-            >
-            <!-- Счетчик символов -->
-            <div class="absolute right-0 top-3 text-sm text-gray-400 mobile-text">
-                <span id="charCount">0</span>/12
+            <!-- Поле ввода имени -->
+            <div class="relative mb-6">
+                <input 
+                    type="text" 
+                    id="username"
+                    maxlength="12"
+                    placeholder="Имя"
+                    class="w-full bg-transparent border-0 border-b border-gray-300 px-0 py-3 text-lg focus:outline-none focus:border-apple-blue placeholder-gray-400"
+                    autocomplete="off"
+                >
+                <!-- Счетчик символов -->
+                <div class="absolute right-0 top-3 text-sm text-gray-400">
+                    <span id="charCount">0</span>/12
+                </div>
+                <!-- Сообщение об ошибке -->
+                <div id="nameError" class="absolute -bottom-6 left-0 text-red-500 text-sm hidden"></div>
             </div>
-            <!-- Сообщение об ошибке -->
-            <div id="nameError" class="absolute -bottom-6 left-0 text-red-500 text-sm hidden mobile-text"></div>
-        </div>
 
-        <!-- Две кнопки в ряд -->
-        <div class="flex gap-3 mb-4">
-            <!-- Кнопка анонима -->
-            <button class="flex-1 bg-gray-100 rounded-2xl py-4 px-2 border-0 flex items-center justify-center text-gray-600 mobile-text">
-                <i class="fas fa-masks-theater text-apple-blue mr-2 text-lg"></i>
-                <span class="text-base font-normal">Аноним</span>
+            <!-- Две кнопки в ряд -->
+            <div class="flex gap-3 mb-4">
+                <!-- Кнопка анонима -->
+                <button class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
+                    <i class="fas fa-masks-theater text-apple-blue mr-2 text-lg"></i>
+                    <span class="text-base font-normal">Аноним</span>
+                </button>
+
+                <!-- Кнопка входа -->
+                <button id="loginBtn" class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
+                    <i class="fas fa-sign-in-alt text-gray-400 mr-2 text-lg"></i>
+                    <span class="text-base font-normal">Войти</span>
+                </button>
+            </div>
+
+            <!-- Кнопка Telegram -->
+            <button class="w-full bg-apple-blue rounded-2xl py-4 px-6 border-0 flex items-center justify-center text-white">
+                <i class="fab fa-telegram mr-3 text-lg"></i>
+                <span class="text-base font-normal">Войти через Telegram</span>
             </button>
 
-            <!-- Кнопка входа -->
-            <button id="loginBtn" class="flex-1 bg-gray-100 rounded-2xl py-4 px-2 border-0 flex items-center justify-center text-gray-600 mobile-text">
-                <i class="fas fa-sign-in-alt text-gray-400 mr-2 text-lg"></i>
-                <span class="text-base font-normal">Войти</span>
-            </button>
+            <!-- Подсказка -->
+            <p class="text-center text-gray-500 text-sm mt-8 px-4">
+                Присоединяйтесь к сообществу 
+                <span class="main-font opacity-50 text-base">main</span>. 
+                Расскажите свою историю.
+            </p>
         </div>
-
-        <!-- Кнопка Telegram -->
-        <button class="w-full bg-apple-blue rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-white shadow-sm mobile-text">
-            <i class="fab fa-telegram mr-3 text-lg"></i>
-            <span class="text-base font-normal">Войти через Telegram</span>
-        </button>
-
-        <!-- Подсказка -->
-        <p class="text-center text-gray-500 text-sm mt-8 px-4 mobile-text">
-            Присоединяйтесь к сообществу 
-            <span class="main-font opacity-50 text-base">main</span>. 
-            Расскажите свою историю.
-        </p>
     </div>
 
     <script>
@@ -189,79 +131,45 @@
         const loginBtn = document.getElementById('loginBtn');
         const plusIcon = document.getElementById('plusIcon');
         const avatarPreview = document.getElementById('avatarPreview');
-        const avatarCircle = document.getElementById('avatarCircle');
+        const avatarCircle = document.querySelector('.avatar-circle');
 
         let isUsernameValid = false;
-        let hasAvatar = false;
 
-        // Умный список запрещенных корней и паттернов
-        const forbiddenPatterns = [
-            // Основные корни матов (русские и английские варианты)
-            {pattern: /[пp][iиl1][з3z][дd]/, reason: 'Недопустимое слово'},
-            {pattern: /[б6b][лl][яaя]/, reason: 'Недопустимое слово'},
-            {pattern: /[еe][б6b]/, reason: 'Недопустимое слово'},
-            {pattern: /[хx][уy]/, reason: 'Недопустимое слово'},
-            {pattern: /[мm][уy][дd]/, reason: 'Недопустимое слово'},
+        // Расширенный список матов с вариациями
+        const badWordsPatterns = [
+            // Русские маты с заменой букв
+            /п[іiі1l|]зд/gi, /п[іiі1l|]зд/gi, /p[i1l|]zd/gi,
+            /х[уyу3]й/gi, /h[uy3]y/gi,
+            /е[б6b]л/gi, /e[b6]l/gi,
+            /[б6b][лl][яяaа@]д/gi, /b[l1][ya@]d/gi,
+            /[шshщ]л[яяaа@]х/gi, /shl[ya@]h/gi,
+            /[мm][уyуu]д/gi, /m[uy]d/gi,
+            /[гgг][оo0о][вvb][нnh]/gi, /g[o0]v[nm]/gi,
+            /[сcs][уyуu][кkкc]/gi, /s[uy]k/gi,
+            /[жzj][оo0о][пpn][уyуu]/gi, /zh[o0]p[uy]/gi,
+            /[ч4ch][лl][еeе3][нnh][ьb]/gi,
+            /[пp][иi1][дd][[еeе3][рr]/gi,
+            /[мm][аaа@][нnh][дd][аaа@]/gi,
             
-            // Половые органы
-            {pattern: /[ч4c][лl][еe]/, reason: 'Недопустимое слово'},
-            {pattern: /[пp][еe][нn]/, reason: 'Недопустимое слово'},
-            {pattern: /[вbv][аa][гgr]/, reason: 'Недопустимое слово'},
-            {pattern: /[жz][оo0]/, reason: 'Недопустимое слово'},
-            {pattern: /[сcs][рp][аa]/, reason: 'Недопустимое слово'},
+            // Прямые маты
+            /^хуй$/gi, /^пизда$/gi, /^ебал$/gi, /^блядь$/gi,
+            /^мудак$/gi, /^говно$/gi, /^сука$/gi, /^жопа$/gi,
+            /^член$/gi, /^пидор$/gi, /^манда$/gi,
             
-            // Оскорбительные термины
-            {pattern: /[гg][еe][йyи]/, reason: 'Оскорбительный термин'},
-            {pattern: /[пp][еe][дd]/, reason: 'Оскорбительный термин'},
-            {pattern: /[гg][оo0][лl][уy]/, reason: 'Оскорбительный термин'},
-            {pattern: /[лl][гg][бb][тt]/, reason: 'Запрещенная организация'},
-            {pattern: /[шsh][лl][юy]/, reason: 'Оскорбительный термин'},
-            
-            // Запрещенные движения
-            {pattern: /[нn][аa][вbv][аa]/, reason: 'Запрещенная организация'},
-            {pattern: /[иi][гg][иi]/, reason: 'Запрещенная организация'},
-            {pattern: /[тt][аa][лl][иi]/, reason: 'Запрещенная организация'},
-            {pattern: /[мm][аa][йy][дd]/, reason: 'Запрещенная организация'},
-            {pattern: /[уy][кk][рp]/, reason: 'Оскорбительный термин'},
-            
-            // Экстремистские термины
-            {pattern: /[фf][аa][шsh]/, reason: 'Экстремистский термин'},
-            {pattern: /[нn][аa][цc]/, reason: 'Экстремистский термин'},
-            {pattern: /[рp][аa][сcs]/, reason: 'Экстремистский термин'}
+            // Английские аналоги
+            /fuck/gi, /shit/gi, /asshole/gi, /bitch/gi, /dick/gi, /pussy/gi, /cunt/gi
         ];
 
-        // Список разрешенных слов, которые могут содержать похожие буквы
-        const allowedWords = [
-            'пистолет', 'письмо', 'педаль', 'печенье', 'пенал', 'пена', 'песок',
-            'белый', 'белка', 'беседа', 'блеять', 'блеск', 'блин', 'блок',
-            'худой', 'художник', 'хурма', 'хутор', 'хозяин',
-            'мудрый', 'мудрец', 'муза', 'мука', 'мульт',
-            'человек', 'число', 'час', 'честь', 'черный',
-            'влага', 'вклад', 'вкус', 'взгляд',
-            'жора', 'жонглер', 'жокей',
-            'сразу', 'среда', 'срок', 'сражение',
-            'гений', 'герой', 'гель', 'гектар',
-            'педагог', 'педиатр', 'педсовет',
-            'голубь', 'голубой', 'голубизна',
-            'лебедь', 'лесник', 'леска',
-            'навага', 'навес', 'навык',
-            'игла', 'игра', 'иго',
-            'талкан', 'талия', 'талон',
-            'майка', 'майор', 'майя',
-            'укор', 'укроп', 'уклон',
-            'фасад', 'фасоль', 'фаска',
-            'нация', 'нацист',
-            'раса', 'расист'
-        ];
-
-        // Запрет масштабирования и выделения
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
+        // Функция проверки на маты
+        function hasBadWords(text) {
+            // Проверяем все паттерны
+            for (let pattern of badWordsPatterns) {
+                if (pattern.test(text)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         // Обновление счетчика символов
         usernameInput.addEventListener('input', function() {
@@ -285,9 +193,8 @@
             }
             
             // Проверка на запрещенные слова
-            const checkResult = checkForbiddenWords(value);
-            if (!checkResult.allowed) {
-                showError(checkResult.reason);
+            if (hasBadWords(value)) {
+                showError('Недопустимое имя');
                 isUsernameValid = false;
                 updateLoginButton();
                 return;
@@ -304,36 +211,9 @@
             updateLoginButton();
         });
 
-        // Умная проверка запрещенных слов
-        function checkForbiddenWords(text) {
-            const lowerText = text.toLowerCase();
-            
-            // Сначала проверяем разрешенные слова
-            if (allowedWords.some(word => lowerText === word.toLowerCase())) {
-                return { allowed: true };
-            }
-            
-            // Проверяем запрещенные паттерны
-            for (const item of forbiddenPatterns) {
-                if (item.pattern.test(lowerText)) {
-                    // Дополнительная проверка: если это часть разрешенного слова
-                    const isPartOfAllowed = allowedWords.some(allowed => 
-                        allowed.toLowerCase().includes(lowerText) || 
-                        lowerText.includes(allowed.toLowerCase())
-                    );
-                    
-                    if (!isPartOfAllowed) {
-                        return { allowed: false, reason: item.reason };
-                    }
-                }
-            }
-            
-            return { allowed: true };
-        }
-
         // Обновление состояния кнопки входа
         function updateLoginButton() {
-            if (isUsernameValid && hasAvatar) {
+            if (isUsernameValid) {
                 loginBtn.classList.remove('bg-gray-100', 'text-gray-600');
                 loginBtn.classList.add('bg-apple-blue', 'text-white');
                 loginBtn.querySelector('i').classList.remove('text-gray-400');
@@ -355,13 +235,9 @@
                     avatarPreview.src = e.target.result;
                     avatarPreview.classList.remove('hidden');
                     plusIcon.classList.add('hidden');
-                    
-                    // Меняем контур на синий сплошной
+                    // Меняем пунктирную рамку на синюю сплошную
                     avatarCircle.classList.remove('border-dashed', 'border-gray-300');
                     avatarCircle.classList.add('border-solid', 'border-apple-blue', 'border-2');
-                    
-                    hasAvatar = true;
-                    updateLoginButton();
                 }
                 reader.readAsDataURL(file);
             }
@@ -389,25 +265,17 @@
             });
         });
 
-        // Адаптация для очень маленьких экранов
-        function checkScreenSize() {
-            if (window.innerWidth < 380) {
+        // Адаптация для мобильных устройств
+        function handleResize() {
+            if (window.innerWidth < 640) {
                 document.body.classList.add('text-sm');
             } else {
                 document.body.classList.remove('text-sm');
             }
         }
 
-        // Проверяем размер при загрузке и изменении
-        window.addEventListener('load', checkScreenSize);
-        window.addEventListener('resize', checkScreenSize);
-
-        // Дополнительная защита от масштабирования
-        document.addEventListener('touchmove', function(e) {
-            if (e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Инициализация
     </script>
 </body>
 </html>
