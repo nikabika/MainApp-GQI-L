@@ -41,6 +41,27 @@
             transition: background-color 0.5s ease, color 0.5s ease;
         }
 
+        /* Фоновая картинка */
+        .background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://cdn.qwenlm.ai/72327e40-02c9-46e7-a011-0542655a56ad/5cfe6123-3f94-4156-8f0d-4f770a2b7a4b_%D0%98%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F_%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzIzMjdlNDAtMDJjOS00NmU3LWEwMTEtMDU0MjY1NWE1NmFkIiwicmVzb3VyY2VfaWQiOiI1Y2ZlNjEyMy0zZjk0LTQxNTYtOGYwZC00Zjc3MGEyYjdhNGIiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.yFMFs7hKN7tqA3bnLy5Wi8Qj2AzApbL1PDMGhLYaQfU&x-oss-process=image/resize,m_mfit,w_320,h_320');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+            opacity: 1;
+        }
+
+        /* Затемнение для лучшей читаемости контента */
+        .content-overlay {
+            position: relative;
+            z-index: 1;
+        }
+
         /* Адаптация для мобил */
         @media (max-width: 640px) {
             .container-mobile {
@@ -51,12 +72,27 @@
                 width: 120px;
                 height: 120px;
             }
+            .background-image {
+                background-size: cover;
+                background-position: center;
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 380px) {
+            .background-image {
+                background-size: cover;
+                background-position: center;
+            }
         }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col">
+    <!-- Фоновая картинка -->
+    <div class="background-image"></div>
+
     <!-- Шапка -->
-    <header class="bg-transparent py-6 px-4 w-full">
+    <header class="bg-transparent py-6 px-4 w-full content-overlay">
         <div class="text-center">
             <span class="text-base opacity-50 font-normal block mb-1">Добро пожаловать в</span>
             <span class="main-font text-apple-blue text-4xl">main</span>
@@ -64,11 +100,11 @@
     </header>
 
     <!-- Основной контент -->
-    <div class="flex-1 flex items-center justify-center container-mobile p-4">
+    <div class="flex-1 flex items-center justify-center container-mobile p-4 content-overlay">
         <div class="w-full max-w-sm">
             <!-- Круг для аватарки -->
             <div class="relative mb-8 flex justify-center">
-                <div class="w-32 h-32 avatar-mobile rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer avatar-circle"
+                <div class="w-32 h-32 avatar-mobile rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer avatar-circle bg-white/80 backdrop-blur-sm"
                      onclick="document.getElementById('avatarInput').click()">
                     <i class="fas fa-plus text-3xl text-gray-400" id="plusIcon"></i>
                     <img id="avatarPreview" class="w-full h-full rounded-full object-cover hidden" alt="Аватар">
@@ -83,7 +119,7 @@
                     id="username"
                     maxlength="12"
                     placeholder="Имя"
-                    class="w-full bg-transparent border-0 border-b border-gray-300 px-0 py-3 text-lg focus:outline-none focus:border-apple-blue placeholder-gray-400"
+                    class="w-full bg-white/80 backdrop-blur-sm border-0 border-b border-gray-300 px-0 py-3 text-lg focus:outline-none focus:border-apple-blue placeholder-gray-400 rounded-t-lg"
                     autocomplete="off"
                 >
                 <!-- Счетчик символов -->
@@ -97,13 +133,13 @@
             <!-- Две кнопки в ряд -->
             <div class="flex gap-3 mb-4">
                 <!-- Кнопка анонима -->
-                <button class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
+                <button class="flex-1 bg-white/80 backdrop-blur-sm rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
                     <i class="fas fa-masks-theater text-apple-blue mr-2 text-lg"></i>
                     <span class="text-base font-normal">Аноним</span>
                 </button>
 
                 <!-- Кнопка входа -->
-                <button id="loginBtn" class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
+                <button id="loginBtn" class="flex-1 bg-white/80 backdrop-blur-sm rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
                     <i class="fas fa-sign-in-alt text-gray-400 mr-2 text-lg"></i>
                     <span class="text-base font-normal">Войти</span>
                 </button>
@@ -116,9 +152,9 @@
             </button>
 
             <!-- Подсказка -->
-            <p class="text-center text-gray-500 text-sm mt-8 px-4">
+            <p class="text-center text-gray-700 text-sm mt-8 px-4 bg-white/60 backdrop-blur-sm rounded-lg py-2">
                 Присоединяйтесь к сообществу 
-                <span class="main-font opacity-50 text-base">main</span>. 
+                <span class="main-font opacity-70 text-base">main</span>. 
                 Расскажите свою историю.
             </p>
         </div>
@@ -214,13 +250,13 @@
         // Обновление состояния кнопки входа
         function updateLoginButton() {
             if (isUsernameValid) {
-                loginBtn.classList.remove('bg-gray-100', 'text-gray-600');
+                loginBtn.classList.remove('bg-white/80', 'text-gray-600');
                 loginBtn.classList.add('bg-apple-blue', 'text-white');
                 loginBtn.querySelector('i').classList.remove('text-gray-400');
                 loginBtn.querySelector('i').classList.add('text-white');
             } else {
                 loginBtn.classList.remove('bg-apple-blue', 'text-white');
-                loginBtn.classList.add('bg-gray-100', 'text-gray-600');
+                loginBtn.classList.add('bg-white/80', 'text-gray-600');
                 loginBtn.querySelector('i').classList.remove('text-white');
                 loginBtn.querySelector('i').classList.add('text-gray-400');
             }
