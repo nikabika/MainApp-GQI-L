@@ -35,6 +35,22 @@
             height: 80px;
         }
 
+        /* Закрепленная шапка с белым фоном, прозрачностью и блюром */
+        .header-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Отступ для контента под шапкой */
+        .content-with-header {
+            margin-top: 100px;
+        }
+
         /* Стили для таймера с разной прозрачностью */
         .timer-hours {
             opacity: 1;
@@ -142,6 +158,30 @@
             display: none;
         }
 
+        /* Кастомный скроллбар для постов */
+        .post-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .post-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .post-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .post-scroll::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .post-scroll::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
         /* Адаптация для мобильных устройств */
         @media (max-width: 640px) {
             .container-mobile {
@@ -154,12 +194,15 @@
             .text-mobile {
                 font-size: 0.9rem;
             }
+            .content-with-header {
+                margin-top: 90px;
+            }
         }
     </style>
 </head>
 <body class="bg-white min-h-screen">
-    <!-- Шапка -->
-    <header class="bg-transparent py-6 px-4 w-full container-mobile">
+    <!-- Закрепленная шапка с белым фоном и блюром -->
+    <header class="header-fixed py-6 px-4 w-full container-mobile">
         <div class="flex items-center justify-between">
             <!-- Левая часть: круг и логотип -->
             <div class="flex items-center">
@@ -178,142 +221,142 @@
         </div>
     </header>
 
-    <!-- Большой пост -->
-    <div class="flex justify-center px-4 mb-6 container-mobile">
-        <div class="w-full max-w-md post-mobile">
-            <!-- Серый прямоугольник (чуть темнее) -->
-            <div class="bg-gray-200 rounded-2xl p-1">
-                <!-- Белая шапка профиля (на 5px уже) -->
-                <div class="bg-white rounded-2xl p-3 mx-0.5 mt-0.5">
-                    <div class="flex items-center justify-between">
-                        <!-- Левая часть: аватар и имя -->
-                        <div class="flex items-center">
-                            <!-- Круг с синим контуром -->
-                            <div class="w-8 h-8 rounded-full border-2 border-apple-blue mr-3"></div>
-                            
-                            <!-- Имя и статус -->
-                            <div class="flex-1">
-                                <div class="flex items-center">
-                                    <span class="text-black font-medium text-lg mr-2">Main</span>
-                                    <i class="fas fa-circle-check text-green-500 text-sm"></i>
+    <!-- Основной контент с отступом под шапку -->
+    <div class="content-with-header">
+        <!-- Большой пост -->
+        <div class="flex justify-center px-4 mb-6 container-mobile">
+            <div class="w-full max-w-md post-mobile">
+                <!-- Серый прямоугольник (чуть темнее) -->
+                <div class="bg-gray-200 rounded-2xl p-1">
+                    <!-- Белая шапка профиля (на 5px уже) -->
+                    <div class="bg-white rounded-2xl p-3 mx-0.5 mt-0.5">
+                        <div class="flex items-center justify-between">
+                            <!-- Левая часть: аватар и имя -->
+                            <div class="flex items-center">
+                                <!-- Круг с синим контуром -->
+                                <div class="w-8 h-8 rounded-full border-2 border-apple-blue mr-3"></div>
+                                
+                                <!-- Имя и статус -->
+                                <div class="flex-1">
+                                    <div class="flex items-center">
+                                        <span class="text-black font-medium text-lg mr-2">Main</span>
+                                        <i class="fas fa-circle-check text-green-500 text-sm"></i>
+                                    </div>
+                                    <div class="opacity-50 text-xs -mt-1">admin</div>
                                 </div>
-                                <div class="opacity-50 text-xs -mt-1">admin</div>
                             </div>
+
+                            <!-- Правая часть: кнопка Join -->
+                            <button class="bg-apple-blue text-white rounded-2xl px-4 py-1 text-sm">
+                                Join
+                            </button>
                         </div>
+                    </div>
 
-                        <!-- Правая часть: кнопка Join -->
-                        <button class="bg-apple-blue text-white rounded-2xl px-4 py-1 text-sm">
-                            Join
+                    <!-- Текст поста с скроллбаром -->
+                    <div class="p-4 text-gray-700 post-text text-mobile post-scroll">
+                        <div id="postContent" class="text-gradient">
+                            <span class="line-1">Привет! Готовы к новому челленджу? 🎨 Сегодня пишем про </span>
+                            <span class="line-2 text-apple-blue font-medium">неловкие ситуации!</span>
+                            <span class="line-2"> Напомним, что объем поста - минимум 200 символов, пишем на русском языке и как можно более красочно! Здесь мы делимся историями и опытом, а не коллективно грустим. За работу! Это дополнительный текст чтобы показать как работает обрезание когда контента много и нужно скрыть часть информации от пользователя пока он не нажмет на кнопку читать дальше. Еще больше текста чтобы показать скроллбар в действии. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
+                        </div>
+                        <div class="read-more-container">
+                            <button id="readMoreBtn" class="read-more text-apple-blue font-medium text-sm">
+                                Читать дальше
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Строка ввода комментария (скрыта в свернутом режиме) -->
+                    <div id="commentsSection" class="comments-section p-3 flex items-center gap-2">
+                        <!-- Иконка сердца -->
+                        <button id="likeBtn" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                            <i class="fas fa-heart text-xl"></i>
                         </button>
+                        
+                        <!-- Контейнер для поля ввода с кнопкой внутри -->
+                        <div class="input-container">
+                            <input 
+                                type="text" 
+                                placeholder="Комментарий"
+                                class="w-full bg-white rounded-2xl px-4 py-2 border-0 focus:outline-none comment-input"
+                            >
+                            <!-- Кнопка отправки внутри строки ввода -->
+                            <button class="w-8 h-8 bg-apple-blue rounded-full flex items-center justify-center text-white send-button">
+                                <i class="fas fa-arrow-up text-sm"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Текст поста -->
-                <div class="p-4 text-gray-700 post-text text-mobile">
-                    <div id="postContent" class="text-gradient">
-                        <span class="line-1">Привет! Готовы к новому челленджу? 🎨 Сегодня пишем про </span>
-                        <span class="line-2 text-apple-blue font-medium">неловкие ситуации!</span>
-                        <span class="line-2"> Напомним, что объем поста - минимум 200 символов, пишем на русском языке и как можно более красочно! Здесь мы делимся историями и опытом, а не коллективно грустим. За работу! Это дополнительный текст чтобы показать как работает обрезание когда контента много и нужно скрыть часть информации от пользователя пока он не нажмет на кнопку читать дальше.</span>
-                    </div>
-                    <div class="read-more-container">
-                        <button id="readMoreBtn" class="read-more text-apple-blue font-medium text-sm">
-                            Читать дальше
-                        </button>
-                    </div>
-                </div>
+        <!-- Маленький пост -->
+        <div class="flex justify-center px-4 mb-6 container-mobile">
+            <div class="w-full max-w-md post-mobile">
+                <!-- Серый прямоугольник (чуть темнее) -->
+                <div class="bg-gray-200 rounded-2xl p-1">
+                    <!-- Белая шапка профиля (на 5px уже) -->
+                    <div class="bg-white rounded-2xl p-3 mx-0.5 mt-0.5">
+                        <div class="flex items-center justify-between">
+                            <!-- Левая часть: аватар и имя -->
+                            <div class="flex items-center">
+                                <!-- Круг с синим контуром -->
+                                <div class="w-8 h-8 rounded-full border-2 border-apple-blue mr-3"></div>
+                                
+                                <!-- Имя и статус -->
+                                <div class="flex-1">
+                                    <div class="flex items-center">
+                                        <span class="text-black font-medium text-lg mr-2">Main</span>
+                                        <i class="fas fa-circle-check text-green-500 text-sm"></i>
+                                    </div>
+                                    <div class="opacity-50 text-xs -mt-1">admin</div>
+                                </div>
+                            </div>
 
-                <!-- Строка ввода комментария (скрыта в свернутом режиме) -->
-                <div id="commentsSection" class="comments-section p-3 flex items-center gap-2">
-                    <!-- Иконка сердца -->
-                    <button id="likeBtn" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
-                        <i class="fas fa-heart text-xl"></i>
-                    </button>
-                    
-                    <!-- Контейнер для поля ввода с кнопкой внутри -->
-                    <div class="input-container">
-                        <input 
-                            type="text" 
-                            placeholder="Комментарий"
-                            class="w-full bg-white rounded-2xl px-4 py-2 border-0 focus:outline-none comment-input"
-                        >
-                        <!-- Кнопка отправки внутри строки ввода -->
-                        <button class="w-8 h-8 bg-apple-blue rounded-full flex items-center justify-center text-white send-button">
-                            <i class="fas fa-arrow-up text-sm"></i>
+                            <!-- Правая часть: кнопка Join -->
+                            <button class="bg-apple-blue text-white rounded-2xl px-4 py-1 text-sm">
+                                Join
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Текст маленького поста -->
+                    <div class="p-4 text-gray-700 post-text text-mobile small-post">
+                        <div class="text-gradient">
+                            <span class="line-1">Короткий пост без кнопки "Читать дальше".</span>
+                        </div>
+                        <div class="read-more-container">
+                            <button class="read-more text-apple-blue font-medium text-sm">
+                                Читать дальше
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Строка ввода комментария (сразу видна для маленьких постов) -->
+                    <div class="comments-section p-3 flex items-center gap-2">
+                        <!-- Иконка сердца -->
+                        <button class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                            <i class="fas fa-heart text-xl"></i>
                         </button>
+                        
+                        <!-- Контейнер для поля ввода с кнопкой внутри -->
+                        <div class="input-container">
+                            <input 
+                                type="text" 
+                                placeholder="Комментарий"
+                                class="w-full bg-white rounded-2xl px-4 py-2 border-0 focus:outline-none comment-input"
+                            >
+                            <!-- Кнопка отправки внутри строки ввода -->
+                            <button class="w-8 h-8 bg-apple-blue rounded-full flex items-center justify-center text-white send-button">
+                                <i class="fas fa-arrow-up text-sm"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Маленький пост -->
-    <div class="flex justify-center px-4 mb-6 container-mobile">
-        <div class="w-full max-w-md post-mobile">
-            <!-- Серый прямоугольник (чуть темнее) -->
-            <div class="bg-gray-200 rounded-2xl p-1">
-                <!-- Белая шапка профиля (на 5px уже) -->
-                <div class="bg-white rounded-2xl p-3 mx-0.5 mt-0.5">
-                    <div class="flex items-center justify-between">
-                        <!-- Левая часть: аватар и имя -->
-                        <div class="flex items-center">
-                            <!-- Круг с синим контуром -->
-                            <div class="w-8 h-8 rounded-full border-2 border-apple-blue mr-3"></div>
-                            
-                            <!-- Имя и статус -->
-                            <div class="flex-1">
-                                <div class="flex items-center">
-                                    <span class="text-black font-medium text-lg mr-2">Main</span>
-                                    <i class="fas fa-circle-check text-green-500 text-sm"></i>
-                                </div>
-                                <div class="opacity-50 text-xs -mt-1">admin</div>
-                            </div>
-                        </div>
-
-                        <!-- Правая часть: кнопка Join -->
-                        <button class="bg-apple-blue text-white rounded-2xl px-4 py-1 text-sm">
-                            Join
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Текст маленького поста -->
-                <div class="p-4 text-gray-700 post-text text-mobile small-post">
-                    <div class="text-gradient">
-                        <span class="line-1">Короткий пост без кнопки "Читать дальше".</span>
-                    </div>
-                    <div class="read-more-container">
-                        <button class="read-more text-apple-blue font-medium text-sm">
-                            Читать дальше
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Строка ввода комментария (сразу видна для маленьких постов) -->
-                <div class="comments-section p-3 flex items-center gap-2">
-                    <!-- Иконка сердца -->
-                    <button class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
-                        <i class="fas fa-heart text-xl"></i>
-                    </button>
-                    
-                    <!-- Контейнер для поля ввода с кнопкой внутри -->
-                    <div class="input-container">
-                        <input 
-                            type="text" 
-                            placeholder="Комментарий"
-                            class="w-full bg-white rounded-2xl px-4 py-2 border-0 focus:outline-none comment-input"
-                        >
-                        <!-- Кнопка отправки внутри строки ввода -->
-                        <button class="w-8 h-8 bg-apple-blue rounded-full flex items-center justify-center text-white send-button">
-                            <i class="fas fa-arrow-up text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Основной контент (пустой) -->
-    <div class="flex-1"></div>
 
     <!-- Подвал -->
     <footer class="footer w-full fixed bottom-0 left-0">
