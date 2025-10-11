@@ -55,6 +55,14 @@
 </head>
 <body class="bg-white min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-sm mobile-container">
+        
+        <!-- Приветствие -->
+        <div class="text-center mb-4">
+            <div id="welcomeText" class="opacity-50 mobile-text hidden">
+                Хей, <span id="userName"></span>!
+            </div>
+        </div>
+
         <!-- Заголовок в одну строку -->
         <div class="text-center mb-12 flex items-baseline justify-center space-x-2">
             <span class="text-base opacity-50 font-normal mobile-text">Добро пожаловать в</span>
@@ -127,9 +135,71 @@
         const plusIcon = document.getElementById('plusIcon');
         const avatarPreview = document.getElementById('avatarPreview');
         const avatarCircle = document.getElementById('avatarCircle');
+        const welcomeText = document.getElementById('welcomeText');
+        const userNameSpan = document.getElementById('userName');
 
         let isUsernameValid = false;
         let hasAvatar = false;
+
+        // Умный список запрещенных корней и паттернов
+        const forbiddenPatterns = [
+            // Основные корни матов (русские и английские варианты)
+            {pattern: /[пp][iиl1][з3z][дd]/, reason: 'Недопустимое слово'},
+            {pattern: /[б6b][лl][яaя]/, reason: 'Недопустимое слово'},
+            {pattern: /[еe][б6b]/, reason: 'Недопустимое слово'},
+            {pattern: /[хx][уy]/, reason: 'Недопустимое слово'},
+            {pattern: /[мm][уy][дd]/, reason: 'Недопустимое слово'},
+            
+            // Половые органы
+            {pattern: /[ч4c][лl][еe]/, reason: 'Недопустимое слово'},
+            {pattern: /[пp][еe][нn]/, reason: 'Недопустимое слово'},
+            {pattern: /[вbv][аa][гgr]/, reason: 'Недопустимое слово'},
+            {pattern: /[жz][оo0]/, reason: 'Недопустимое слово'},
+            {pattern: /[сcs][рp][аa]/, reason: 'Недопустимое слово'},
+            
+            // Оскорбительные термины
+            {pattern: /[гg][еe][йyи]/, reason: 'Оскорбительный термин'},
+            {pattern: /[пp][еe][дd]/, reason: 'Оскорбительный термин'},
+            {pattern: /[гg][оo0][лl][уy]/, reason: 'Оскорбительный термин'},
+            {pattern: /[лl][гg][бb][тt]/, reason: 'Запрещенная организация'},
+            {pattern: /[шsh][лl][юy]/, reason: 'Оскорбительный термин'},
+            
+            // Запрещенные движения
+            {pattern: /[нn][аa][вbv][аa]/, reason: 'Запрещенная организация'},
+            {pattern: /[иi][гg][иi]/, reason: 'Запрещенная организация'},
+            {pattern: /[тt][аa][лl][иi]/, reason: 'Запрещенная организация'},
+            {pattern: /[мm][аa][йy][дd]/, reason: 'Запрещенная организация'},
+            {pattern: /[уy][кk][рp]/, reason: 'Оскорбительный термин'},
+            
+            // Экстремистские термины
+            {pattern: /[фf][аa][шsh]/, reason: 'Экстремистский термин'},
+            {pattern: /[нn][аa][цc]/, reason: 'Экстремистский термин'},
+            {pattern: /[рp][аa][сcs]/, reason: 'Экстремистский термин'}
+        ];
+
+        // Список разрешенных слов, которые могут содержать похожие буквы
+        const allowedWords = [
+            'пистолет', 'письмо', 'педаль', 'печенье', 'пенал', 'пена', 'песок',
+            'белый', 'белка', 'беседа', 'блеять', 'блеск', 'блин', 'блок',
+            'худой', 'художник', 'хурма', 'хутор', 'хозяин',
+            'мудрый', 'мудрец', 'муза', 'мука', 'мульт',
+            'человек', 'число', 'час', 'честь', 'черный',
+            'влага', 'вклад', 'вкус', 'взгляд',
+            'жора', 'жонглер', 'жокей',
+            'сразу', 'среда', 'срок', 'сражение',
+            'гений', 'герой', 'гель', 'гектар',
+            'педагог', 'педиатр', 'педсовет',
+            'голубь', 'голубой', 'голубизна',
+            'лебедь', 'лесник', 'леска',
+            'навага', 'навес', 'навык',
+            'игла', 'игра', 'иго',
+            'талкан', 'талия', 'талон',
+            'майка', 'майор', 'майя',
+            'укор', 'укроп', 'уклон',
+            'фасад', 'фасоль', 'фаска',
+            'нация', 'нацист', // только полное совпадение
+            'раса', 'расист' // только полное совпадение
+        ];
 
         // Обновление счетчика символов
         usernameInput.addEventListener('input', function() {
@@ -141,6 +211,7 @@
                 showError('Пробелы не допускаются');
                 isUsernameValid = false;
                 updateLoginButton();
+                updateWelcomeText('');
                 return;
             }
             
@@ -149,14 +220,17 @@
                 showError('Минимум 3 символа');
                 isUsernameValid = false;
                 updateLoginButton();
+                updateWelcomeText('');
                 return;
             }
             
-            // Проверка на запрещенные слова (заглушка)
-            if (hasBadWords(value)) {
-                showError('Недопустимое имя');
+            // Проверка на запрещенные слова
+            const checkResult = checkForbiddenWords(value);
+            if (!checkResult.allowed) {
+                showError(checkResult.reason);
                 isUsernameValid = false;
                 updateLoginButton();
+                updateWelcomeText('');
                 return;
             }
             
@@ -164,12 +238,51 @@
             if (value.length >= 3) {
                 hideError();
                 isUsernameValid = true;
+                updateWelcomeText(value);
             } else {
                 isUsernameValid = false;
+                updateWelcomeText('');
             }
             
             updateLoginButton();
         });
+
+        // Умная проверка запрещенных слов
+        function checkForbiddenWords(text) {
+            const lowerText = text.toLowerCase();
+            
+            // Сначала проверяем разрешенные слова
+            if (allowedWords.some(word => lowerText === word.toLowerCase())) {
+                return { allowed: true };
+            }
+            
+            // Проверяем запрещенные паттерны
+            for (const item of forbiddenPatterns) {
+                if (item.pattern.test(lowerText)) {
+                    // Дополнительная проверка: если это часть разрешенного слова
+                    const isPartOfAllowed = allowedWords.some(allowed => 
+                        allowed.toLowerCase().includes(lowerText) || 
+                        lowerText.includes(allowed.toLowerCase())
+                    );
+                    
+                    if (!isPartOfAllowed) {
+                        return { allowed: false, reason: item.reason };
+                    }
+                }
+            }
+            
+            return { allowed: true };
+        }
+
+        // Обновление приветственного текста
+        function updateWelcomeText(name) {
+            if (name && name.length >= 3) {
+                userNameSpan.textContent = name;
+                welcomeText.classList.remove('hidden');
+            } else {
+                welcomeText.classList.add('hidden');
+            }
+        }
 
         // Обновление состояния кнопки входа
         function updateLoginButton() {
@@ -217,12 +330,6 @@
         function hideError() {
             nameError.classList.add('hidden');
             usernameInput.classList.remove('border-red-500');
-        }
-
-        // Заглушка для проверки плохих слов
-        function hasBadWords(text) {
-            const badWords = ['мат1', 'мат2', 'мат3']; // Заменить на реальный список
-            return badWords.some(word => text.toLowerCase().includes(word));
         }
 
         // Убираем все эффекты наведения
