@@ -3,396 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apple Style Design</title>
+    <title>main - Начать</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'apple-blue': '#007AFF',
+                        'apple-gray': '#8E8E93',
+                        'light-gray': '#F2F2F7',
+                        'border-gray': '#C6C6C8'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+        @import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap');
+        
+        .main-font {
+            font-family: 'Bubblegum Sans', cursive;
+        }
+        
+        /* Убираем все эффекты при наведении */
+        button, input, .avatar-circle {
+            transition: all 0.3s ease;
+        }
+        button:hover, input:hover, .avatar-circle:hover {
+            transform: none !important;
+        }
+        
+        /* Плавное изменение цвета кнопки входа */
+        #loginBtn {
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        body {
-            background-color: #000;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            padding-left: 10%;
-            position: relative;
-            overflow: hidden;
-            touch-action: pan-y;
-        }
-
-        .avatar {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #fff;
-            overflow: hidden;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .avatar-placeholder {
-            width: 100%;
-            height: 100%;
-            background-color: #fff;
-            border-radius: 50%;
-        }
-
-        .content {
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .main-title {
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.1;
-        }
-
-        .subtitle {
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            font-weight: 400;
-            opacity: 0.5;
-            line-height: 1.1;
-        }
-
-        .swipe-container {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0.5;
-            white-space: nowrap;
-            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .chevron {
-            width: 20px;
-            height: 10px;
-            margin-bottom: 5px;
-            position: relative;
-        }
-
-        .chevron::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background: #fff;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-        }
-
-        .swipe-hint {
-            font-size: 0.875rem;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* Loading animation */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-            align-items: center;
-            gap: 8px;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-
-        .loading.hide {
-            opacity: 0;
-        }
-
-        .loading-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #fff;
-            animation: loadingWave 1.4s ease-in-out infinite both;
-        }
-
-        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
-        .loading-dot:nth-child(3) { animation-delay: 0s; }
-        .loading-dot:nth-child(4) { animation-delay: 0.16s; }
-
-        @keyframes loadingWave {
-            0%, 80%, 100% {
-                transform: scale(0.5);
-                opacity: 0.5;
-            }
-            40% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        /* Swipe area */
-        .swipe-area {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 150px;
-            z-index: 10;
-        }
-
-        /* Hide elements when swiped */
-        .hide-up {
-            transform: translateY(-100vh) scale(0.8);
-            opacity: 0;
-        }
-
-        .hide-fade {
-            opacity: 0;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding-left: 5%;
-            }
-            
-            .avatar {
-                top: 15px;
-                left: 15px;
-                width: 35px;
-                height: 35px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding-left: 5%;
-            }
-            
-            .main-title, .subtitle {
-                font-size: 2rem;
-            }
-            
-            .avatar {
-                top: 12px;
-                left: 12px;
-                width: 32px;
-                height: 32px;
-            }
-            
-            .swipe-hint {
-                font-size: 0.8rem;
-            }
-        }
-
-        /* Landscape orientation support */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .content {
-                transform: scale(0.8);
-                transform-origin: left center;
-            }
-            
-            .swipe-container {
-                bottom: 10px;
-            }
+        /* Стиль для выбранной аватарки */
+        .avatar-circle.selected {
+            border: 2px solid #007AFF;
+            border-style: solid;
         }
     </style>
 </head>
-<body>
-    <div class="avatar" id="userAvatar">
-        <div class="avatar-placeholder"></div>
-    </div>
-    
-    <div class="content" id="mainContent">
-        <h1 class="main-title">Что у тебя на уме?</h1>
-        <p class="subtitle">Поделись с обществом</p>
-    </div>
-    
-    <div class="swipe-container" id="swipeHint">
-        <div class="chevron"></div>
-        <div class="swipe-hint">Свайпни, чтобы смотреть посты</div>
-    </div>
+<body class="bg-white min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-sm">
+        <!-- Приветствие с именем из Telegram -->
+        <div id="tgGreeting" class="text-center mb-2 hidden">
+            <span class="text-base opacity-50 font-normal">Хей, </span>
+            <span id="tgUserName" class="text-base font-normal text-apple-blue"></span>
+        </div>
 
-    <div class="loading" id="loading">
-        <div class="loading-dot"></div>
-        <div class="loading-dot"></div>
-        <div class="loading-dot"></div>
-        <div class="loading-dot"></div>
-    </div>
+        <!-- Заголовок в одну строку -->
+        <div class="text-center mb-12">
+            <span class="text-base opacity-50 font-normal">Добро пожаловать в </span>
+            <span class="main-font text-apple-blue text-4xl">main</span>
+        </div>
+        
+        <!-- Круг для аватарки -->
+        <div class="relative mb-8 flex justify-center">
+            <div class="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer avatar-circle"
+                 onclick="document.getElementById('avatarInput').click()">
+                <i class="fas fa-plus text-3xl text-gray-400" id="plusIcon"></i>
+                <img id="avatarPreview" class="w-full h-full rounded-full object-cover hidden" alt="Аватар">
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarSelect(event)">
+        </div>
 
-    <div class="swipe-area" id="swipeArea"></div>
+        <!-- Поле ввода имени -->
+        <div class="relative mb-6">
+            <input 
+                type="text" 
+                id="username"
+                maxlength="12"
+                placeholder="Имя"
+                class="w-full bg-transparent border-0 border-b border-gray-300 px-0 py-3 text-lg focus:outline-none focus:border-apple-blue placeholder-gray-400"
+                autocomplete="off"
+            >
+            <!-- Счетчик символов -->
+            <div class="absolute right-0 top-3 text-sm text-gray-400">
+                <span id="charCount">0</span>/12
+            </div>
+            <!-- Сообщение об ошибке -->
+            <div id="nameError" class="absolute -bottom-6 left-0 text-red-500 text-sm hidden"></div>
+        </div>
+
+        <!-- Две кнопки в ряд -->
+        <div class="flex gap-3 mb-4">
+            <!-- Кнопка анонима -->
+            <button class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
+                <i class="fas fa-masks-theater text-apple-blue mr-2 text-lg"></i>
+                <span class="text-base font-normal">Аноним</span>
+            </button>
+
+            <!-- Кнопка входа -->
+            <button id="loginBtn" class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 border-0 flex items-center justify-center text-gray-600">
+                <i class="fas fa-sign-in-alt text-gray-400 mr-2 text-lg"></i>
+                <span class="text-base font-normal">Войти</span>
+            </button>
+        </div>
+
+        <!-- Кнопка Telegram -->
+        <button class="w-full bg-apple-blue rounded-2xl py-4 px-6 border-0 flex items-center justify-center text-white shadow-sm">
+            <i class="fab fa-telegram mr-3 text-lg"></i>
+            <span class="text-base font-normal">Войти через Telegram</span>
+        </button>
+
+        <!-- Подсказка -->
+        <p class="text-center text-gray-500 text-sm mt-8 px-4">
+            Присоединяйтесь к сообществу 
+            <span class="main-font opacity-50 text-base">main</span>. 
+            Расскажите свою историю.
+        </p>
+    </div>
 
     <script>
+        const usernameInput = document.getElementById('username');
+        const charCount = document.getElementById('charCount');
+        const nameError = document.getElementById('nameError');
+        const loginBtn = document.getElementById('loginBtn');
+        const plusIcon = document.getElementById('plusIcon');
+        const avatarPreview = document.getElementById('avatarPreview');
+        const avatarCircle = document.querySelector('.avatar-circle');
+        const tgGreeting = document.getElementById('tgGreeting');
+        const tgUserName = document.getElementById('tgUserName');
+
+        let isUsernameValid = false;
+
         // Инициализация Telegram Web App
-        const tg = window.Telegram.WebApp;
-        
-        // Инициализируем приложение
-        tg.expand();
-        tg.enableClosingConfirmation();
-        
-        // Получаем данные пользователя
-        const user = tg.initDataUnsafe?.user;
-        
-        // Устанавливаем аватар пользователя
-        const avatarElement = document.getElementById('userAvatar');
-        
-        if (user && user.photo_url) {
-            avatarElement.style.backgroundImage = `url(${user.photo_url})`;
-            avatarElement.innerHTML = '';
-        } else if (user && user.first_name) {
-            const initials = user.first_name.charAt(0).toUpperCase();
-            avatarElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-color:#007AFF;color:white;font-weight:bold;border-radius:50%;font-size:14px;">${initials}</div>`;
-        } else {
-            avatarElement.style.backgroundColor = '#fff';
-        }
+        let tg = window.Telegram.WebApp;
 
-        // Smart swipe functionality
-        const swipeArea = document.getElementById('swipeArea');
-        const mainContent = document.getElementById('mainContent');
-        const swipeHint = document.getElementById('swipeHint');
-        const loading = document.getElementById('loading');
-        const avatar = document.getElementById('userAvatar');
-
-        let startY = 0;
-        let currentY = 0;
-        let isSwiping = false;
-        let isAnimating = false;
-        const threshold = window.innerHeight * 0.4; // 40% высоты экрана
-
-        swipeArea.addEventListener('touchstart', (e) => {
-            if (isAnimating) return;
+        // При загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Расширяем на весь экран
+            tg.expand();
             
-            startY = e.touches[0].clientY;
-            currentY = startY;
-            isSwiping = true;
-            
-            // Сбрасываем трансформации для плавного начала
-            mainContent.style.transition = 'none';
-            avatar.style.transition = 'none';
-            swipeHint.style.transition = 'none';
-        });
-
-        swipeArea.addEventListener('touchmove', (e) => {
-            if (!isSwiping || isAnimating) return;
-            
-            currentY = e.touches[0].clientY;
-            const diff = startY - currentY;
-            
-            // Двигаем контент только если свайп вверх
-            if (diff > 0) {
-                const progress = Math.min(diff / threshold, 1);
+            // Проверяем, есть ли данные пользователя
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                const userName = user.first_name || 'Друг';
                 
-                // Плавное движение контента вверх
-                const translateY = -progress * 100;
-                const scale = 1 - progress * 0.2;
-                const opacity = 1 - progress;
+                // Показываем приветствие
+                tgUserName.textContent = userName;
+                tgGreeting.classList.remove('hidden');
                 
-                mainContent.style.transform = `translateY(${translateY}px) scale(${scale})`;
-                mainContent.style.opacity = opacity;
+                // Автоматически заполняем поле имени
+                usernameInput.value = userName;
+                charCount.textContent = userName.length;
                 
-                // Плавное исчезновение аватара и подсказки
-                avatar.style.opacity = 1 - progress * 2;
-                swipeHint.style.opacity = 0.5 - progress;
+                // Проверяем валидность
+                validateUsername(userName);
             }
         });
 
-        swipeArea.addEventListener('touchend', () => {
-            if (!isSwiping || isAnimating) return;
+        // Обновление счетчика символов и валидация
+        usernameInput.addEventListener('input', function() {
+            const value = this.value;
+            charCount.textContent = value.length;
+            validateUsername(value);
+        });
+
+        // Функция валидации имени пользователя
+        function validateUsername(value) {
+            // Проверка на пробелы
+            if (/\s/.test(value)) {
+                showError('Пробелы не допускаются');
+                isUsernameValid = false;
+                updateLoginButton();
+                return;
+            }
             
-            const diff = startY - currentY;
-            const progress = diff / threshold;
+            // Проверка минимальной длины
+            if (value.length > 0 && value.length < 3) {
+                showError('Минимум 3 символа');
+                isUsernameValid = false;
+                updateLoginButton();
+                return;
+            }
             
-            // Включаем плавные переходы обратно
-            mainContent.style.transition = '';
-            avatar.style.transition = '';
-            swipeHint.style.transition = '';
+            // Проверка на запрещенные слова (заглушка)
+            if (hasBadWords(value)) {
+                showError('Недопустимое имя');
+                isUsernameValid = false;
+                updateLoginButton();
+                return;
+            }
             
-            if (progress > 0.5) {
-                // Если свайпнули больше половины - завершаем анимацию
-                completeSwipe();
+            // Если все проверки пройдены
+            if (value.length >= 3) {
+                hideError();
+                isUsernameValid = true;
             } else {
-                // Если не дотянули - возвращаем обратно
-                resetSwipe();
+                isUsernameValid = false;
             }
             
-            isSwiping = false;
+            updateLoginButton();
+        }
+
+        // Обновление состояния кнопки входа
+        function updateLoginButton() {
+            if (isUsernameValid) {
+                loginBtn.classList.remove('bg-gray-100', 'text-gray-600');
+                loginBtn.classList.add('bg-apple-blue', 'text-white');
+                loginBtn.querySelector('i').classList.remove('text-gray-400');
+                loginBtn.querySelector('i').classList.add('text-white');
+            } else {
+                loginBtn.classList.remove('bg-apple-blue', 'text-white');
+                loginBtn.classList.add('bg-gray-100', 'text-gray-600');
+                loginBtn.querySelector('i').classList.remove('text-white');
+                loginBtn.querySelector('i').classList.add('text-gray-400');
+            }
+        }
+
+        // Обработка выбора аватарки
+        function handleAvatarSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                    avatarPreview.classList.remove('hidden');
+                    plusIcon.classList.add('hidden');
+                    // Меняем контур на синий сплошной
+                    avatarCircle.classList.remove('border-dashed', 'border-gray-300');
+                    avatarCircle.classList.add('selected');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Функции для работы с ошибками
+        function showError(message) {
+            nameError.textContent = message;
+            nameError.classList.remove('hidden');
+            usernameInput.classList.add('border-red-500');
+        }
+
+        function hideError() {
+            nameError.classList.add('hidden');
+            usernameInput.classList.remove('border-red-500');
+        }
+
+        // Заглушка для проверки плохих слов
+        function hasBadWords(text) {
+            const badWords = ['мат1', 'мат2', 'мат3']; // Заменить на реальный список
+            return badWords.some(word => text.toLowerCase().includes(word));
+        }
+
+        // Убираем все эффекты наведения
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.transform = 'none';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'none';
+            });
         });
-
-        function completeSwipe() {
-            isAnimating = true;
-            
-            // Запускаем финальную анимацию
-            mainContent.classList.add('hide-up');
-            avatar.classList.add('hide-fade');
-            swipeHint.classList.add('hide-fade');
-            
-            // Показываем загрузку после исчезновения всех элементов
-            setTimeout(() => {
-                loading.style.display = 'flex';
-                
-                // Случайная длительность загрузки от 0.2 до 1 секунды
-                const randomDuration = 200 + Math.random() * 800;
-                
-                setTimeout(() => {
-                    // Плавно скрываем загрузку
-                    loading.classList.add('hide');
-                    
-                    setTimeout(() => {
-                        // Полностью скрываем все элементы
-                        loading.classList.add('hidden');
-                        mainContent.classList.add('hidden');
-                        avatar.classList.add('hidden');
-                        swipeHint.classList.add('hidden');
-                        
-                        // Остается только темный экран
-                    }, 300);
-                    
-                }, randomDuration);
-                
-            }, 500);
-            
-            // Блокируем повторные свайпы
-            swipeArea.style.pointerEvents = 'none';
-        }
-
-        function resetSwipe() {
-            isAnimating = true;
-            
-            // Возвращаем все в исходное положение
-            mainContent.style.transform = '';
-            mainContent.style.opacity = '';
-            avatar.style.opacity = '';
-            swipeHint.style.opacity = '';
-            
-            setTimeout(() => {
-                isAnimating = false;
-            }, 300);
-        }
-
-        console.log('Telegram User:', user);
     </script>
 </body>
 </html>
