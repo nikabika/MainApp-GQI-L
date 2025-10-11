@@ -47,10 +47,58 @@
             border: 2px solid #007AFF;
             border-style: solid;
         }
+
+        /* Адаптивные контейнеры */
+        .top-section {
+            margin-top: 25px;
+        }
+
+        .middle-section {
+            margin-top: 15px;
+        }
+
+        .bottom-section {
+            margin-bottom: 25px;
+        }
+
+        /* Адаптивные размеры для разных устройств */
+        @media (max-height: 700px) {
+            .avatar-circle {
+                width: 28px;
+                height: 28px;
+            }
+            .top-section {
+                margin-top: 20px;
+            }
+            .bottom-section {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .avatar-circle {
+                width: 24px;
+                height: 24px;
+            }
+            .top-section {
+                margin-top: 15px;
+            }
+            .bottom-section {
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .container-padding {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
     </style>
 </head>
-<body class="bg-white min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-sm">
+<body class="bg-white min-h-screen flex flex-col">
+    <!-- Верхняя секция - 25px от верха -->
+    <div class="top-section container-padding">
         <!-- Приветствие с именем из Telegram -->
         <div id="tgGreeting" class="text-center mb-2 hidden">
             <span class="text-base opacity-50 font-normal">Хей, </span>
@@ -58,11 +106,14 @@
         </div>
 
         <!-- Заголовок в одну строку -->
-        <div class="text-center mb-12">
+        <div class="text-center">
             <span class="text-base opacity-50 font-normal">Добро пожаловать в </span>
             <span class="main-font text-apple-blue text-4xl">main</span>
         </div>
-        
+    </div>
+
+    <!-- Центральная секция - 15px от заголовка -->
+    <div class="flex-1 flex flex-col items-center justify-center middle-section container-padding">
         <!-- Круг для аватарки -->
         <div class="relative mb-8 flex justify-center">
             <div class="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer avatar-circle"
@@ -74,7 +125,7 @@
         </div>
 
         <!-- Поле ввода имени -->
-        <div class="relative mb-6">
+        <div class="relative mb-6 w-full max-w-xs">
             <input 
                 type="text" 
                 id="username"
@@ -87,10 +138,13 @@
             <div class="absolute right-0 top-3 text-sm text-gray-400">
                 <span id="charCount">0</span>/12
             </div>
-            <!-- Сообщение об ошибке -->
+            <!-- Сообщение об ошибки -->
             <div id="nameError" class="absolute -bottom-6 left-0 text-red-500 text-sm hidden"></div>
         </div>
+    </div>
 
+    <!-- Нижняя секция - 25px от низа -->
+    <div class="bottom-section container-padding">
         <!-- Две кнопки в ряд -->
         <div class="flex gap-3 mb-4">
             <!-- Кнопка анонима -->
@@ -107,13 +161,13 @@
         </div>
 
         <!-- Кнопка Telegram -->
-        <button class="w-full bg-apple-blue rounded-2xl py-4 px-6 border-0 flex items-center justify-center text-white shadow-sm">
+        <button class="w-full bg-apple-blue rounded-2xl py-4 px-6 border-0 flex items-center justify-center text-white shadow-sm mb-4">
             <i class="fab fa-telegram mr-3 text-lg"></i>
             <span class="text-base font-normal">Войти через Telegram</span>
         </button>
 
         <!-- Подсказка -->
-        <p class="text-center text-gray-500 text-sm mt-8 px-4">
+        <p class="text-center text-gray-500 text-sm px-4">
             Присоединяйтесь к сообществу 
             <span class="main-font opacity-50 text-base">main</span>. 
             Расскажите свою историю.
@@ -157,7 +211,30 @@
                 // Проверяем валидность
                 validateUsername(userName);
             }
+
+            // Адаптация под разные устройства
+            adaptToScreenSize();
         });
+
+        // Адаптация под размер экрана
+        function adaptToScreenSize() {
+            const height = window.innerHeight;
+            const width = window.innerWidth;
+            
+            // Для очень маленьких экранов
+            if (height < 600) {
+                document.querySelector('.avatar-circle').classList.add('w-24', 'h-24');
+                document.querySelector('.avatar-circle').classList.remove('w-32', 'h-32');
+            }
+            
+            // Для очень узких экранов
+            if (width < 340) {
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.classList.add('py-3');
+                    btn.classList.remove('py-4');
+                });
+            }
+        }
 
         // Обновление счетчика символов и валидация
         usernameInput.addEventListener('input', function() {
@@ -252,6 +329,9 @@
             const badWords = ['мат1', 'мат2', 'мат3']; // Заменить на реальный список
             return badWords.some(word => text.toLowerCase().includes(word));
         }
+
+        // Адаптация при изменении размера окна
+        window.addEventListener('resize', adaptToScreenSize);
 
         // Убираем все эффекты наведения
         document.querySelectorAll('button').forEach(btn => {
